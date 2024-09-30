@@ -1,16 +1,18 @@
-import { RegisterReqBody } from '~/models/requets/User.requests'
+import { TokenType, UserVerifyStatus } from '../constants/enums'
+import { RegisterReqBody } from '../models/request/User.request'
+import User from '../models/schemas/User.schema'
+import { hashPassword } from '../utils/crypto'
+import { signToken } from '../utils/jwt'
 import databaseService from './database.services'
-import User from '~/models/schemas/User.schema'
-import { hashPassword } from '~/utils/crypto'
-import { signToken } from '~/utils/jwt'
-import { UserVerifyStatus } from '~/constants/enums'
 
 class UserService {
   private signAccessToken(user_id: string) {
     return signToken({
       payload: {
         user_id,
-        user_type: UserVerifyStatus.Verified,
+        user_type: TokenType.AccessToken
+      },
+      optional: {
         expiresIn: process.env.ACCESS_TOKEN_EXPIRES_IN
       }
     })
@@ -19,7 +21,9 @@ class UserService {
     return signToken({
       payload: {
         user_id,
-        user_type: UserVerifyStatus.Verified,
+        user_type: TokenType.RefreshToken
+      },
+      optional: {
         expiresIn: process.env.REFRESH_TOKEN_EXPIRES_IN
       }
     })

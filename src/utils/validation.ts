@@ -1,6 +1,5 @@
-import express from 'express'
+import * as express from 'express'
 import { ContextRunner, ValidationChain } from 'express-validator'
-import { RunnableValidationChains } from 'express-validator/lib/middlewares/schema'
 
 // can be reused by many routes
 export const validate = (validations: ContextRunner[]) => {
