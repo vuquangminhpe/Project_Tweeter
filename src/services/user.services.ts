@@ -1,4 +1,4 @@
-import { TokenType, UserVerifyStatus } from '../constants/enums'
+import { TokenType } from '../constants/enums'
 import { RegisterReqBody } from '../models/request/User.request'
 import User from '../models/schemas/User.schema'
 import { hashPassword } from '../utils/crypto'
