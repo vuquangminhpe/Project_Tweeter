@@ -34,7 +34,7 @@
     "concat-map": "^0.0.1",
     "content-disposition": "^0.5.4",
     "content-type": "^1.0.5",
-    "cookie": "^0.6.0",
+    "cookie": "^0.7.1",
     "cookie-signature": "^1.0.6",
     "create-require": "^1.1.1",
     "cross-spawn": "^7.0.3",
@@ -241,6 +241,7 @@
   "devDependencies": {
     "@types/express": "^5.0.0",
     "@types/jsonwebtoken": "^9.0.7",
+    "@types/lodash": "^4.17.10",
     "tsx": "^4.19.1"
   },
   "scripts": {
