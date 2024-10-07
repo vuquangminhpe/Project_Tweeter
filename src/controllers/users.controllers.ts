@@ -2,17 +2,23 @@ import { NextFunction, Request, Response } from 'express'
 import usersService from '../services/user.services'
 import { ParamsDictionary } from 'express-serve-static-core'
 import { RegisterReqBody } from '../models/request/User.request'
+import { USERS_MESSAGES } from '~/constants/messages'
 
-export const loginController = (req: Request, res: Response) => {
+export const loginController = async (req: Request, res: Response) => {
+  const { user }: any = req
+  const { _id } = user
+  console.log(_id)
+  console.log(user)
+
   const { email, password } = req.body
-  if (email === 'minhdev123' && password === 'minh123') {
+  const result = await usersService.checkUsersExists(email, password)
+  usersService.login(_id.toString())
+  if (!result) {
     return res.status(200).json({
       message: 'Login Success'
     })
   }
-  return res.status(400).json({
-    error: 'Login Failed'
-  })
+  return res.status(400).json({ errors: USERS_MESSAGES.PASSWORD_IS_WRONG })
 }
 export const registerController = async (
   req: Request<ParamsDictionary, any, RegisterReqBody>,
