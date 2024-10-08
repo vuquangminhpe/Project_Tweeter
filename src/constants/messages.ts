@@ -1,5 +1,5 @@
 export const USERS_MESSAGES = {
-  VALIDATION_ERROR: 'validation error',
+  VALIDATION_ERROR: 'Validation error',
   NAME_IS_REQUIRED: 'Name is required',
   NAME_MUST_BE_A_STRING: 'Name must be a string',
   NAME_LENGTH_MUST_BE_FROM_1_TO_100: 'Name must be from 1 to 100',
@@ -19,5 +19,8 @@ export const USERS_MESSAGES = {
   CONFIRM_PASSWORD_MUST_BE_THE_SAME_AS_PASSWORD: 'Confirm password must be the same as password',
   DATE_OF_BIRTH_MUST_BE_ISO8601: 'Date of birth must be ISO8601',
   EMAIL_NOT_FOUND: 'Email not found',
-  PASSWORD_IS_WRONG: 'Password is wrong'
+  PASSWORD_IS_WRONG: 'Password is wrong',
+  LOGIN_SUCCESS: 'Login success',
+  REGISTER_SUCCESS: 'Register success',
+  USER_NOT_FOUND: 'Email or password is wrong'
 } as const

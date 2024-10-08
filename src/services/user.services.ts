@@ -43,13 +43,12 @@ class UserService {
     }
   }
 
-  async checkUsersExists(email: string, password?: string) {
-    const result = await databaseService.users.find({ email: email, password: password })
-    console.log(result)
-
+  async checkUsersExists(email: string) {
+    const result = await databaseService.users.findOne({
+      email: email
+    })
     return Boolean(result)
   }
-
   async login(user_id: string) {
     const [access_token, refresh_token] = await this.signAccessAndRefreshToken(user_id)
     return {

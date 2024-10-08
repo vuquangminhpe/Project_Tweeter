@@ -3,6 +3,7 @@ import { validate } from '../utils/validation'
 import usersService from '../services/user.services'
 import { USERS_MESSAGES } from '~/constants/messages'
 import databaseService from '~/services/database.services'
+import { hashPassword } from '~/utils/crypto'
 export const loginValidator = validate(
   checkSchema({
     email: {
@@ -15,11 +16,11 @@ export const loginValidator = validate(
       trim: true,
       custom: {
         options: async (value, { req }) => {
-          const user = await databaseService.users.findOne({ email: value })
+          const user = await databaseService.users.findOne({ email: value, password: hashPassword(req.body.password) })
           console.log(user)
 
           if (user === null) {
-            throw new Error(USERS_MESSAGES.EMAIL_NOT_FOUND)
+            throw new Error(USERS_MESSAGES.USER_NOT_FOUND)
           }
           req.user = user
           return true
@@ -39,6 +40,17 @@ export const loginValidator = validate(
           max: 50
         },
         errorMessage: USERS_MESSAGES.PASSWORD_LENGTH_MUST_BE_FROM_6_TO_50
+      },
+      custom: {
+        options: async (password: string) => {
+          const isExitPassword = await usersService.checkUsersExists(password)
+          console.log(isExitPassword)
+
+          if (isExitPassword) {
+            throw new Error(USERS_MESSAGES.PASSWORD_IS_WRONG)
+          }
+          return true
+        }
       }
     }
   })
@@ -72,7 +84,6 @@ export const registerValidator = validate(
       custom: {
         options: async (email: string) => {
           const isExitEmail = await usersService.checkUsersExists(email)
-          console.log(isExitEmail)
 
           if (isExitEmail) {
             throw new Error(USERS_MESSAGES.EMAIL_ALREADY_EXISTS)
