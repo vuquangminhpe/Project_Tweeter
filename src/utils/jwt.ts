@@ -18,3 +18,18 @@ export const signToken = ({
     })
   )
 }
+
+export const verifyToken = ({
+  token,
+  secretOnPublicKey = process.env.JWT_SECRET as string
+}: {
+  token: string
+  secretOnPublicKey?: string
+}) => {
+  return new Promise<jwt.JwtPayload>((resolve, reject) => {
+    jwt.verify(token, secretOnPublicKey, (error, decoded) => {
+      if (error) throw reject(error)
+      resolve(decoded as jwt.JwtPayload)
+    })
+  })
+}

@@ -11,7 +11,7 @@ export const loginController = async (req: Request, res: Response) => {
   const user_id = user._id as ObjectId
 
   const result = await usersService.login(user_id.toString())
-  return res.status(200).json({
+  res.status(200).json({
     message: USERS_MESSAGES.LOGIN_SUCCESS,
     result
   })
@@ -23,7 +23,7 @@ export const registerController = async (
 ) => {
   const result = await usersService.register(req.body)
 
-  return res.json({
+  res.json({
     message: USERS_MESSAGES.REGISTER_SUCCESS,
     result
   })
