@@ -3,13 +3,13 @@ import { TokenPayload } from '~/models/request/User.request'
 
 export const signToken = ({
   payload,
-  privateKey = process.env.JWT_SECRET as string,
+  privateKey,
   optional = {
     algorithm: 'HS256'
   }
 }: {
   payload: string | Buffer | object
-  privateKey?: string
+  privateKey: string
   optional?: jwt.SignOptions
 }) => {
   return new Promise<string>((resolve, reject) =>
@@ -20,13 +20,7 @@ export const signToken = ({
   )
 }
 
-export const verifyToken = ({
-  token,
-  secretOnPublicKey = process.env.JWT_SECRET as string
-}: {
-  token: string
-  secretOnPublicKey?: string
-}) => {
+export const verifyToken = ({ token, secretOnPublicKey }: { token: string; secretOnPublicKey: string }) => {
   return new Promise<TokenPayload>((resolve, reject) => {
     jwt.verify(token, secretOnPublicKey, (error, decoded) => {
       if (error) throw reject(error)
