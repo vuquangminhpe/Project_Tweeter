@@ -31,5 +31,6 @@ export const USERS_MESSAGES = {
   LOGOUT_SUCCESS: 'Logout success',
   EMAIL_ALREADY_VERIFIED_BEFORE: 'Email already verified before',
   EMAIL_VERIFY_SUCCESS: 'Email verify success',
-  RESEND_VERIFY_EMAIL_SUCCESS: 'Resent email verify success'
+  RESEND_VERIFY_EMAIL_SUCCESS: 'Resent email verify success',
+  CHECK_EMAIL_TO_RESET_PASSWORD: 'Check email to reset password'
 } as const
