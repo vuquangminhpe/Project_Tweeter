@@ -8,7 +8,7 @@ import { verifyToken } from '~/utils/jwt'
 import { ErrorWithStatus } from '~/models/Errors'
 import HTTP_STATUS from '~/constants/httpStatus'
 import { JsonWebTokenError } from 'jsonwebtoken'
-import _ from 'lodash'
+import _, { capitalize } from 'lodash'
 import { Request } from 'express'
 export const loginValidator = validate(
   checkSchema(
@@ -257,22 +257,31 @@ export const RefreshTokenValidator = validate(
 export const emailVerifyTokenValidator = validate(
   checkSchema(
     {
-      email: {
-        notEmpty: {
-          errorMessage: new ErrorWithStatus({
-            message: USERS_MESSAGES.EMAIL_IS_REQUIRED,
-            status: HTTP_STATUS.UNAUTHORIZED
-          })
-        },
+      email_verify_token: {
         trim: true,
         custom: {
           options: async (value: string, { req }) => {
-            const decoded_email_verify_token = await verifyToken({
-              token: value,
-              secretOnPublicKey: process.env.JWT_SECRET_EMAIL_VERIFY_TOKEN as string
-            })
+            console.log('value', value)
 
-            ;(req as Request).decoded_email_verify_token = decoded_email_verify_token
+            if (!value) {
+              throw new ErrorWithStatus({
+                message: USERS_MESSAGES.EMAIL_IS_REQUIRED,
+                status: HTTP_STATUS.UNAUTHORIZED
+              })
+            }
+            try {
+              const decoded_email_verify_token = await verifyToken({
+                token: value,
+                secretOnPublicKey: process.env.JWT_SECRET_EMAIL_VERIFY_TOKEN as string
+              })
+
+              ;(req as Request).decoded_email_verify_token = decoded_email_verify_token
+            } catch (error) {
+              throw new ErrorWithStatus({
+                message: capitalize((error as JsonWebTokenError).message),
+                status: HTTP_STATUS.UNAUTHORIZED
+              })
+            }
 
             return true
           }

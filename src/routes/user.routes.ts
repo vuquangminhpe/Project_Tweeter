@@ -1,9 +1,10 @@
 import { Router } from 'express'
 import {
-  emailVerifyValidator,
+  emailVerifyController,
   loginController,
   logoutController,
-  registerController
+  registerController,
+  resendVerifyEmailController
 } from '~/controllers/users.controllers'
 import {
   AccessTokenValidator,
@@ -19,6 +20,7 @@ const usersRouter = Router()
 usersRouter.post('/login', loginValidator, wrapAsync(loginController))
 usersRouter.post('/register', registerValidator, wrapAsync(registerController))
 usersRouter.post('/logout', AccessTokenValidator, RefreshTokenValidator, wrapAsync(logoutController))
-usersRouter.post('/verify-email', emailVerifyTokenValidator, wrapAsync(emailVerifyValidator))
+usersRouter.post('/verify-email', emailVerifyTokenValidator, wrapAsync(emailVerifyController))
+usersRouter.post('/resend-verify-email', AccessTokenValidator, wrapAsync(resendVerifyEmailController))
 
 export default usersRouter

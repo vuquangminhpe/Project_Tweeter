@@ -1,5 +1,5 @@
 import RefreshToken from '~/models/schemas/RefreshToken.schema'
-import { TokenType } from '../constants/enums'
+import { TokenType, UserVerifyStatus } from '../constants/enums'
 import { RegisterReqBody } from '../models/request/User.request'
 import User from '../models/schemas/User.schema'
 import { hashPassword } from '../utils/crypto'
@@ -54,11 +54,18 @@ class UserService {
   async register(payload: RegisterReqBody) {
     const user_id = new ObjectId()
     const email_verify_token = await this.signEmailVerifyToken(user_id.toString())
-    const result = await databaseService.users.insertOne(
-      new User({ ...payload, password: hashPassword(payload.password), date_of_birth: new Date(payload.date_of_birth) })
+    await databaseService.users.insertOne(
+      new User({
+        ...payload,
+        _id: user_id,
+        email_verify_token: email_verify_token,
+        password: hashPassword(payload.password),
+        date_of_birth: new Date(payload.date_of_birth)
+      })
     )
-    user_id = result.insertedId.toString()
-    const [access_token, refresh_token] = await this.signAccessAndRefreshToken(user_id)
+    console.log(email_verify_token)
+
+    const [access_token, refresh_token] = await this.signAccessAndRefreshToken(user_id.toString())
     await databaseService.refreshToken.insertOne(
       new RefreshToken({ user_id: new ObjectId(user_id), token: refresh_token })
     )
@@ -93,17 +100,41 @@ class UserService {
   }
 
   async verifyEmail(user_id: string) {
+    //cật nhật giá trị có thể dùng $$NOW => ném vào [] mới sử dụng được hoặc $curentDate
     await databaseService.users.updateOne(
       { _id: new ObjectId(user_id) },
       {
         $set: {
           email_verify_token: '',
-          updated_at: new Date()
+          verify: UserVerifyStatus.Verified
+        },
+        $currentDate: {
+          updated_at: true
+        }
+      }
+    )
+    const [access_token, refresh_token] = await this.signAccessAndRefreshToken(user_id)
+    return {
+      access_token,
+      refresh_token
+    }
+  }
+  async resendVerifyEmail(user_id: string) {
+    const email_verify_token = await this.signEmailVerifyToken(user_id)
+
+    await databaseService.users.updateOne(
+      { _id: new ObjectId(user_id) },
+      {
+        $set: {
+          email_verify_token
+        },
+        $currentDate: {
+          updated_at: true
         }
       }
     )
     return {
-      message: USERS_MESSAGES.EMAIL_VERIFY_SUCCESS
+      message: USERS_MESSAGES.RESEND_VERIFY_EMAIL_SUCCESS
     }
   }
 }
