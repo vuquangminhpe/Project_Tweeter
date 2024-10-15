@@ -7,6 +7,7 @@ import { signToken } from '../utils/jwt'
 import databaseService from './database.services'
 import { ObjectId } from 'bson'
 import { USERS_MESSAGES } from '~/constants/messages'
+import { identity } from 'lodash'
 
 class UserService {
   private signAccessToken(user_id: string) {
@@ -34,7 +35,19 @@ class UserService {
       }
     })
   }
+  private forgotPasswordToken(user_id: string) {
+    return signToken({
+      payload: {
+        user_id,
+        user_type: TokenType.ForgotPasswordToken
+      },
+      privateKey: process.env.JWT_SECRET_FORGOT_PASSWORD_TOKEN as string,
 
+      optional: {
+        expiresIn: process.env.FORGOT_PASSWORD_TOKEN_EXPIRES_IN
+      }
+    })
+  }
   private signEmailVerifyToken(user_id: string) {
     return signToken({
       payload: {
@@ -49,19 +62,6 @@ class UserService {
     })
   }
 
-  private signForgotPasswordToken(user_id: string) {
-    return signToken({
-      payload: {
-        user_id,
-        user_type: TokenType.ForgotPasswordToken
-      },
-      privateKey: process.env.JWT_SECRET_FORGOT_PASSWORD_TOKEN as string,
-
-      optional: {
-        expiresIn: process.env.FORGOT_PASSWORD_TOKEN_EXPIRES_IN
-      }
-    })
-  }
   private signAccessAndRefreshToken(user_id: string) {
     return Promise.all([this.signAccessToken(user_id), this.signRefreshToken(user_id)])
   }
@@ -153,12 +153,11 @@ class UserService {
   }
 
   async forgotPassword(user_id: string) {
-    const forgot_password_token = await this.signForgotPasswordToken(user_id)
+    const forgot_password_token = await this.forgotPasswordToken(user_id)
+    console.log(forgot_password_token)
 
     await databaseService.users.updateOne(
-      {
-        _id: new ObjectId(user_id)
-      },
+      { _id: new ObjectId(user_id) },
       {
         $set: {
           forgot_password_token
@@ -168,12 +167,37 @@ class UserService {
         }
       }
     )
-    console.log(forgot_password_token)
-
-    // Gửi email => + link => người dùng
     return {
       message: USERS_MESSAGES.CHECK_EMAIL_TO_RESET_PASSWORD
     }
+  }
+
+  async resetPassword(user_id: string, password: string) {
+    await databaseService.users.updateOne(
+      { _id: new ObjectId(user_id) },
+      {
+        $set: {
+          forgot_password_token: '',
+          password: hashPassword(password)
+        },
+        $currentDate: {
+          updated_at: true
+        }
+      }
+    )
+  }
+  async getMe(user_id: string) {
+    const user = await databaseService.users.findOne(
+      { _id: new ObjectId(user_id) },
+      {
+        projection: {
+          password: 0,
+          email_verify_token: 0,
+          forgot_password_token: 0
+        }
+      }
+    )
+    return user
   }
 }
 

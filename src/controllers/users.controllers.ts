@@ -6,9 +6,11 @@ import {
   LoginReqBody,
   LogoutReqBody,
   RegisterReqBody,
+  ResetPasswordReqBody,
   TokenPayload,
   UserReq,
-  VerifyEmailReqBody
+  VerifyEmailReqBody,
+  VerifyForgotPasswordReqBody
 } from '../models/request/User.request'
 import { USERS_MESSAGES } from '~/constants/messages'
 import { ObjectId } from 'bson'
@@ -94,8 +96,41 @@ export const forgotPasswordController = async (
   res: Response
 ) => {
   const { _id } = req.user as User
-  const result = await usersService.forgotPassword((_id as ObjectId).toString())
+  const user = await databaseService.users.findOne({ _id: new ObjectId(_id) })
+
+  if (!user) {
+    res.status(HTTP_STATUS.NOT_FOUND).json({
+      message: USERS_MESSAGES.USER_NOT_FOUND
+    })
+  }
+
+  const result = await usersService.forgotPassword(new ObjectId(_id).toString())
+  res.json(result)
+}
+export const VerifyForgotPasswordController = async (
+  req: Request<ParamsDictionary, any, VerifyForgotPasswordReqBody>,
+  res: Response
+) => {
   res.json({
-    result
+    message: USERS_MESSAGES.VERIFY_FORGOT_PASSWORD_SUCCESS
+  })
+}
+
+export const resetPasswordController = async (
+  req: Request<ParamsDictionary, any, ResetPasswordReqBody>,
+  res: Response
+) => {
+  const { user_id } = req.decode_forgot_password_token as TokenPayload
+  const { password } = req.body
+  const result = await usersService.resetPassword(new ObjectId(user_id).toString(), password)
+  res.json({ message: USERS_MESSAGES.RESET_PASSWORD_SUCCESS, result })
+}
+
+export const getMeController = async (req: Request<ParamsDictionary, any, ResetPasswordReqBody>, res: Response) => {
+  const { user_id } = req.decode_authorization as TokenPayload
+  const user = await usersService.getMe(user_id)
+  res.json({
+    message: USERS_MESSAGES.GET_ME_SUCCESS,
+    result: user
   })
 }
