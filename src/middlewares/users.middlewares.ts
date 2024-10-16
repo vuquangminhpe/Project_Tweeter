@@ -9,8 +9,10 @@ import { ErrorWithStatus } from '~/models/Errors'
 import HTTP_STATUS from '~/constants/httpStatus'
 import { JsonWebTokenError } from 'jsonwebtoken'
 import _, { capitalize } from 'lodash'
-import { Request } from 'express'
+import { NextFunction, Request, RequestHandler } from 'express'
 import { ObjectId } from 'bson'
+import { TokenPayload } from '~/models/request/User.request'
+import { UserVerifyStatus } from '~/constants/enums'
 const passwordSchema: ParamSchema = {
   notEmpty: {
     errorMessage: USERS_MESSAGES.PASSWORD_IS_REQUIRED
@@ -353,3 +355,16 @@ export const resetPasswordValidator = validate(
     ['body']
   )
 )
+
+export const verifiedUserValidator: RequestHandler = (req: Request, res, next: NextFunction) => {
+  const { verify } = (req.decode_authorization as TokenPayload) || {}
+  if (verify !== UserVerifyStatus.Verified) {
+    return next(
+      new ErrorWithStatus({
+        message: USERS_MESSAGES.USER_NOT_VERIFIED,
+        status: HTTP_STATUS.FORBIDDEN
+      })
+    )
+  }
+  next()
+}
