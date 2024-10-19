@@ -2,6 +2,8 @@ import { NextFunction, Request, Response } from 'express'
 import usersService from '../services/user.services'
 import { ParamsDictionary } from 'express-serve-static-core'
 import {
+  ChangePasswordReqBody,
+  FollowReqBody,
   ForgotPasswordReqBody,
   LoginReqBody,
   LogoutReqBody,
@@ -9,6 +11,7 @@ import {
   ResetPasswordReqBody,
   TokenPayload,
   UpdateMeReqBody,
+  UserProfileReqBody,
   UserReq,
   VerifyEmailReqBody,
   VerifyForgotPasswordReqBody
@@ -21,6 +24,7 @@ import HTTP_STATUS from '~/constants/httpStatus'
 import { WithId } from 'mongodb'
 import { UserVerifyStatus } from '~/constants/enums'
 import { pick } from 'lodash'
+import { hashPassword, verifyPassword } from '~/utils/crypto'
 
 export const loginController = async (req: Request<ParamsDictionary, any, LoginReqBody>, res: Response) => {
   const user = req.user as User
@@ -156,4 +160,44 @@ export const updateMeController = async (req: Request<ParamsDictionary, any, Upd
     message: USERS_MESSAGES.UPDATE_PROFILE_SUCCESS,
     result: user
   })
+}
+
+export const getProfileController = async (req: Request<ParamsDictionary, any, UserProfileReqBody>, res: Response) => {
+  console.log('All params:', req.params)
+  const { username } = req.params
+
+  const result = await usersService.getProfile(username)
+  res.json(result)
+}
+
+export const followController = async (req: Request<ParamsDictionary, any, FollowReqBody>, res: Response) => {
+  const { user_id } = req.decode_authorization as TokenPayload
+  const { followed_user_id } = req.body
+  const result = await usersService.follow(user_id, followed_user_id)
+  res.json(result)
+}
+
+export const UnController = async (req: Request<ParamsDictionary, any, FollowReqBody>, res: Response) => {
+  const { user_id } = req.decode_authorization as TokenPayload
+  const { followed_user_id } = req.body
+  const result = await usersService.unFollow(user_id, followed_user_id)
+  res.json(result)
+}
+
+export const changePasswordController = async (
+  req: Request<ParamsDictionary, any, ChangePasswordReqBody>,
+  res: Response
+) => {
+  const { user_id } = req.decode_authorization as TokenPayload
+
+  const { old_password, new_password } = req.body
+  const user = await databaseService.users.findOne({ _id: new ObjectId(user_id) })
+
+  const { password } = user as User
+  const isVerifyPasswords = verifyPassword(old_password, password)
+  if (isVerifyPasswords) {
+    res.json({ message: USERS_MESSAGES.OLD_PASSWORD_IS_WRONG })
+  }
+  const result = await usersService.changePassword(user_id, new_password)
+  res.json(result)
 }

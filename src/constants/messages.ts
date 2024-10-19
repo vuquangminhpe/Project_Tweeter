@@ -22,7 +22,7 @@ export const USERS_MESSAGES = {
   PASSWORD_IS_WRONG: 'Password is wrong',
   LOGIN_SUCCESS: 'Login success',
   REGISTER_SUCCESS: 'Register success',
-  USER_NOT_FOUND: 'Email or password is wrong',
+  USER_NOT_FOUND: 'User not found',
   ACCESS_TOKEN_IS_VALID: 'Access token is valid',
   ACCESS_TOKEN_IS_REQUIRED: 'Access token is required',
   REFRESH_TOKEN_IS_REQUIRED: 'Refresh token is required',
@@ -47,9 +47,19 @@ export const USERS_MESSAGES = {
   WEBSITE_LENGTH_MUST_BE_FROM_5_TO_200: 'Website must be from 5 to 200',
   USERNAME_MUST_BE_A_STRING: 'Username must be a string',
   USERNAME_LENGTH_MUST_BE_FROM_5_TO_50: 'Username must be from 5 to 50',
+  USERNAME_INVALID:
+    'User name must be 4-15 characters long and contain only letters, numbers, underscores, not only number',
   AVATAR_MUST_BE_A_STRING: 'Avatar must be a string',
   AVATAR_LENGTH_MUST_BE_FROM_1_TO_400: 'Avatar must be from 5 to 400',
   COVER_PHOTO_MUST_BE_A_STRING: 'Cover photo must be a string',
   COVER_PHOTO_LENGTH_MUST_BE_FROM_1_TO_200: 'Cover photo must be from 5 to 200',
-  UPDATE_PROFILE_SUCCESS: 'update profile Successfully'
+  UPDATE_PROFILE_SUCCESS: 'update profile Successfully',
+  GET_PROFILE_SUCCESS: 'Get profile success',
+  FOLLOWER_SUCCESS: 'Follower success',
+  INVALID_FOLLOWED_USER_ID: 'Invalid followed user id',
+  CANNOT_FOLLOW_DUPLICATES: 'Followed',
+  NO_FOLLOW_USER: 'No follow user',
+  UN_FOLLOWER_SUCCESS: 'Un follow success',
+  USERNAME_EXISTED: 'Username existed',
+  OLD_PASSWORD_IS_WRONG: 'Old password is wrong'
 } as const

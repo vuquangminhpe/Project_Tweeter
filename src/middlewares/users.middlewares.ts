@@ -13,6 +13,7 @@ import { NextFunction, Request, RequestHandler } from 'express'
 import { ObjectId } from 'bson'
 import { TokenPayload } from '~/models/request/User.request'
 import { UserVerifyStatus } from '~/constants/enums'
+import { REGEX_USERNAME } from '~/constants/regex'
 const passwordSchema: ParamSchema = {
   notEmpty: {
     errorMessage: USERS_MESSAGES.PASSWORD_IS_REQUIRED
@@ -425,13 +426,24 @@ export const updateMeValidator = validate(
           errorMessage: USERS_MESSAGES.WEBSITE_LENGTH_MUST_BE_FROM_5_TO_200
         }
       },
-      userName: {
+      username: {
         optional: true,
 
         isString: {
           errorMessage: USERS_MESSAGES.USERNAME_MUST_BE_A_STRING
         },
         trim: true,
+        custom: {
+          options: async (value: string, { req }) => {
+            if (!REGEX_USERNAME.test(value)) {
+              throw Error(USERS_MESSAGES.USERNAME_INVALID)
+            }
+            const user = await databaseService.users.findOne({ username: value })
+            if (user) {
+              throw Error(USERS_MESSAGES.USERNAME_EXISTED)
+            }
+          }
+        },
         isLength: {
           options: {
             min: 1,
@@ -474,4 +486,66 @@ export const updateMeValidator = validate(
     },
     ['body']
   )
+)
+
+export const followValidator = validate(
+  checkSchema({
+    followed_user_id: {
+      custom: {
+        options: async (value, { req }) => {
+          if (!ObjectId.isValid(value)) {
+            throw new ErrorWithStatus({
+              message: USERS_MESSAGES.INVALID_FOLLOWED_USER_ID,
+              status: HTTP_STATUS.NOT_FOUND
+            })
+          }
+          const followed_user = await databaseService.users.findOne({
+            _id: new ObjectId(value as string)
+          })
+          if (followed_user === null) {
+            throw new ErrorWithStatus({
+              message: USERS_MESSAGES.USER_NOT_FOUND,
+              status: HTTP_STATUS.NOT_FOUND
+            })
+          }
+        }
+      }
+    }
+  })
+)
+
+export const changePasswordValidator = validate(
+  checkSchema({
+    old_password: passwordSchema,
+    new_password: passwordSchema,
+    confirm_new_password: {
+      notEmpty: {
+        errorMessage: USERS_MESSAGES.CONFIRM_PASSWORD_IS_REQUIRED
+      },
+      isString: {
+        errorMessage: USERS_MESSAGES.CONFIRM_PASSWORD_MUST_BE_A_STRING
+      },
+      isLength: {
+        options: {
+          min: 6,
+          max: 50
+        },
+        errorMessage: USERS_MESSAGES.CONFIRM_PASSWORD_LENGTH_MUST_BE_FROM_6_TO_50
+      },
+      isStrongPassword: {
+        options: {
+          minLength: 6
+        },
+        errorMessage: USERS_MESSAGES.CONFIRM_PASSWORD_MUST_BE_STRONG
+      },
+      custom: {
+        options: (value, { req }) => {
+          if (value !== req.body.new_password) {
+            throw new Error(USERS_MESSAGES.CONFIRM_PASSWORD_MUST_BE_THE_SAME_AS_PASSWORD)
+          }
+          return true
+        }
+      }
+    }
+  })
 )

@@ -1,19 +1,25 @@
 import { Router } from 'express'
 import {
+  changePasswordController,
   emailVerifyController,
+  followController,
   forgotPasswordController,
   getMeController,
+  getProfileController,
   loginController,
   logoutController,
   registerController,
   resendVerifyEmailController,
   resetPasswordController,
+  UnController,
   updateMeController,
   VerifyForgotPasswordController
 } from '~/controllers/users.controllers'
 import {
   AccessTokenValidator,
+  changePasswordValidator,
   emailVerifyTokenValidator,
+  followValidator,
   forgotPasswordValidator,
   loginValidator,
   RefreshTokenValidator,
@@ -48,6 +54,7 @@ usersRouter.post('/reset-password', resetPasswordValidator, wrapAsync(resetPassw
  * Header: {Authorization: Bearer <access_token>}
  */
 usersRouter.get('/me', AccessTokenValidator, verifiedUserValidator, wrapAsync(getMeController))
+
 /**
  * Description: Update my profile
  * Path: /me
@@ -56,4 +63,37 @@ usersRouter.get('/me', AccessTokenValidator, verifiedUserValidator, wrapAsync(ge
  * body: User Schema
  */
 usersRouter.patch('/me', AccessTokenValidator, verifiedUserValidator, updateMeValidator, wrapAsync(updateMeController))
+
+/**
+ * Description: get user profile
+ * Path: /:username
+ * method: GET
+ */
+usersRouter.get('/:username', wrapAsync(getProfileController))
+
+/**
+ * Description: follow someone
+ * Path: /follow
+ * method: post
+ * body: {user_id: string}
+ * Header: {followed_user_id: string}
+ */
+usersRouter.post('/follow', AccessTokenValidator, verifiedUserValidator, followValidator, wrapAsync(followController))
+
+/**
+ * Description: follow someone
+ * Path: /un-follow
+ * method: post
+ * body: {user_id: string}
+ * Header: {followed_user_id: string}
+ */
+usersRouter.post('/un-follow', AccessTokenValidator, verifiedUserValidator, followValidator, wrapAsync(UnController))
+usersRouter.post(
+  '/change-password',
+  AccessTokenValidator,
+  verifiedUserValidator,
+  changePasswordValidator,
+  wrapAsync(changePasswordController)
+)
+
 export default usersRouter

@@ -7,3 +7,8 @@ function sha256(content: string) {
 export function hashPassword(password: string) {
   return sha256(password) + process.env.PASSWORD_SECRET
 }
+
+export function verifyPassword(inputPassword: string, hashedPassword: string) {
+  const inputHash = sha256(inputPassword) + process.env.PASSWORD_SECRET
+  return inputHash === hashedPassword
+}

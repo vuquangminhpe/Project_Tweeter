@@ -11,6 +11,15 @@ export interface UpdateMeReqBody {
   avatar?: string
   cover_photo?: string
 }
+
+export interface FollowReqBody {
+  followed_user_id: string
+}
+export interface ChangePasswordReqBody {
+  old_password: string
+  new_password: string
+  confirm_new_password: string
+}
 export interface LoginReqBody {
   email: string
   password: string
@@ -49,4 +58,8 @@ export interface ResetPasswordReqBody {
   password: string
   confirm_password: string
   forgot_password_token: string
+}
+
+export interface UserProfileReqBody {
+  username: string
 }
