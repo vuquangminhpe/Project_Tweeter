@@ -249,9 +249,9 @@
     "tsx": "^4.19.1"
   },
   "scripts": {
-    "dev": "npx nodemon",
+    "dev": "npx nodemon development",
     "build": "rimraf ./dist && tsc && tsc-alias",
-    "start": "node dist/index.js",
+    "start": "node dist/index.js production",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "prettier": "prettier --check .",
