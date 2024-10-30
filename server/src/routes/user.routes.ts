@@ -8,6 +8,7 @@ import {
   getProfileController,
   loginController,
   logoutController,
+  oauthController,
   registerController,
   resendVerifyEmailController,
   resetPasswordController,
@@ -34,6 +35,8 @@ import { wrapAsync } from '~/utils/handler'
 const usersRouter = Router()
 
 usersRouter.post('/login', loginValidator, wrapAsync(loginController))
+usersRouter.get('/oauth/google', wrapAsync(oauthController))
+
 usersRouter.post('/register', registerValidator, wrapAsync(registerController))
 usersRouter.post('/logout', AccessTokenValidator, RefreshTokenValidator, wrapAsync(logoutController))
 usersRouter.post('/verify-email', emailVerifyTokenValidator, wrapAsync(emailVerifyController))

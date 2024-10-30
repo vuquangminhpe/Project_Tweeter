@@ -61,5 +61,6 @@ export const USERS_MESSAGES = {
   NO_FOLLOW_USER: 'No follow user',
   UN_FOLLOWER_SUCCESS: 'Un follow success',
   USERNAME_EXISTED: 'Username existed',
-  OLD_PASSWORD_IS_WRONG: 'Old password is wrong'
+  OLD_PASSWORD_IS_WRONG: 'Old password is wrong',
+  GMAIL_NOT_VERIFIED: 'Gmail not verified'
 } as const

@@ -12,7 +12,6 @@ import {
   TokenPayload,
   UpdateMeReqBody,
   UserProfileReqBody,
-  UserReq,
   VerifyEmailReqBody,
   VerifyForgotPasswordReqBody
 } from '../models/request/User.request'
@@ -24,8 +23,9 @@ import HTTP_STATUS from '~/constants/httpStatus'
 import { WithId } from 'mongodb'
 import { UserVerifyStatus } from '~/constants/enums'
 import { pick } from 'lodash'
-import { hashPassword, verifyPassword } from '~/utils/crypto'
-
+import { verifyPassword } from '~/utils/crypto'
+import { config } from 'dotenv'
+config()
 export const loginController = async (req: Request<ParamsDictionary, any, LoginReqBody>, res: Response) => {
   const user = req.user as User
   const user_id = user._id as ObjectId
@@ -34,6 +34,19 @@ export const loginController = async (req: Request<ParamsDictionary, any, LoginR
   res.status(200).json({
     message: USERS_MESSAGES.LOGIN_SUCCESS,
     result
+  })
+}
+export const oauthController = async (req: Request<ParamsDictionary, any, LoginReqBody>, res: Response) => {
+  const { code } = req.query
+  const result = await usersService.oauth(code as string)
+  const urlRedirect = `${process.env.CLIENT_REDIRECT_CALLBACK}?access_token=${result.access_token}&refresh_token=${result.refresh_token}&new_user=${result.newUser}&verify=${result.verify}`
+  res.redirect(urlRedirect)
+  res.status(200).json({
+    message: result.newUser ? USERS_MESSAGES.REGISTER_SUCCESS : USERS_MESSAGES.LOGIN_SUCCESS,
+    result: {
+      access_token: result.access_token,
+      refresh_token: result.refresh_token
+    }
   })
 }
 export const registerController = async (
