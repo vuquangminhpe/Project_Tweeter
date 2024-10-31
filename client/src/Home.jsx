@@ -41,7 +41,12 @@ function Home() {
           <img src={reactLogo} className="logo react" alt="React logo" />
         </span>
       </div>
-
+      <video controls width={500}>
+        <source
+          src="http://localhost:4000/static/video/5ac63cfb7a9d2f6958db26c00.mp4"
+          type="video/mp4"
+        />
+      </video>
       {isAuthenticated ? (
         <Fragment>
           <span>Login oke</span>
