@@ -142,7 +142,7 @@
     "merge2": "^1.4.1",
     "methods": "^1.1.2",
     "micromatch": "^4.0.8",
-    "mime": "^1.6.0",
+    "mime": "^4.0.4",
     "mime-db": "^1.52.0",
     "mime-types": "^2.1.35",
     "minimatch": "^9.0.5",
@@ -246,6 +246,7 @@
     "@types/formidable": "^3.4.5",
     "@types/jsonwebtoken": "^9.0.7",
     "@types/lodash": "^4.17.10",
+    "@types/mime": "^4.0.0",
     "@types/minimist": "^1.2.5",
     "tsx": "^4.19.1"
   },

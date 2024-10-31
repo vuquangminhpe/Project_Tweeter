@@ -36,8 +36,8 @@ class MediaService {
         fs.unlinkSync(file.filepath)
         return {
           url: isProduction
-            ? `${process.env.HOST}/static/video/${file.newFilename}.mp4`
-            : `http://localhost:${process.env.PORT}/static/video/${file.newFilename}.mp4`,
+            ? `${process.env.HOST}/static/video-stream/${file.newFilename}.mp4`
+            : `http://localhost:${process.env.PORT}/static/video-stream/${file.newFilename}.mp4`,
           type: MediaType.Video
         }
       })

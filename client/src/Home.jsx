@@ -43,7 +43,7 @@ function Home() {
       </div>
       <video controls width={500}>
         <source
-          src="http://localhost:4000/static/video/5ac63cfb7a9d2f6958db26c00.mp4"
+          src="http://localhost:5000/static/video-stream/0eba0868a22642d4643c4d300.mp4"
           type="video/mp4"
         />
       </video>
