@@ -14,6 +14,11 @@ export const uploadVideoController = async (req: Request, res: Response, next: N
   const url = await mediaService.uploadVideo(req)
   res.json({ message: USERS_MESSAGES.UPLOAD_SUCCESS, result: url })
 }
+export const uploadVideoHLSController = async (req: Request, res: Response, next: NextFunction) => {
+  const url = await mediaService.uploadVideoHLS(req)
+  res.json({ message: USERS_MESSAGES.UPLOAD_SUCCESS, result: url })
+}
+
 export const serveImageController = (req: Request, res: Response, next: NextFunction) => {
   const { name } = req.params
   res.sendFile(path.resolve(UPLOAD_DIR, name), (err) => {
@@ -27,10 +32,6 @@ export const serveVideoStreamController = async (req: Request, res: Response, ne
   try {
     const { name } = req.params
     const videoPath = path.resolve(UPLOAD_VIDEO_DIR, name)
-
-    if (!fs.existsSync(videoPath)) {
-      res.status(404).send('Video not found')
-    }
 
     const videoSize = fs.statSync(videoPath).size
     const range = req.headers.range

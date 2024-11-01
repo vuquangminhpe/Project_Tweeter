@@ -3,6 +3,8 @@ import fs from 'fs'
 import formidable, { Part } from 'formidable'
 import { File } from 'formidable'
 import { UPLOAD_TEMP_DIR, UPLOAD_VIDEO_DIR } from '~/constants/dir'
+import { nanoid } from 'nanoid'
+import path from 'path'
 export const initFolderImage = () => {
   if (!fs.existsSync(UPLOAD_TEMP_DIR)) {
     fs.mkdirSync(UPLOAD_TEMP_DIR, {
@@ -56,20 +58,26 @@ export const getNameFromFullname = (fullname: string) => {
   return namearr.join('')
 }
 
+// C1 : Tạo unique id cho video từ đầu
+// c2: Đợi video upload xong r tạo folder, move video vào
 export const handleUploadVideo = async (req: Request) => {
+  const idName = nanoid()
+  const folderPath = path.resolve(UPLOAD_VIDEO_DIR, idName)
+  fs.mkdirSync(folderPath)
   const form = formidable({
-    uploadDir: UPLOAD_VIDEO_DIR,
+    uploadDir: folderPath,
     maxFiles: 1,
     keepExtensions: true,
     maxFileSize: 50 * 1024 * 1024, // 300KB
     filter: function ({ name, originalFilename, mimetype }: Part) {
-      console.log(name, mimetype)
-
       const valid = name === 'video' && Boolean(mimetype?.includes('mp4') || mimetype?.includes('quicktime'))
       if (!valid) {
         form.emit('error' as any, new Error('File type is not valid') as any)
       }
       return valid
+    },
+    filename() {
+      return idName
     }
   })
 
