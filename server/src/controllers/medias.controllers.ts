@@ -35,10 +35,6 @@ export const serveVideoStreamController = async (req: Request, res: Response, ne
     const videoSize = fs.statSync(videoPath).size
     const range = req.headers.range
 
-    console.log('Video Path:', videoPath)
-    console.log('Video Size:', videoSize)
-    console.log('Range Header:', range)
-
     if (range) {
       const parts = range.replace(/bytes=/, '').split('-')
       const start = parseInt(parts[0], 10)
