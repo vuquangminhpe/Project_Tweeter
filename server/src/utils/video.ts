@@ -2,122 +2,121 @@ import path from 'path'
 import ffmpeg from 'fluent-ffmpeg'
 import fs from 'fs-extra'
 
-const MAXIMUM_BITRATE_720P = 5 * 10 ** 6 // 5Mbps
-const MAXIMUM_BITRATE_1080P = 8 * 10 ** 6 // 8Mbps
-const MAXIMUM_BITRATE_1440P = 16 * 10 ** 6 // 16Mbps
-
-const checkVideoHasAudio = (filePath: string): Promise<boolean> => {
-  return new Promise((resolve, reject) => {
-    ffmpeg.ffprobe(filePath, (err, metadata) => {
-      if (err) {
-        reject(err)
-        return
-      }
-      const audioStreams = metadata.streams.filter((stream) => stream.codec_type === 'audio')
-      resolve(audioStreams.length > 0)
-    })
-  })
+const BITRATE_CONFIGS = {
+  v0: { height: 720, bitrate: '1000k' },
+  v1: { height: 1080, bitrate: '2000k' }
 }
 
-const getResolution = (filePath: string): Promise<{ width: number; height: number }> => {
+const getVideoInfo = async (filePath: string): Promise<any> => {
   return new Promise((resolve, reject) => {
     ffmpeg.ffprobe(filePath, (err, metadata) => {
-      if (err) {
-        reject(err)
-        return
-      }
-      const videoStream = metadata.streams.find((stream) => stream.codec_type === 'video')
+      if (err) reject(err)
+      const videoStream = metadata.streams.find((stream: any) => stream.codec_type === 'video')
+      const hasAudio = metadata.streams.some((stream: any) => stream.codec_type === 'audio')
+
       resolve({
-        width: Number(videoStream?.width || 0),
-        height: Number(videoStream?.height || 0)
+        resolution: {
+          width: Number(videoStream?.width || 0),
+          height: Number(videoStream?.height || 0)
+        },
+        hasAudio
       })
     })
   })
 }
 
-const getWidth = (height: number, resolution: { width: number; height: number }): number => {
-  const width = Math.round((height * resolution.width) / resolution.height)
+const getWidth = (targetHeight: number, originalWidth: number, originalHeight: number): number => {
+  const width = Math.round((targetHeight * originalWidth) / originalHeight)
   return width % 2 === 0 ? width : width + 1
+}
+
+const encodeStream = async (
+  inputPath: string,
+  outputFolder: string,
+  width: number,
+  height: number,
+  bitrate: string,
+  hasAudio: boolean
+): Promise<boolean> => {
+  return new Promise((resolve, reject) => {
+    let command = ffmpeg(inputPath)
+      .videoCodec('libx264')
+      .addOption('-preset', 'veryfast')
+      .addOption('-tune', 'fastdecode')
+      .addOption('-profile:v', 'baseline')
+      .addOption('-level', '3.0')
+      .addOption('-movflags', '+faststart')
+      .addOption('-x264opts', 'no-scenecut')
+      .addOption('-g', '30')
+      .addOption('-keyint_min', '30')
+      .addOptions(['-hls_playlist_type', 'vod'])
+      .addOption('-hls_time', '2')
+      .addOption('-hls_flags', 'single_file')
+      .addOption('-hls_segment_type', 'fmp4')
+      .size(`${width}x${height}`)
+      .videoBitrate(bitrate)
+
+    if (hasAudio) {
+      command.audioCodec('aac').audioBitrate('64k')
+    } else {
+      command.noAudio()
+    }
+
+    command
+      .output(path.join(outputFolder, 'prog_index.m3u8'))
+      .on('progress', (progress) => {
+        process.stdout.write(`\rProcessing ${height}p: ${Math.round(progress.percent as number)}%`)
+      })
+      .on('end', () => {
+        process.stdout.write('\n')
+        resolve(true)
+      })
+      .on('error', reject)
+      .run()
+  })
 }
 
 export const encodeHLSWithMultipleVideoStreams = async (
   inputPath: string,
-  maxFileSize = 50, // MB, ngưỡng để quyết định encode
-  maxStreams = 2 // Số stream tối đa
+  maxFileSize = 50,
+  maxStreams = 2
 ): Promise<boolean> => {
-  const fileStats = await fs.stat(inputPath)
-  const fileSizeInMB = fileStats.size / (1024 * 1024)
-  if (fileSizeInMB <= maxFileSize) {
-    return encodeSmallFile(inputPath)
+  const parentFolder = path.dirname(inputPath)
+  const { resolution, hasAudio } = await getVideoInfo(inputPath)
+
+  // Create output folders
+  const streamConfigs = Object.entries(BITRATE_CONFIGS)
+    .slice(0, maxStreams)
+    .map(([version, config]) => ({
+      folder: version,
+      ...config
+    }))
+
+  for (const config of streamConfigs) {
+    await fs.ensureDir(path.join(parentFolder, config.folder))
   }
-  return encodeMultiStreams(inputPath, maxStreams)
-}
 
-const encodeSmallFile = async (inputPath: string): Promise<boolean> => {
-  const parentFolder = path.dirname(inputPath)
-  const outputDir = path.join(parentFolder, 'v0')
-  await fs.ensureDir(outputDir)
-  const [resolution, isHasAudio] = await Promise.all([getResolution(inputPath), checkVideoHasAudio(inputPath)])
-  return new Promise((resolve, reject) => {
-    const command = ffmpeg(inputPath)
-      .videoCodec('libx264')
-      .audioCodec(isHasAudio ? 'copy' : 'aac')
-      .outputOptions([
-        '-preset ultrafast', // Encode nhanh hơn
-        '-g 48',
-        '-crf 23',
-        '-f hls',
-        '-hls_time 10',
-        '-hls_list_size 0',
-        '-threads 4' // Increase thread utilization
-      ])
-      .output(path.join(outputDir, 'index.m3u8'))
-      .on('end', () => resolve(true))
-      .on('error', (err) => reject(err))
-      .run()
-  })
-}
+  // Generate master playlist
+  const masterPlaylist = ['#EXTM3U', '#EXT-X-VERSION:3']
 
-const encodeMultiStreams = async (inputPath: string, maxStreams: number): Promise<boolean> => {
-  const parentFolder = path.dirname(inputPath)
-  const resolutions = ['v0', 'v1', 'v2'].slice(0, maxStreams)
-  await Promise.all(resolutions.map((res) => fs.ensureDir(path.join(parentFolder, res))))
-  const [resolution, isHasAudio] = await Promise.all([getResolution(inputPath), checkVideoHasAudio(inputPath)])
-  return new Promise((resolve, reject) => {
-    const command = ffmpeg(inputPath)
-      .videoCodec('libx264')
-      .audioCodec(isHasAudio ? 'copy' : 'aac')
-      .outputOptions([
-        '-preset ultrafast', // Encode nhanh hơn
-        '-g 48',
-        '-crf 23',
-        '-sc_threshold 0',
-        '-f hls',
-        '-hls_time 10',
-        '-hls_list_size 0',
-        '-master_pl_name master.m3u8',
-        '-threads 4' // Increase thread utilization
-      ])
+  // Process each stream
+  for (const config of streamConfigs) {
+    const width = getWidth(config.height, resolution.width, resolution.height)
+    masterPlaylist.push(
+      `#EXT-X-STREAM-INF:BANDWIDTH=${parseInt(config.bitrate) * 1000},RESOLUTION=${width}x${config.height}`,
+      `${config.folder}/prog_index.m3u8`
+    )
 
-    const streamConfigs = [
-      { height: 720, bitrate: MAXIMUM_BITRATE_720P },
-      { height: 1080, bitrate: MAXIMUM_BITRATE_1080P },
-      { height: 1440, bitrate: MAXIMUM_BITRATE_1440P }
-    ].slice(0, maxStreams)
+    await encodeStream(
+      inputPath,
+      path.join(parentFolder, config.folder),
+      width,
+      config.height,
+      config.bitrate,
+      hasAudio
+    )
+  }
 
-    streamConfigs.forEach((config, index) => {
-      command
-        .output(path.join(parentFolder, `v${index}`, 'prog_index.m3u8'))
-        .outputOptions([
-          `-filter:v:${index} scale=${getWidth(config.height, resolution)}:${config.height}`,
-          `-maxrate:v:${index} ${config.bitrate}`,
-          `-var_stream_map v:${index},a:${index}`
-        ])
-    })
-
-    command
-      .on('end', () => resolve(true))
-      .on('error', (err) => reject(err))
-      .run()
-  })
+  await fs.writeFile(path.join(parentFolder, 'master.m3u8'), masterPlaylist.join('\n'))
+  return true
 }

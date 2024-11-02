@@ -2,7 +2,16 @@ import reactLogo from "./assets/react.svg";
 import { Link } from "react-router-dom";
 import viteLogo from "/vite.svg";
 import "./App.css";
+import axios from "axios";
 import { Fragment, useEffect } from "react";
+// Base styles for media player and provider (~400B).
+import "@vidstack/react/player/styles/default/theme.css";
+import "@vidstack/react/player/styles/default/layouts/video.css";
+import { MediaPlayer, MediaProvider } from "@vidstack/react";
+import {
+  defaultLayoutIcons,
+  DefaultVideoLayout,
+} from "@vidstack/react/player/layouts/default";
 
 const getGoogleAuthUrl = () => {
   const url = "https://accounts.google.com/o/oauth2/auth";
@@ -41,12 +50,24 @@ function Home() {
           <img src={reactLogo} className="logo react" alt="React logo" />
         </span>
       </div>
+      <h2>Video streaming</h2>
       <video controls width={500}>
-        <source
+        {/* <source
           src="http://localhost:5000/static/video-stream/0eba0868a22642d4643c4d300.mp4"
           type="video/mp4"
-        />
+        /> */}
       </video>
+      <h2>HLS Streaming</h2>
+      <MediaPlayer
+        title="Sprite Fight"
+        src="https://files.vidstack.io/sprite-fight/hls/stream.m3u8"
+      >
+        <MediaProvider />
+        <DefaultVideoLayout
+          thumbnails="https://files.vidstack.io/sprite-fight/thumbnails.vtt"
+          icons={defaultLayoutIcons}
+        />
+      </MediaPlayer>
       {isAuthenticated ? (
         <Fragment>
           <span>Login oke</span>
