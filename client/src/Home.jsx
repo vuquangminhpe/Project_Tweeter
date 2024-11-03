@@ -60,7 +60,7 @@ function Home() {
       <h2>HLS Streaming</h2>
       <MediaPlayer
         title="Sprite Fight"
-        src="https://files.vidstack.io/sprite-fight/hls/stream.m3u8"
+        src="http://localhost:5000/static/video-hls/i5GGcEWxJYhZ7EfD-C6ZP/master.m3u8"
       >
         <MediaProvider />
         <DefaultVideoLayout

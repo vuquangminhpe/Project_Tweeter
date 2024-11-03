@@ -3,6 +3,7 @@ import { config } from 'dotenv'
 import User from '../models/schemas/User.schema'
 import RefreshToken from '~/models/schemas/RefreshToken.schema'
 import Follower from '~/models/schemas/Follower.schema'
+import VideoStatus from '~/models/schemas/VideoStatus.schema'
 config()
 const uri = `mongodb+srv://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@minhdevmongo.hzvnp.mongodb.net/?retryWrites=true&w=majority&appName=minhdevMongo`
 
@@ -24,6 +25,26 @@ class DatabaseService {
       return error
     }
   }
+  async indexUsers() {
+    const exits = await this.users.indexExists(['email_1_password_1', 'username_1', 'email_1'])
+    if (!exits) {
+      this.users.createIndex({ email: 1, password: 1 }, { unique: true })
+      this.users.createIndex({ email: 1 }, { unique: true })
+      this.users.createIndex({ username: 1 }, { unique: true })
+    }
+  }
+  async indexVideoStatus() {
+    const exits = await this.users.indexExists('name_1')
+    if (!exits) {
+      this.videoStatus.createIndex({ name: 1 }, { unique: true })
+    }
+  }
+  async indexFollowers() {
+    const exits = await this.users.indexExists('user_id_1_followed_user_id_1')
+    if (!exits) {
+      this.followers.createIndex({ user_id: 1, followed_user_id: 1 }, { unique: true })
+    }
+  }
   get users(): Collection<User> {
     return this.db.collection(process.env.DB_USERS_COLLECTION as string)
   }
@@ -32,6 +53,9 @@ class DatabaseService {
   }
   get followers(): Collection<Follower> {
     return this.db.collection(process.env.DB_FOLLOWERS_COLLECTION as string)
+  }
+  get videoStatus(): Collection<VideoStatus> {
+    return this.db.collection(process.env.DB_VIDEO_STATUS_COLLECTION as string)
   }
 }
 
