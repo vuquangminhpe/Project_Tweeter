@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from 'express'
-import usersService from '../services/user.services'
+import usersService from '../services/users.services'
 import { ParamsDictionary } from 'express-serve-static-core'
 import {
   ChangePasswordReqBody,

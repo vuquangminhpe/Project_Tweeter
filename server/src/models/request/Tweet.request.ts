@@ -8,5 +8,5 @@ export interface TweetRequestBody {
   parent_id: null | string
   hashtags: string[]
   mentions: string[]
-  medias: Media
+  medias: Media[]
 }
