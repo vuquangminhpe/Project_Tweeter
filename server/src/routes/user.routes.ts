@@ -94,13 +94,20 @@ usersRouter.get('/:username', wrapAsync(getProfileController))
 usersRouter.post('/follow', AccessTokenValidator, verifiedUserValidator, followValidator, wrapAsync(followController))
 
 /**
- * Description: follow someone
+ * Description:un follow someone
  * Path: /un-follow
  * method: post
  * body: {user_id: string}
  * Header: {followed_user_id: string}
  */
 usersRouter.post('/un-follow', AccessTokenValidator, verifiedUserValidator, followValidator, wrapAsync(UnController))
+
+/**
+ * Description: change password
+ * Path: /change-password
+ * method: post
+ * body: {user_id: string ,password: string, confirm_password: string}
+ */
 usersRouter.post(
   '/change-password',
   AccessTokenValidator,

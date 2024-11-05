@@ -69,6 +69,7 @@ export const USERS_MESSAGES = {
 } as const
 
 export const TWEET_MESSAGE = {
+  CREATE_TWEET_SUCCESS: 'Create tweet success',
   INVALID_TYPE: 'Invalid type',
   INVALID_AUDIENCE: 'Invalid audience',
   INVALID_PARENT_ID: 'Invalid parent id',
@@ -79,3 +80,9 @@ export const TWEET_MESSAGE = {
   MENTIONS_MUST_BE_AN_ARRAY_OF_USER_ID: 'Mentions must be an array of user id',
   MEDIAS_MUST_BE_AN_ARRAY_OF_MEDIA_OBJECT: 'Medias must be an array of media object'
 } as const
+
+export const BOOKMARKS_MESSAGE = {
+  BOOKMARKS_TWEET_SUCCESS: 'Bookmarks tweet success',
+  BOOKMARK_ALREADY_EXISTS: 'Bookmarks already exists',
+  UN_BOOKMARKS_TWEET_SUCCESS: 'Un bookmarks tweet success'
+}

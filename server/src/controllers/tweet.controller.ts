@@ -5,12 +5,13 @@ import { ParamsDictionary } from 'express-serve-static-core'
 import { TweetRequestBody } from '~/models/request/Tweet.request'
 import tweetsService from '~/services/tweets.services'
 import { TokenPayload } from '~/models/request/User.request'
+import { TWEET_MESSAGE } from '~/constants/messages'
 
 export const createTweetController = async (req: Request<ParamsDictionary, any, TweetRequestBody>, res: Response) => {
   const { user_id } = req.decode_authorization as TokenPayload
   const results = await tweetsService.createTweet(req.body, user_id)
   res.json({
-    message: 'Create Tweet Successfully',
+    message: TWEET_MESSAGE.CREATE_TWEET_SUCCESS,
     data: results
   })
 }
