@@ -7,6 +7,7 @@ import VideoStatus from '~/models/schemas/VideoStatus.schema'
 import Tweet from '~/models/schemas/Tweet.schema'
 import Hashtag from '~/models/schemas/Hashtag.schema'
 import { Bookmark } from '~/models/schemas/Boomark.schema'
+import { Like } from '~/models/schemas/Like.schema'
 config()
 const uri = `mongodb+srv://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@minhdevmongo.hzvnp.mongodb.net/?retryWrites=true&w=majority&appName=minhdevMongo`
 
@@ -29,11 +30,10 @@ class DatabaseService {
     }
   }
   async indexUsers() {
-    const exits = await this.users.indexExists(['email_1_password_1', 'username_1', 'email_1'])
+    const exits = await this.users.indexExists(['email_1_password_1', 'email_1'])
     if (!exits) {
       this.users.createIndex({ email: 1, password: 1 }, { unique: true })
       this.users.createIndex({ email: 1 }, { unique: true })
-      this.users.createIndex({ username: 1 }, { unique: true })
     }
   }
   async indexVideoStatus() {
@@ -68,6 +68,9 @@ class DatabaseService {
   }
   get bookmarks(): Collection<Bookmark> {
     return this.db.collection(process.env.DB_BOOKMARKS_COLLECTION as string)
+  }
+  get likes(): Collection<Like> {
+    return this.db.collection(process.env.DB_LIKES_COLLECTION as string)
   }
 }
 

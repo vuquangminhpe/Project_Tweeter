@@ -15,3 +15,21 @@ export const createTweetController = async (req: Request<ParamsDictionary, any, 
     data: results
   })
 }
+
+export const getAllTweetController = async (req: Request, res: Response) => {
+  const { user_id } = req.decode_authorization as TokenPayload
+  const results = await tweetsService.getTweet(user_id)
+  res.json({
+    message: TWEET_MESSAGE.GET_TWEET_SUCCESS,
+    data: results
+  })
+}
+
+export const getTweetDetailsController = async (req: Request, res: Response) => {
+  const { tweet_id } = req.params
+  const results = await tweetsService.getTweetDetails(tweet_id)
+  res.json({
+    message: TWEET_MESSAGE.GET_TWEET_DETAILS_SUCCESS,
+    data: results
+  })
+}

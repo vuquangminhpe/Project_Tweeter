@@ -56,6 +56,7 @@ export const registerController = async (
   next: NextFunction
 ) => {
   const result = await usersService.register(req.body)
+  console.log(req.body)
 
   res.json({
     message: USERS_MESSAGES.REGISTER_SUCCESS,

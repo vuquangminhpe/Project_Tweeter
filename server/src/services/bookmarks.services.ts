@@ -28,6 +28,14 @@ class BookmarkService {
     })
     return result
   }
+  async getBookmarkTweet(user_id: string) {
+    const result = await databaseService.bookmarks
+      .find({
+        user_id: new ObjectId(user_id)
+      })
+      .toArray()
+    return result
+  }
 }
 
 const bookmarksService = new BookmarkService()

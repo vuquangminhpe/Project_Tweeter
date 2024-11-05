@@ -10,6 +10,7 @@ import { UPLOAD_VIDEO_DIR } from './constants/dir'
 import cors from 'cors'
 import { tweetsRouter } from './routes/tweets.routes'
 import bookmarksRouter from './routes/bookmarks.routes'
+import { likesTweetRouter } from './routes/likes.routes'
 config()
 databaseService
   .connect()
@@ -32,9 +33,10 @@ app.use('/medias', mediasRouter)
 app.use('/tweets', tweetsRouter)
 app.use('/static', staticRouter)
 app.use('/bookmarks', bookmarksRouter)
+app.use('/likes', likesTweetRouter)
 app.use('/static/video-stream', express.static(UPLOAD_VIDEO_DIR))
 
 app.use(defaultErrorHandler)
 app.listen(port, () => {
-  console.log(`Example app listening on port ${port}`)
+  console.log(`App listening on port ${port}`)
 })
