@@ -555,12 +555,12 @@ export const changePasswordValidator = validate(
   })
 )
 
-export const isUserLoggedInValidator = (middleware: RequestHandler): RequestHandler => {
-  return (req: Request, res: ExpressResponse, next: NextFunction): void => {
-    if (req.headers.authorization) {
-      middleware(req, res, next)
-      return
-    }
-    next()
-  }
-}
+// export const isUserLoggedInValidator = (middleware: RequestHandler): RequestHandler => {
+//   return (req: Request, res: ExpressResponse, next: NextFunction): void => {
+//     if (req.headers.authorization) {
+//       middleware(req, res, next)
+//       return
+//     }
+//     next()
+//   }
+// }

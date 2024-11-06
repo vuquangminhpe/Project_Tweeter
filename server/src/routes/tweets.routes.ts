@@ -1,7 +1,7 @@
 import { Router } from 'express'
 import { createTweetController, getAllTweetController, getTweetDetailsController } from '~/controllers/tweet.controller'
-import { createTweetValidator, tweetIdValidator } from '~/middlewares/tweets.middlewares'
-import { AccessTokenValidator, isUserLoggedInValidator, verifiedUserValidator } from '~/middlewares/users.middlewares'
+import { audienceValidator, createTweetValidator, tweetIdValidator } from '~/middlewares/tweets.middlewares'
+import { AccessTokenValidator, verifiedUserValidator } from '~/middlewares/users.middlewares'
 import { wrapAsync } from '~/utils/handler'
 
 export const tweetsRouter = Router()
@@ -14,8 +14,8 @@ export const tweetsRouter = Router()
  */
 tweetsRouter.post(
   '/',
-  isUserLoggedInValidator(AccessTokenValidator),
-  isUserLoggedInValidator(verifiedUserValidator),
+  AccessTokenValidator,
+  verifiedUserValidator,
   createTweetValidator,
   wrapAsync(createTweetController)
 )
@@ -27,12 +27,7 @@ tweetsRouter.post(
  * Body: user_id: string
  * type: tweetTypes
  */
-tweetsRouter.get(
-  '/',
-  isUserLoggedInValidator(AccessTokenValidator),
-  isUserLoggedInValidator(verifiedUserValidator),
-  wrapAsync(getAllTweetController)
-)
+tweetsRouter.get('/', AccessTokenValidator, verifiedUserValidator, wrapAsync(getAllTweetController))
 
 /**
  * Description: get Tweet details
@@ -43,8 +38,9 @@ tweetsRouter.get(
  */
 tweetsRouter.get(
   '/:tweet_id',
-  isUserLoggedInValidator(AccessTokenValidator),
-  isUserLoggedInValidator(verifiedUserValidator),
   tweetIdValidator,
+  AccessTokenValidator,
+  verifiedUserValidator,
+  wrapAsync(audienceValidator),
   wrapAsync(getTweetDetailsController)
 )

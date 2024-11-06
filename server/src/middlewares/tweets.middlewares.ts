@@ -144,6 +144,7 @@ export const tweetIdValidator = validate(
 // Nếu không dùng try catch thì dùng wrapRequest
 export const audienceValidator = async (req: Request, res: Response, next: NextFunction) => {
   const tweet = req.tweet as Tweet
+
   if (tweet.audience === TweetAudience.TwitterCircle) {
     // Kiểm tra người xem tweet này đã đăng nhập hay chưa
     if (!req.decode_authorization) {
@@ -157,15 +158,20 @@ export const audienceValidator = async (req: Request, res: Response, next: NextF
     const author = await databaseService.users.findOne({
       _id: new ObjectId(tweet.user_id)
     })
+    console.log(author)
+
     if (!author || author.verify === UserVerifyStatus.Banned) {
       throw new ErrorWithStatus({
         status: HTTP_STATUS.NOT_FOUND,
         message: USERS_MESSAGES.USER_NOT_FOUND
       })
     }
-    // TWEET này có trong twitter circle của tác giả hay không
+    // TWEET này có trong twitter circle của tác giả hay không hoặc ko phải auuthor
     const { user_id } = req.decode_authorization
     const isInTwitterCircle = author.twitter_circle.some((user_circle_id) => user_circle_id.equals(user_id))
+    if (!author._id.equals(user_id) && !isInTwitterCircle) {
+      throw new ErrorWithStatus({ message: TWEET_MESSAGE.TWEET_IS_NOT_PUBLIC, status: HTTP_STATUS.FORBIDDEN })
+    }
   }
   next()
 }
