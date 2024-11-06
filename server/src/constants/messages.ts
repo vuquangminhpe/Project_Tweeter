@@ -83,7 +83,8 @@ export const TWEET_MESSAGE = {
   TWEET_NOT_FOUND: 'Tweet not found',
   GET_TWEET_SUCCESS: 'Get tweet success',
   GET_TWEET_DETAILS_SUCCESS: 'Get tweet details success',
-  TWEET_IS_NOT_PUBLIC: 'Tweet is not public'
+  TWEET_IS_NOT_PUBLIC: 'Tweet is not public',
+  GET_TWEET_CHILDREN_SUCCESS: 'Get tweet children success'
 } as const
 
 export const BOOKMARKS_MESSAGE = {
