@@ -1,4 +1,4 @@
-import { check, checkSchema, ParamSchema } from 'express-validator'
+import { checkSchema, ParamSchema } from 'express-validator'
 import { validate } from '../utils/validation'
 import usersService from '../services/users.services'
 import { USERS_MESSAGES } from '~/constants/messages'
@@ -14,6 +14,11 @@ import { ObjectId } from 'bson'
 import { TokenPayload } from '~/models/request/User.request'
 import { UserVerifyStatus } from '~/constants/enums'
 import { REGEX_USERNAME } from '~/constants/regex'
+import { ParsedQs } from 'qs'
+import { ParamsDictionary } from 'express-serve-static-core'
+import { Response as ExpressResponse } from 'express-serve-static-core'
+
+type ExpressMiddleware = RequestHandler<ParamsDictionary, any, any, ParsedQs, Record<string, any>>
 const passwordSchema: ParamSchema = {
   notEmpty: {
     errorMessage: USERS_MESSAGES.PASSWORD_IS_REQUIRED
@@ -549,3 +554,13 @@ export const changePasswordValidator = validate(
     }
   })
 )
+
+export const isUserLoggedInValidator = (middleware: RequestHandler): RequestHandler => {
+  return (req: Request, res: ExpressResponse, next: NextFunction): void => {
+    if (req.headers.authorization) {
+      middleware(req, res, next)
+      return
+    }
+    next()
+  }
+}
