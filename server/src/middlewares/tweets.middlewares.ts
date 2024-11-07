@@ -1,6 +1,6 @@
 import { NextFunction, Response, Request } from 'express'
 import { checkSchema } from 'express-validator'
-import { isEmpty } from 'lodash'
+import { isEmpty, isNumber } from 'lodash'
 import { ObjectId } from 'mongodb'
 import { MediaType, TweetAudience, TweetType, UserVerifyStatus } from '~/constants/enums'
 import HTTP_STATUS from '~/constants/httpStatus'
@@ -286,3 +286,41 @@ export const audienceValidator = async (req: Request, res: Response, next: NextF
   }
   next()
 }
+
+export const getTweetChildrenValidator = validate(
+  checkSchema(
+    {
+      type: {
+        isIn: {
+          options: [tweetTypes],
+          errorMessage: TWEET_MESSAGE.INVALID_TYPE
+        }
+      },
+      limit: {
+        isNumeric: true,
+        custom: {
+          options: async (value, { req }) => {
+            const num = Number(value)
+            if (num > 100 || num < 1) {
+              throw new Error('Limit maximum is 100 and minimum is 1')
+            }
+            return true
+          }
+        }
+      },
+      page: {
+        isNumeric: true,
+        custom: {
+          options: async (value, { req }) => {
+            const page = Number(value)
+            if (page < 1) {
+              throw new Error('Page >= 1')
+            }
+            return true
+          }
+        }
+      }
+    },
+    ['query']
+  )
+)

@@ -251,6 +251,7 @@
     "zx": "^8.2.0"
   },
   "devDependencies": {
+    "@faker-js/faker": "^9.2.0",
     "@types/cors": "^2.8.17",
     "@types/express": "^5.0.0",
     "@types/formidable": "^3.4.5",

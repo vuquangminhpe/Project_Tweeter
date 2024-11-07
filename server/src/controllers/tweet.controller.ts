@@ -2,7 +2,7 @@ import { ObjectId } from 'mongodb'
 
 import { Request, Response } from 'express'
 import { ParamsDictionary } from 'express-serve-static-core'
-import { TweetRequestBody } from '~/models/request/Tweet.request'
+import { TweetParam, TweetQuery, TweetRequestBody } from '~/models/request/Tweet.request'
 import tweetsService from '~/services/tweets.services'
 import { TokenPayload } from '~/models/request/User.request'
 import { TWEET_MESSAGE } from '~/constants/messages'
@@ -39,7 +39,7 @@ export const getTweetDetailsController = async (req: Request, res: Response) => 
     data: tweet
   })
 }
-export const getTweetChildrenController = async (req: Request, res: Response) => {
+export const getTweetChildrenController = async (req: Request<TweetParam, any, any, TweetQuery>, res: Response) => {
   const tweet_type = Number(req.query.tweet_type as string) as TweetType
   const limit = Number(req.query.limit as string)
   const page = Number(req.query.page as string)
