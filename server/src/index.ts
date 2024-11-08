@@ -11,6 +11,8 @@ import cors from 'cors'
 import { tweetsRouter } from './routes/tweets.routes'
 import bookmarksRouter from './routes/bookmarks.routes'
 import { likesTweetRouter } from './routes/likes.routes'
+import { searchRouter } from './routes/search.routes'
+import '~/utils/fake'
 config()
 databaseService
   .connect()
@@ -34,6 +36,7 @@ app.use('/tweets', tweetsRouter)
 app.use('/static', staticRouter)
 app.use('/bookmarks', bookmarksRouter)
 app.use('/likes', likesTweetRouter)
+app.use('/search', searchRouter)
 app.use('/static/video-stream', express.static(UPLOAD_VIDEO_DIR))
 
 app.use(defaultErrorHandler)

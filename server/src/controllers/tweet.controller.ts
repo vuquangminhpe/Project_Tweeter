@@ -10,7 +10,7 @@ import { TweetType } from '~/constants/enums'
 
 export const createTweetController = async (req: Request<ParamsDictionary, any, TweetRequestBody>, res: Response) => {
   const { user_id } = req.decode_authorization as TokenPayload
-  const results = await tweetsService.createTweet(req.body, user_id)
+  const results = await tweetsService.createTweet(user_id, req.body)
   res.json({
     message: TWEET_MESSAGE.CREATE_TWEET_SUCCESS,
     data: results

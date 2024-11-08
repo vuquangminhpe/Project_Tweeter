@@ -77,21 +77,22 @@ const followMultipleUsers = async (user_id: ObjectId, followed_user_ids: ObjectI
       )
     })
   )
-  return result
+  console.log(`Followed ${result.length} users`)
 }
 
-const insertMultipleTweets = async (ids: ObjectId[]) => {
+const insertMultipleTweets = async (userIds: ObjectId[]) => {
   let count = 0
-  const tweet = await Promise.all(
-    ids.map(async (id, index) => {
-      await Promise.all([
-        tweetsService.createTweet(createRandomTweet(), id.toString()),
-        tweetsService.createTweet(createRandomTweet(), id.toString())
+  const result = await Promise.all(
+    userIds.map(async (userId) => {
+      const tweetIds = await Promise.all([
+        tweetsService.createTweet(userId.toString(), createRandomTweet()),
+        tweetsService.createTweet(userId.toString(), createRandomTweet())
       ])
-      count += 2
+      await databaseService.users.updateOne({ _id: userId }, { $push: { tweets: { $each: tweetIds } } })
+      count += tweetIds.length
     })
   )
-  return tweet
+  return result
 }
 
 insertMultipleUsers(users).then((ids) => {
