@@ -2,6 +2,7 @@ import { Router } from 'express'
 import {
   createTweetController,
   getAllTweetController,
+  getNewTweetController,
   getTweetChildrenController,
   getTweetDetailsController
 } from '~/controllers/tweet.controller'
@@ -9,6 +10,7 @@ import {
   audienceValidator,
   createTweetValidator,
   getTweetChildrenValidator,
+  paginationValidator,
   tweetIdValidator
 } from '~/middlewares/tweets.middlewares'
 import { AccessTokenValidator, verifiedUserValidator } from '~/middlewares/users.middlewares'
@@ -20,6 +22,7 @@ export const tweetsRouter = Router()
  * Description: Create Tweet
  * Path: /
  * Method: POST
+ *  * Header: {Authorization: Bearer <access_token>}
  * Body: TweetRequestBody
  */
 tweetsRouter.post(
@@ -35,6 +38,7 @@ tweetsRouter.post(
  * Path: /
  * Method: GET
  * Body: user_id: string
+ *  * Header: {Authorization: Bearer <access_token>}
  * type: tweetTypes
  */
 tweetsRouter.get('/', AccessTokenValidator, verifiedUserValidator, wrapAsync(getAllTweetController))
@@ -44,6 +48,7 @@ tweetsRouter.get('/', AccessTokenValidator, verifiedUserValidator, wrapAsync(get
  * Path: /
  * Method: GET
  * Body: user_id: string
+ *  * Header: {Authorization: Bearer <access_token>}
  * type: tweetTypes
  */
 tweetsRouter.get(
@@ -61,6 +66,7 @@ tweetsRouter.get(
  * Method: GET
  * Body: user_id: string
  * type: tweetTypes
+ *  * Header: {Authorization: Bearer <access_token>}
  * Query: {limit: number,page:number,tweet_type: TweetType}
  */
 tweetsRouter.get(
@@ -71,4 +77,21 @@ tweetsRouter.get(
   verifiedUserValidator,
   wrapAsync(audienceValidator),
   wrapAsync(getTweetChildrenController)
+)
+
+/**
+ * Description: get new feeds
+ * Path: /new-feeds
+ * Method: GET
+ * Body: user_id: string
+ * type: tweetTypes
+ * Header: {Authorization: Bearer <access_token>}
+ * Query: {limit: number,page:number,tweet_type: TweetType}
+ */
+tweetsRouter.get(
+  '/new/new-feeds',
+  paginationValidator,
+  AccessTokenValidator,
+  verifiedUserValidator,
+  wrapAsync(getNewTweetController)
 )

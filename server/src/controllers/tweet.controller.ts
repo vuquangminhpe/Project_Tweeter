@@ -2,7 +2,7 @@ import { ObjectId } from 'mongodb'
 
 import { Request, Response } from 'express'
 import { ParamsDictionary } from 'express-serve-static-core'
-import { TweetParam, TweetQuery, TweetRequestBody } from '~/models/request/Tweet.request'
+import { Pagination, TweetParam, TweetQuery, TweetRequestBody } from '~/models/request/Tweet.request'
 import tweetsService from '~/services/tweets.services'
 import { TokenPayload } from '~/models/request/User.request'
 import { TWEET_MESSAGE } from '~/constants/messages'
@@ -62,5 +62,18 @@ export const getTweetChildrenController = async (req: Request<TweetParam, any, a
       page,
       total_pages: Math.ceil(total / limit)
     }
+  })
+}
+
+export const getNewTweetController = async (req: Request<ParamsDictionary, any, any, Pagination>, res: Response) => {
+  const limit = Number(req.query.limit as string)
+  const page = Number(req.query.page as string)
+  const user_id = req.decode_authorization?.user_id
+
+  const tweets = await tweetsService.getNewFeeds({ limit, page, user_id })
+
+  res.json({
+    message: 'Get New Feeds Success',
+    results: tweets
   })
 }
