@@ -12,7 +12,7 @@ import tweetsService from '~/services/tweets.services'
 const PASSWORD = 'Minh9972'
 const MYID = new ObjectId('672ce09b6c4e5340d598c42c')
 
-const USER_COUNT = 10
+const USER_COUNT = 100
 
 const createRandomUser = () => {
   const user: RegisterReqBody = {

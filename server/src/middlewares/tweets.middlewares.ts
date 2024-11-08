@@ -290,7 +290,7 @@ export const audienceValidator = async (req: Request, res: Response, next: NextF
 export const getTweetChildrenValidator = validate(
   checkSchema(
     {
-      type: {
+      tweet_type: {
         isIn: {
           options: [tweetTypes],
           errorMessage: TWEET_MESSAGE.INVALID_TYPE
