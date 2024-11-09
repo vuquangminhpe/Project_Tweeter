@@ -12,7 +12,7 @@ import tweetsService from '~/services/tweets.services'
 const PASSWORD = 'Minh9972'
 const MYID = new ObjectId('672ce09b6c4e5340d598c42c')
 
-const USER_COUNT = 100
+const USER_COUNT = 2
 
 const createRandomUser = () => {
   const user: RegisterReqBody = {
@@ -51,7 +51,9 @@ const insertMultipleUsers = async (users: RegisterReqBody[]) => {
   const result = await Promise.all(
     users.map(async (user) => {
       const user_id = new ObjectId()
-      await databaseService.users.insertOne(
+      console.log(user_id)
+
+      const result = await databaseService.users.insertOne(
         new User({
           ...user,
           username: `user${user_id.toString()}`,
@@ -60,7 +62,7 @@ const insertMultipleUsers = async (users: RegisterReqBody[]) => {
           verify: UserVerifyStatus.Verified
         })
       )
-      return user_id
+      return result.insertedId.toString() as any
     })
   )
   return result
@@ -96,6 +98,10 @@ const insertMultipleTweets = async (userIds: ObjectId[]) => {
 }
 
 insertMultipleUsers(users).then((ids) => {
+  console.log(users)
+
+  console.log(ids)
+
   followMultipleUsers(new ObjectId(MYID), ids)
   insertMultipleTweets(ids)
 })
