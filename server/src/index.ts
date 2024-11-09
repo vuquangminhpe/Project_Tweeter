@@ -20,6 +20,7 @@ databaseService
     databaseService.indexUsers()
     databaseService.indexVideoStatus()
     databaseService.indexFollowers()
+    databaseService.indexTweets()
   })
   .catch()
 

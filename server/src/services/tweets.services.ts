@@ -258,6 +258,7 @@ class TweetService {
       .toArray()
     const ids = followed_user_ids.map((item) => item.followed_user_id)
     ids.push(user_id_obj)
+
     const [tweets, total] = await Promise.all([
       databaseService.tweets
         .aggregate([
@@ -455,7 +456,7 @@ class TweetService {
                     },
                     {
                       'user.twitter_circle': {
-                        $in: [user_id_obj]
+                        $in: [new ObjectId(user_id_obj)]
                       }
                     }
                   ]

@@ -29,6 +29,12 @@ class DatabaseService {
       return error
     }
   }
+  async indexTweets() {
+    const exists = await this.tweets.indexExists(['content_text'])
+    if (!exists) {
+      this.tweets.createIndex({ content: 'text' }, { default_language: 'none' })
+    }
+  }
   async indexUsers() {
     const exits = await this.users.indexExists(['email_1_password_1', 'email_1'])
     if (!exits) {
