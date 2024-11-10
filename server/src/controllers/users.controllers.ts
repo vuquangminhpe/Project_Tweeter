@@ -56,7 +56,6 @@ export const registerController = async (
   next: NextFunction
 ) => {
   const result = await usersService.register(req.body)
-  console.log(req.body)
 
   res.json({
     message: USERS_MESSAGES.REGISTER_SUCCESS,
@@ -189,7 +188,6 @@ export const updateMeController = async (req: Request<ParamsDictionary, any, Upd
 }
 
 export const getProfileController = async (req: Request<ParamsDictionary, any, UserProfileReqBody>, res: Response) => {
-  console.log('All params:', req.params)
   const { username } = req.params
 
   const result = await usersService.getProfile(username)

@@ -42,8 +42,6 @@ export const handleUploadImage = async (req: Request) => {
       if (err) {
         return reject(err)
       }
-      console.log(files)
-
       if (!Boolean(files.image)) {
         return reject(new Error('File is empty'))
       }
@@ -86,8 +84,6 @@ export const handleUploadVideo = async (req: Request) => {
       if (err) {
         return reject(err)
       }
-      console.log(files)
-
       if (!Boolean(files.video)) {
         return reject(new Error('File is empty'))
       }

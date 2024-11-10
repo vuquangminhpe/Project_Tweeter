@@ -100,7 +100,7 @@ usersRouter.post('/follow', AccessTokenValidator, verifiedUserValidator, followV
  * body: {user_id: string}
  * Header: {followed_user_id: string}
  */
-usersRouter.post('/un-follow', AccessTokenValidator, verifiedUserValidator, followValidator, wrapAsync(UnController))
+usersRouter.delete('/un-follow', AccessTokenValidator, verifiedUserValidator, followValidator, wrapAsync(UnController))
 
 /**
  * Description: change password

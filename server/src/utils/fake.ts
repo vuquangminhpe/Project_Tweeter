@@ -51,8 +51,6 @@ const insertMultipleUsers = async (users: RegisterReqBody[]) => {
   const result = await Promise.all(
     users.map(async (user) => {
       const user_id = new ObjectId()
-      console.log(user_id)
-
       const result = await databaseService.users.insertOne(
         new User({
           ...user,
@@ -98,10 +96,6 @@ const insertMultipleTweets = async (userIds: ObjectId[]) => {
 }
 
 insertMultipleUsers(users).then((ids) => {
-  console.log(users)
-
-  console.log(ids)
-
   followMultipleUsers(new ObjectId(MYID), ids)
   insertMultipleTweets(ids)
 })

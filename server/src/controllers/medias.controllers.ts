@@ -81,7 +81,6 @@ export const serveVideoM3u8Controller = (req: Request, res: Response, next: Next
 }
 export const serveSegmentController = (req: Request, res: Response, next: NextFunction) => {
   const { id, v, segment } = req.params
-  console.log(segment)
 
   res.sendFile(path.resolve(UPLOAD_VIDEO_DIR, id, v, segment), (err) => {
     if (err) {

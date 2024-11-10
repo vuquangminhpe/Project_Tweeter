@@ -360,7 +360,6 @@ class UserService {
       user_id: new ObjectId(user_id),
       followed_user_id: new ObjectId(followed_user_id)
     })
-    console.log(user_follower)
 
     if (user_follower) {
       return {
@@ -379,7 +378,6 @@ class UserService {
       user_id: new ObjectId(user_id),
       followed_user_id: new ObjectId(followed_user_id)
     })
-    console.log(user_follower)
 
     if (!user_follower) {
       return {

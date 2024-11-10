@@ -269,7 +269,6 @@ export const audienceValidator = async (req: Request, res: Response, next: NextF
     const author = await databaseService.users.findOne({
       _id: new ObjectId(tweet.user_id)
     })
-    console.log(author)
 
     if (!author || author.verify === UserVerifyStatus.Banned) {
       throw new ErrorWithStatus({

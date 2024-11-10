@@ -89,7 +89,6 @@ const forgotPasswordTokenSchema: ParamSchema = {
             status: HTTP_STATUS.UNAUTHORIZED
           })
         }
-        console.log(decode_forgot_password_token)
 
         if (user.forgot_password_token !== value) {
           throw new ErrorWithStatus({
@@ -153,7 +152,6 @@ export const loginValidator = validate(
               email: value,
               password: hashPassword(req.body.password)
             })
-            console.log(user)
 
             if (user === null) {
               throw new Error(USERS_MESSAGES.USER_NOT_FOUND)
@@ -507,6 +505,8 @@ export const followValidator = validate(
           const followed_user = await databaseService.users.findOne({
             _id: new ObjectId(value as string)
           })
+          console.log()
+
           if (followed_user === null) {
             throw new ErrorWithStatus({
               message: USERS_MESSAGES.USER_NOT_FOUND,
