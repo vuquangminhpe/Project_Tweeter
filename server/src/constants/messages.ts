@@ -1,3 +1,5 @@
+import { MediaTypeQuery } from './enums'
+
 export const USERS_MESSAGES = {
   VALIDATION_ERROR: 'Validation error',
   NAME_IS_REQUIRED: 'Name is required',
@@ -99,4 +101,11 @@ export const LIKES_MESSAGE = {
   ALREADY_LIKED_THIS_TWEET: 'Already liked this tweet',
   ALREADY_UN_LIKED_THIS_TWEET: 'Already un liked this tweet',
   GET_LIKES_SUCCESS: 'Get likes success'
+}
+export const SEARCH_MESSAGE = {
+  CONTENT_MUST_BE_STRING: 'Content must be string',
+  MEDIA_TYPE_MUST_BE_ONE_OF_MEDIA_TYPE_QUERY: `Media type must be one of ${Object.values(MediaTypeQuery).join(', ')}`,
+  LIMIT_IS_GREATER_THAN_1_AND_SMALL_20: 'Limit is greater than 1 and small 20',
+  PAGE_IS_GREATER_THAN_1_AND_SMALL_TOTAL_PAGES: 'Page is greater than 1 and small total pages',
+  FOLLOW_USER_IS_TRUE_OR_FALSE: 'Follow user is true or false'
 }
