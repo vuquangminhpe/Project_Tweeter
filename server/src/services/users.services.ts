@@ -12,7 +12,7 @@ import HTTP_STATUS from '~/constants/httpStatus'
 import Follower from '~/models/schemas/Follower.schema'
 import axios from 'axios'
 import { config } from 'dotenv'
-import { verifyEmail as sendVerifyEmail } from '~/utils/sendmail'
+import { verifyEmail as sendVerifyEmail, verifyEmail, verifyForgotPassword } from '~/utils/sendmail'
 config()
 class UserService {
   private signAccessToken({ user_id, verify }: { user_id: string; verify: UserVerifyStatus }) {
@@ -283,8 +283,7 @@ class UserService {
 
   async forgotPassword({ user_id, verify }: { user_id: string; verify: UserVerifyStatus }) {
     const forgot_password_token = await this.forgotPasswordToken({ user_id, verify: verify })
-    console.log(forgot_password_token)
-
+    const user = await databaseService.users.findOne({ _id: new ObjectId(user_id) })
     await databaseService.users.updateOne(
       { _id: new ObjectId(user_id) },
       {
@@ -296,6 +295,9 @@ class UserService {
         }
       }
     )
+    verifyForgotPassword(user?.email as string, forgot_password_token)
+    console.log(user)
+
     return {
       message: USERS_MESSAGES.CHECK_EMAIL_TO_RESET_PASSWORD
     }

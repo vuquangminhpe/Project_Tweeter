@@ -333,6 +333,7 @@ export const forgotPasswordValidator = validate(
               })
             }
             req.user = user
+
             return true
           }
         }

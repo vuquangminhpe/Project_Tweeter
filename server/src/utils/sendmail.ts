@@ -73,3 +73,16 @@ export const verifyEmail = (toAddress: string, email_verify_token: string, templ
       .replace('{{name}}', `${toAddress.split('@')[0]?.split('+')[0]}`)
   )
 }
+export const verifyForgotPassword = (
+  toAddress: string,
+  forgot_verify_token: string,
+  template: string = verifyEmailTemplate
+) => {
+  return sendVerifyEmail(
+    toAddress,
+    'Verify your email',
+    template
+      .replace('{{link}}', `${process.env.CLIENT_URL}/verify-forgot-password?token=${forgot_verify_token}`)
+      .replace('{{name}}', `${toAddress.split('@')[0]?.split('+')[0]}`)
+  )
+}

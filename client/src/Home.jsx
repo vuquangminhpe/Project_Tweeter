@@ -73,7 +73,10 @@ function Home() {
           <button onClick={logout}>Logout</button>
         </Fragment>
       ) : (
-        <Link to={googleOAuthUrl}>Google Oauth 2.</Link>
+        <Fragment>
+          <Link to={`/forgot_password`}>Forgot Password - Click here</Link>
+          <Link to={googleOAuthUrl}>Google Oauth 2.</Link>
+        </Fragment>
       )}
     </>
   );

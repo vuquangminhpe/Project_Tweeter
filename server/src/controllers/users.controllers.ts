@@ -133,6 +133,7 @@ export const forgotPasswordController = async (
       message: USERS_MESSAGES.USER_NOT_FOUND
     })
   }
+  console.log(user)
 
   const result = await usersService.forgotPassword({
     user_id: new ObjectId(_id).toString(),
