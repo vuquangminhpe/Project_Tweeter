@@ -2,7 +2,6 @@ import reactLogo from "./assets/react.svg";
 import { Link } from "react-router-dom";
 import viteLogo from "/vite.svg";
 import "./App.css";
-import axios from "axios";
 import { Fragment, useEffect } from "react";
 // Base styles for media player and provider (~400B).
 import "@vidstack/react/player/styles/default/theme.css";
