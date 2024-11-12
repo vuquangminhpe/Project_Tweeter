@@ -4,8 +4,8 @@ import mediaService from '~/services/medias.services'
 import path from 'path'
 import mime from 'mime'
 import fs from 'fs'
-import { UPLOAD_DIR, UPLOAD_VIDEO_DIR } from '~/constants/dir'
-import HTTP_STATUS from '~/constants/httpStatus'
+import { UPLOAD_IMAGES_DIR, UPLOAD_VIDEO_DIR } from '~/constants/dir'
+import { sendFileFromS3 } from '~/utils/s3'
 export const uploadImageController = async (req: Request, res: Response, next: NextFunction) => {
   const url = await mediaService.uploadImage(req)
   res.json({ message: USERS_MESSAGES.UPLOAD_SUCCESS, result: url })
@@ -26,7 +26,7 @@ export const videoStatusController = async (req: Request, res: Response, next: N
 
 export const serveImageController = (req: Request, res: Response, next: NextFunction) => {
   const { name } = req.params
-  res.sendFile(path.resolve(UPLOAD_DIR, name), (err) => {
+  res.sendFile(path.resolve(UPLOAD_IMAGES_DIR, name), (err) => {
     if (err) {
       res.status((err as any).status).send('Not found')
     }
@@ -73,18 +73,19 @@ export const serveVideoStreamController = async (req: Request, res: Response, ne
 
 export const serveVideoM3u8Controller = (req: Request, res: Response, next: NextFunction) => {
   const { id } = req.params
-  res.sendFile(path.resolve(UPLOAD_VIDEO_DIR, id, 'master.m3u8'), (err) => {
-    if (err) {
-      res.status((err as any).status).send('Not found')
-    }
-  })
+  sendFileFromS3(res, `videos-hls/${id}/master.m3u8`)
+  // res.sendFile(path.resolve(UPLOAD_VIDEO_DIR, id, 'master.m3u8'), (err) => {
+  //   if (err) {
+  //     res.status((err as any).status).send('Not found')
+  //   }
+  // })
 }
 export const serveSegmentController = (req: Request, res: Response, next: NextFunction) => {
   const { id, v, segment } = req.params
-
-  res.sendFile(path.resolve(UPLOAD_VIDEO_DIR, id, v, segment), (err) => {
-    if (err) {
-      res.status((err as any).status).send('Not found')
-    }
-  })
+  sendFileFromS3(res, `videos-hls/${id}/${v}/${segment}`)
+  // res.sendFile(path.resolve(UPLOAD_VIDEO_DIR, id, v, segment), (err) => {
+  //   if (err) {
+  //     res.status((err as any).status).send('Not found')
+  //   }
+  // })
 }

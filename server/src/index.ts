@@ -5,7 +5,7 @@ import { defaultErrorHandler } from './middlewares/error.middlewares'
 import mediasRouter from './routes/medias.routes'
 import { config } from 'dotenv'
 import staticRouter from './routes/static.routes'
-import { initFolderImage, initFolderVideo } from './utils/file'
+import { initFolderImage, initFolderVideo, initFolderVideoHls } from './utils/file'
 import { UPLOAD_VIDEO_DIR } from './constants/dir'
 import cors from 'cors'
 import { tweetsRouter } from './routes/tweets.routes'
@@ -31,6 +31,7 @@ app.use(cors())
 // Tạo 1 folder upload
 initFolderImage()
 initFolderVideo()
+initFolderVideoHls()
 app.use(express.json())
 app.use('/users', usersRouter)
 app.use('/medias', mediasRouter)
