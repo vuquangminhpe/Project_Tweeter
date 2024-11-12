@@ -212,6 +212,7 @@
     "signal-exit": "^4.1.0",
     "simple-update-notifier": "^2.0.0",
     "slash": "^3.0.0",
+    "socket.io": "^4.8.1",
     "sparse-bitfield": "^3.0.3",
     "statuses": "^2.0.1",
     "string-width": "^5.1.2",
@@ -274,5 +275,10 @@
     "prettier:fix": "prettier --write ."
   },
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "optionalDependencies": {
+    "bufferutil": "^4.0.8",
+    "install": "^0.13.0",
+    "utf-8-validate": "^6.0.5"
+  }
 }
