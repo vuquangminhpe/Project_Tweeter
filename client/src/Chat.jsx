@@ -4,8 +4,6 @@ function Chat() {
   const profile = JSON.parse(localStorage.getItem("profile"));
   const [value, setValue] = useState("");
   useEffect(() => {
-    console.log(profile._id);
-
     socket.auth = {
       _id: profile._id,
     };
