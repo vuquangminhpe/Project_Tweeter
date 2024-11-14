@@ -14,6 +14,8 @@ import { likesTweetRouter } from './routes/likes.routes'
 import { searchRouter } from './routes/search.routes'
 import '~/utils/fake'
 import '~/utils/s3'
+import { createServer } from 'http'
+import { Server, Socket } from 'socket.io'
 config()
 databaseService
   .connect()
@@ -26,6 +28,7 @@ databaseService
   .catch()
 
 const app = express()
+const httpServer = createServer(app)
 const port = process.env.PORT || 3000
 app.use(cors())
 // Tạo 1 folder upload
@@ -41,8 +44,22 @@ app.use('/bookmarks', bookmarksRouter)
 app.use('/likes', likesTweetRouter)
 app.use('/search', searchRouter)
 app.use('/static/video-stream', express.static(UPLOAD_VIDEO_DIR))
+const io = new Server(httpServer, {
+  cors: {
+    origin: 'http://localhost:3002'
+  }
+})
 
+io.on('connection', (socket: Socket) => {
+  console.log(`user ${socket.id} connected`)
+  console.log(socket.handshake.auth)
+
+  socket.on('disconnect', () => {
+    console.log(`user ${socket.id} disconnected`)
+  })
+})
 app.use(defaultErrorHandler)
-app.listen(port, () => {
-  console.log(`App listening on port ${port}`)
+
+httpServer.listen(port, () => {
+  console.log(`Server listening on port ${port}`)
 })

@@ -15,9 +15,8 @@ import {
 const getGoogleAuthUrl = () => {
   const url = "https://accounts.google.com/o/oauth2/auth";
   const query = {
-    client_id:
-      "1065435437989-s24vtub6m0damkbqslkfoplhdg1s5ssg.apps.googleusercontent.com",
-    redirect_uri: "http://localhost:5000/users/oauth/google",
+    client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
+    redirect_uri: import.meta.env.VITE_GOOGLE_REDIRECT_URI,
     response_type: "code",
     scope: [
       "https://www.googleapis.com/auth/userinfo.profile",
