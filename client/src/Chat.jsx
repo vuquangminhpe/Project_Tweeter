@@ -11,19 +11,32 @@ function Chat() {
     socket.connect();
     socket.on("receive private message", (data) => {
       const content = data.content;
-      setMessages((messages) => [...messages, content]);
+      setMessages((messages) => [
+        ...messages,
+        {
+          content,
+          isSender: false,
+        },
+      ]);
     });
     return () => {
       socket.disconnect();
     };
   }, [profile._id]);
-  const handleSubmit = (e) => {
+  const send = (e) => {
     setValue("");
     console.log(e);
     socket.emit("private message", {
       content: value,
       to: "673187cb67a5e547220397ef",
     });
+    setMessages((messages) => [
+      ...messages,
+      {
+        content: value,
+        isSender: true,
+      },
+    ]);
   };
   return (
     <div>
@@ -31,11 +44,13 @@ function Chat() {
       <div>
         {message.map((message, index) => (
           <div key={index}>
-            <div>{message}</div>
+            <div className={`${message.isSender ? "message-right" : ""}`}>
+              {message.content}
+            </div>
           </div>
         ))}
       </div>
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={send}>
         <input
           type="text"
           onChange={(e) => setValue(e.target.value)}
