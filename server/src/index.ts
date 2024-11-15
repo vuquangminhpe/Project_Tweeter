@@ -16,6 +16,7 @@ import '~/utils/fake'
 import '~/utils/s3'
 import { createServer } from 'http'
 import { Server, Socket } from 'socket.io'
+import Conversations from './models/schemas/conversations.schema'
 config()
 databaseService
   .connect()
@@ -63,14 +64,26 @@ io.on('connection', (socket: Socket) => {
   }
   console.log(users)
 
-  socket.on('private message', (data) => {
-    const receiver_socket_id = users[data.to].socket_id
+  socket.on('private message', async (data) => {
+    const user = users[data.to]
+    if (!user) {
+      return
+    }
+    const receiver_socket_id = user.socket_id
+    const result = await databaseService.conversations.insertOne(
+      new Conversations({
+        sender_id: data.from,
+        receive_id: data.to,
+        content: data.content
+      })
+    )
+    console.log(result)
+
     socket.to(receiver_socket_id).emit('receive private message', {
       content: data.content,
       from: user_id
     })
   })
-
   socket.on('disconnect', () => {
     delete users[user_id]
     console.log(`user ${socket.id} disconnected`)
