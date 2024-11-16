@@ -5,7 +5,7 @@ import { AccessTokenValidator, verifiedUserValidator } from '~/middlewares/users
 const conversationsRouter = Router()
 
 conversationsRouter.get(
-  '/receiver/:receiver_id',
+  '/receivers/:receiver_id',
   AccessTokenValidator,
   verifiedUserValidator,
   getConversationsByReceiverIdController

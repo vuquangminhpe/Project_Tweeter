@@ -66,24 +66,24 @@ io.on('connection', (socket: Socket) => {
   users[user_id] = {
     socket_id: socket.id
   }
-  console.log(users)
 
-  socket.on('private message', async (data) => {
-    const receiver_socket_id = users[data.to]?.socket_id
+  socket.on('send_message', async (data) => {
+    const { sender_id, receive_id, content } = data.payload
+
+    const receiver_socket_id = users[receive_id]?.socket_id
     if (!receiver_socket_id) {
       return
     }
-    await databaseService.conversations.insertOne(
-      new Conversations({
-        sender_id: new ObjectId(data.from as string),
-        receive_id: new ObjectId(data.to as string),
-        content: data.content
-      })
-    )
+    const conversations = new Conversations({
+      sender_id: new ObjectId(sender_id as string),
+      receive_id: new ObjectId(receive_id as string),
+      content: content
+    })
+    const result = await databaseService.conversations.insertOne(conversations)
+    conversations._id = result.insertedId
 
-    socket.to(receiver_socket_id).emit('receive private message', {
-      content: data.content,
-      from: user_id
+    socket.to(receiver_socket_id).emit('receive_message', {
+      payload: conversations
     })
   })
   socket.on('disconnect', () => {

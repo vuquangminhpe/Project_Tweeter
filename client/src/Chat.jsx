@@ -4,7 +4,7 @@ import axios from "axios";
 function Chat() {
   const profile = JSON.parse(localStorage.getItem("profile"));
   const [value, setValue] = useState("");
-  const [message, setMessages] = useState([]);
+  const [conversation, setConversation] = useState([]);
   const [receiver, setReceiver] = useState("");
   const usernames = [
     {
@@ -19,20 +19,37 @@ function Chat() {
       _id: profile._id,
     };
     socket.connect();
-    socket.on("receive private message", (data) => {
-      const content = data.content;
-      setMessages((messages) => [
-        ...messages,
-        {
-          content,
-          isSender: false,
-        },
-      ]);
+    socket.on("receive_conversation", (data) => {
+      const { payload } = data;
+      setConversation((conversations) => [...conversations, payload]);
     });
     return () => {
       socket.disconnect();
     };
   }, [profile._id]);
+
+  useEffect(() => {
+    const controller = new AbortController();
+
+    if (receiver) {
+      axios
+        .get(`/conversations/receivers/${receiver}`, {
+          baseURL: import.meta.env.VITE_API_URL,
+          signal: controller.signal,
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+          },
+          limit: 40,
+          page: 1,
+        })
+        .then((res) => {
+          const conversations = res.data?.result?.conversations;
+
+          setConversation(conversations);
+        })
+        .catch((error) => console.log(error));
+    }
+  }, [receiver]);
   const getProfile = (username) => {
     const controller = new AbortController();
     axios
@@ -47,18 +64,19 @@ function Chat() {
   const send = (e) => {
     e.preventDefault();
     setValue("");
-    console.log(e);
-
-    socket.emit("private message", {
+    const conversation = {
       content: value,
-      to: receiver,
-      from: profile._id,
+      sender_id: profile._id,
+      receive_id: receiver,
+    };
+    socket.emit("send_conversation", {
+      payload: conversation,
     });
-    setMessages((messages) => [
-      ...messages,
+    setConversation((conversations) => [
+      ...conversations,
       {
-        content: value,
-        isSender: true,
+        ...conversation,
+        _id: new Date().getTime(),
       },
     ]);
   };
@@ -78,15 +96,17 @@ function Chat() {
           </div>
         ))}
       </div>
-      <div className="container">
-        {message.map((message, index) => (
+      <div className="container container_conversation">
+        {conversation.map((conversation, index) => (
           <div key={index}>
             <div
-              className={`message_item ${
-                message.isSender ? "message-right" : "message-left"
+              className={`conversation_item ${
+                conversation.sender_id === profile._id
+                  ? "conversation-right"
+                  : "conversation-left"
               }`}
             >
-              {message.content}
+              {conversation.content}
             </div>
           </div>
         ))}
