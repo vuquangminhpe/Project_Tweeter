@@ -109,3 +109,7 @@ export const SEARCH_MESSAGE = {
   PAGE_IS_GREATER_THAN_1_AND_SMALL_TOTAL_PAGES: 'Page is greater than 1 and small total pages',
   FOLLOW_USER_IS_TRUE_OR_FALSE: 'Follow user is true or false'
 }
+
+export const CONVERSATIONS_MESSAGE = {
+  GET_CONVERSATION_SUCCESSFULLY: 'Get conversation successfully'
+}
