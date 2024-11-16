@@ -17,6 +17,9 @@ import '~/utils/s3'
 import { createServer } from 'http'
 import { Server, Socket } from 'socket.io'
 import Conversations from './models/schemas/conversations.schema'
+import conversationsRouter from './routes/conversations.routes'
+import { ObjectId } from 'mongodb'
+
 config()
 databaseService
   .connect()
@@ -44,6 +47,7 @@ app.use('/static', staticRouter)
 app.use('/bookmarks', bookmarksRouter)
 app.use('/likes', likesTweetRouter)
 app.use('/search', searchRouter)
+app.use('/conversations', conversationsRouter)
 app.use('/static/video-stream', express.static(UPLOAD_VIDEO_DIR))
 const io = new Server(httpServer, {
   cors: {
@@ -65,19 +69,17 @@ io.on('connection', (socket: Socket) => {
   console.log(users)
 
   socket.on('private message', async (data) => {
-    const user = users[data.to]
-    if (!user) {
+    const receiver_socket_id = users[data.to]?.socket_id
+    if (!receiver_socket_id) {
       return
     }
-    const receiver_socket_id = user.socket_id
-    const result = await databaseService.conversations.insertOne(
+    await databaseService.conversations.insertOne(
       new Conversations({
-        sender_id: data.from,
-        receive_id: data.to,
+        sender_id: new ObjectId(data.from as string),
+        receive_id: new ObjectId(data.to as string),
         content: data.content
       })
     )
-    console.log(result)
 
     socket.to(receiver_socket_id).emit('receive private message', {
       content: data.content,

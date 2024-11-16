@@ -1,5 +1,5 @@
 import { Router } from 'express'
-import { searchController } from '~/controllers/search.controller'
+import { searchController } from '~/controllers/search.controllers'
 import { searchValidator } from '~/middlewares/search.middlewares'
 import { AccessTokenValidator, verifiedUserValidator } from '~/middlewares/users.middlewares'
 import { wrapAsync } from '~/utils/handler'
