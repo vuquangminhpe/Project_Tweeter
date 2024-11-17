@@ -6,7 +6,7 @@ import Follower from '~/models/schemas/Follower.schema'
 import VideoStatus from '~/models/schemas/VideoStatus.schema'
 import Tweet from '~/models/schemas/Tweet.schema'
 import Hashtag from '~/models/schemas/Hashtag.schema'
-import { Bookmark } from '~/models/schemas/Boomark.schema'
+import { Bookmark } from '~/models/schemas/Bookmark.schema'
 import { Like } from '~/models/schemas/Like.schema'
 import Conversations from '~/models/schemas/conversations.schema'
 config()

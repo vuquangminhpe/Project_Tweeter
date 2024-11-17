@@ -1,4 +1,4 @@
-import { Bookmark } from '~/models/schemas/Boomark.schema'
+import { Bookmark } from '~/models/schemas/Bookmark.schema'
 import databaseService from './database.services'
 import { ObjectId } from 'mongodb'
 import { BOOKMARKS_MESSAGE } from '~/constants/messages'

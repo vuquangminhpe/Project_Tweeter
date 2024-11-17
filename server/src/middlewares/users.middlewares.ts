@@ -555,3 +555,28 @@ export const changePasswordValidator = validate(
     }
   })
 )
+
+export const getConversationsValidator = validate(
+  checkSchema(
+    {
+      receive_id: {
+        custom: {
+          options: async (value) => {
+            const user = await databaseService.users.findOne({
+              _id: new ObjectId(value as string)
+            })
+            console.log(user)
+
+            if (user) {
+              throw new ErrorWithStatus({
+                message: USERS_MESSAGES.USER_NOT_FOUND,
+                status: HTTP_STATUS.NOT_FOUND
+              })
+            }
+          }
+        }
+      }
+    },
+    ['params']
+  )
+)

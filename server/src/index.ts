@@ -67,7 +67,7 @@ io.on('connection', (socket: Socket) => {
     socket_id: socket.id
   }
 
-  socket.on('send_message', async (data) => {
+  socket.on('send_conversation', async (data) => {
     const { sender_id, receive_id, content } = data.payload
 
     const receiver_socket_id = users[receive_id]?.socket_id
@@ -82,7 +82,7 @@ io.on('connection', (socket: Socket) => {
     const result = await databaseService.conversations.insertOne(conversations)
     conversations._id = result.insertedId
 
-    socket.to(receiver_socket_id).emit('receive_message', {
+    socket.to(receiver_socket_id).emit('receive_conversation', {
       payload: conversations
     })
   })

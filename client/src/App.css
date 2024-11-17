@@ -41,17 +41,17 @@
   color: #888;
 }
 
-.message-right {
+.conversation-right {
   float: right;
 }
-.message-left {
+.conversation-left {
   float: left;
 }
 .container {
   display: flex;
   flex-direction: column;
 }
-.message_item {
+.conversation_item {
   background-color: #40e0d0;
   border-radius: 10%;
   padding: 5px 10px;
@@ -62,7 +62,8 @@
   gap: 10px;
   margin-bottom: 10px;
 }
-.container_message {
-  overflow-x: hidden; /* Hide horizontal scrollbar */
+.container_conversation {
+  width: 700px;
+  height: 500px;
   overflow-y: scroll; /* Add vertical scrollbar */
 }

@@ -3,6 +3,7 @@ import { RouterProvider } from "react-router-dom";
 import { router } from "./router";
 import { useEffect } from "react";
 import axios from "axios";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 function App() {
   useEffect(() => {
     const controller = new AbortController();
@@ -22,7 +23,19 @@ function App() {
       controller.abort();
     };
   }, []);
-  return <RouterProvider router={router} />;
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: {
+        refetchOnWindowFocus: false,
+        retry: 0,
+      },
+    },
+  });
+  return (
+    <QueryClientProvider client={queryClient}>
+      <RouterProvider router={router} />
+    </QueryClientProvider>
+  );
 }
 
 export default App;
