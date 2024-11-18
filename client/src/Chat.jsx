@@ -113,8 +113,8 @@ function Chat() {
       return undefined;
     },
     select: (data) => ({
-      pages: [...data.pages].reverse(),
-      pageParams: [...data.pageParams].reverse(),
+      pages: [...data.pages],
+      pageParams: [...data.pageParams],
     }),
   });
   const handleObserver = useCallback(
@@ -199,7 +199,7 @@ function Chat() {
       setClick(true);
     }
   }, []);
-  console.log(allMessages, isFetchingPreviousPage);
+  console.log(conversation);
 
   return (
     <div className="container">

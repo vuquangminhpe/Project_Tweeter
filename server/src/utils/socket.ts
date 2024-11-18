@@ -37,9 +37,6 @@ const initSocket = (httpServer: ServerHttp) => {
     } catch (error) {
       next(error as ExtendedError)
     }
-    socket.on('connect_error', (err) => {
-      console.log(`connect error due to ${err.message}`)
-    })
   })
   io.on('connection', (socket: Socket) => {
     console.log(`user ${socket.id} connected`)
