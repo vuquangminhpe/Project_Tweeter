@@ -6,7 +6,7 @@ import path from 'path'
 import fs from 'fs'
 import fsPromise from 'fs/promises'
 import mime from 'mime'
-import { isProduction } from '~/constants/config'
+import { envConfig, isProduction } from '~/constants/config'
 import { EncodingStatus, MediaType } from '~/constants/enums'
 import { Media } from '~/models/Other'
 import { encodeHLSWithMultipleVideoStreams } from '~/utils/video'
@@ -126,8 +126,8 @@ class MediaService {
         }
         // return {
         //   url: isProduction
-        //     ? `${process.env.HOST}/static/image/${newFullFileName}`
-        //     : `http://localhost:${process.env.PORT}/static/image/${newFullFileName}`,
+        //     ? `${envConfig.host}/static/image/${newFullFileName}`
+        //     : `http://localhost:${envConfig.port}/static/image/${newFullFileName}`,
         //   type: MediaType.Image
         // }
       })
@@ -152,8 +152,8 @@ class MediaService {
         }
         // return {
         //   url: isProduction
-        //     ? `${process.env.HOST}/static/video-stream/${file.newFilename}.mp4`
-        //     : `http://localhost:${process.env.PORT}/static/video-stream/${file.newFilename}.mp4`,
+        //     ? `${envConfig.host}/static/video-stream/${file.newFilename}.mp4`
+        //     : `http://localhost:${envConfig.port}/static/video-stream/${file.newFilename}.mp4`,
         //   type: MediaType.Video
         // }
       })
@@ -167,8 +167,8 @@ class MediaService {
         queue.enqueue(file.filepath)
         return {
           url: isProduction
-            ? `${process.env.HOST}/static/video-hls/${file.newFilename}/master.m3u8`
-            : `http://localhost:${process.env.PORT}/static/video-hls/${file.newFilename}/master.m3u8`,
+            ? `${envConfig.host}/static/video-hls/${file.newFilename}/master.m3u8`
+            : `http://localhost:${envConfig.port}/static/video-hls/${file.newFilename}/master.m3u8`,
           type: MediaType.HLS
         }
       })

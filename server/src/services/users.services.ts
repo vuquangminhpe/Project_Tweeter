@@ -13,6 +13,7 @@ import Follower from '~/models/schemas/Follower.schema'
 import axios from 'axios'
 import { config } from 'dotenv'
 import { verifyEmail as sendVerifyEmail, verifyEmail, verifyForgotPassword } from '~/utils/sendmail'
+import { envConfig } from '~/constants/config'
 config()
 class UserService {
   private signAccessToken({ user_id, verify }: { user_id: string; verify: UserVerifyStatus }) {
@@ -22,9 +23,9 @@ class UserService {
         user_type: TokenType.AccessToken,
         verify
       },
-      privateKey: process.env.JWT_SECRET_ACCESS_TOKEN as string,
+      privateKey: envConfig.privateKey_access_token as string,
       optional: {
-        expiresIn: process.env.ACCESS_TOKEN_EXPIRES_IN
+        expiresIn: envConfig.expiresIn_access_token
       }
     })
   }
@@ -35,10 +36,10 @@ class UserService {
         user_type: TokenType.RefreshToken,
         verify
       },
-      privateKey: process.env.JWT_SECRET_REFRESH_TOKEN as string,
+      privateKey: envConfig.privateKey_refresh_token as string,
 
       optional: {
-        expiresIn: process.env.REFRESH_TOKEN_EXPIRES_IN
+        expiresIn: envConfig.expiresIn_refresh_token
       }
     })
   }
@@ -49,10 +50,10 @@ class UserService {
         user_type: TokenType.ForgotPasswordToken,
         verify
       },
-      privateKey: process.env.JWT_SECRET_FORGOT_PASSWORD_TOKEN as string,
+      privateKey: envConfig.secretOnPublicKey_Forgot as string,
 
       optional: {
-        expiresIn: process.env.FORGOT_PASSWORD_TOKEN_EXPIRES_IN
+        expiresIn: envConfig.expiresIn_forgot_token
       }
     })
   }
@@ -63,10 +64,10 @@ class UserService {
         user_type: TokenType.EmailVerifyToken,
         verify
       },
-      privateKey: process.env.JWT_SECRET_EMAIL_VERIFY_TOKEN as string,
+      privateKey: envConfig.secretOnPublicKey_Email as string,
 
       optional: {
-        expiresIn: process.env.EMAIL_VERIFY_TOKEN_EXPIRES_IN
+        expiresIn: envConfig.expiresIn_email_token
       }
     })
   }
@@ -136,9 +137,9 @@ class UserService {
   private async getOauthGoogleToken(code: string) {
     const body = new URLSearchParams({
       code,
-      client_id: process.env.GOOGLE_CLIENT_ID!,
-      client_secret: process.env.GOOGLE_CLIENT_SECRET!,
-      redirect_uri: process.env.GOOGLE_REDIRECT_URI!,
+      client_id: envConfig.client_id!,
+      client_secret: envConfig.client_secret!,
+      redirect_uri: envConfig.redirect_uri!,
       grant_type: 'authorization_code'
     })
 

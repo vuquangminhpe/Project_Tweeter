@@ -18,6 +18,7 @@ import { createServer } from 'http'
 
 import conversationsRouter from './routes/conversations.routes'
 import initSocket from './utils/socket'
+import { envConfig } from './constants/config'
 
 config()
 databaseService
@@ -32,7 +33,7 @@ databaseService
 
 const app = express()
 const httpServer = createServer(app)
-const port = process.env.PORT || 3000
+const port = envConfig.port || 3000
 app.use(cors())
 // Tạo 1 folder upload
 initFolderImage()

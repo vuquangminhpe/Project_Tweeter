@@ -26,6 +26,7 @@ import { UserVerifyStatus } from '~/constants/enums'
 import { pick } from 'lodash'
 import { verifyPassword } from '~/utils/crypto'
 import { config } from 'dotenv'
+import { envConfig } from '~/constants/config'
 config()
 export const loginController = async (req: Request<ParamsDictionary, any, LoginReqBody>, res: Response) => {
   const user = req.user as User
@@ -40,7 +41,7 @@ export const loginController = async (req: Request<ParamsDictionary, any, LoginR
 export const oauthController = async (req: Request<ParamsDictionary, any, LoginReqBody>, res: Response) => {
   const { code } = req.query
   const result = await usersService.oauth(code as string)
-  const urlRedirect = `${process.env.CLIENT_REDIRECT_CALLBACK}?access_token=${result.access_token}&refresh_token=${result.refresh_token}&new_user=${result.newUser}&verify=${result.verify}`
+  const urlRedirect = `${envConfig.client_redirect}?access_token=${result.access_token}&refresh_token=${result.refresh_token}&new_user=${result.newUser}&verify=${result.verify}`
   res.redirect(urlRedirect)
   res.status(200).json({
     message: result.newUser ? USERS_MESSAGES.REGISTER_SUCCESS : USERS_MESSAGES.LOGIN_SUCCESS,

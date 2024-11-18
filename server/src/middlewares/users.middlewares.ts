@@ -18,6 +18,7 @@ import { ParsedQs } from 'qs'
 import { ParamsDictionary } from 'express-serve-static-core'
 import { Response as ExpressResponse } from 'express-serve-static-core'
 import { verifyAccessToken } from '~/utils/common'
+import { envConfig } from '~/constants/config'
 
 type ExpressMiddleware = RequestHandler<ParamsDictionary, any, any, ParsedQs, Record<string, any>>
 const passwordSchema: ParamSchema = {
@@ -77,7 +78,7 @@ const forgotPasswordTokenSchema: ParamSchema = {
       try {
         const decode_forgot_password_token = await verifyToken({
           token: value,
-          secretOnPublicKey: process.env.JWT_SECRET_FORGOT_PASSWORD_TOKEN as string
+          secretOnPublicKey: envConfig.secretOnPublicKey_Forgot as string
         })
         const { user_id } = decode_forgot_password_token
         const user = await databaseService.users.findOne({
@@ -235,7 +236,7 @@ export const RefreshTokenValidator = validate(
           options: async (value: string, { req }) => {
             try {
               const [decoded_refresh_token, refresh_token] = await Promise.all([
-                verifyToken({ token: value, secretOnPublicKey: process.env.JWT_SECRET_REFRESH_TOKEN as string }),
+                verifyToken({ token: value, secretOnPublicKey: envConfig.secretOnPublicKey_Refresh as string }),
                 databaseService.refreshToken.findOne({ token: value })
               ])
 
@@ -281,7 +282,7 @@ export const emailVerifyTokenValidator = validate(
             try {
               const decoded_email_verify_token = await verifyToken({
                 token: value,
-                secretOnPublicKey: process.env.JWT_SECRET_EMAIL_VERIFY_TOKEN as string
+                secretOnPublicKey: envConfig.secretOnPublicKey_Email as string
               })
 
               ;(req as Request).decoded_email_verify_token = decoded_email_verify_token
