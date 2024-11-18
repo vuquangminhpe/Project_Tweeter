@@ -5,13 +5,15 @@ import { useInfiniteQuery } from "@tanstack/react-query";
 
 function Chat() {
   const observerRef = useRef();
-  const loadMoreRef = useRef(null);
-  const chatContainerRef = useRef(null);
+  const loadPreviousRef = useRef(null);
   const profile = JSON.parse(localStorage.getItem("profile"));
+  const [click, setClick] = useState(false);
   const [value, setValue] = useState("");
   const [conversation, setConversation] = useState([]);
+  const [totalPages, setTotalPages] = useState();
   const [receiver, setReceiver] = useState("");
-  const [previousScrollHeight, setPreviousScrollHeight] = useState(0);
+  const chatContainerRef = useRef(null);
+  const [initialScrollSet, setInitialScrollSet] = useState(false);
 
   const usernames = [
     {
@@ -30,6 +32,10 @@ function Chat() {
     socket.on("receive_conversation", (data) => {
       const { payload } = data;
       setConversation((conversations) => [...conversations, payload]);
+      if (chatContainerRef.current) {
+        chatContainerRef.current.scrollTop =
+          chatContainerRef.current.scrollHeight;
+      }
     });
     return () => {
       socket.disconnect();
@@ -48,21 +54,17 @@ function Chat() {
             Authorization: `Bearer ${localStorage.getItem("access_token")}`,
           },
           params: {
-            limit: 15,
+            limit: 10,
             page: 1,
           },
         })
         .then((res) => {
-          const conversations = res.data?.result?.conversations;
-          setConversation(conversations);
-          if (chatContainerRef.current) {
-            chatContainerRef.current.scrollTop =
-              chatContainerRef.current.scrollHeight;
-          }
+          const conversations = res.data?.result.total_pages;
+          setTotalPages(conversations);
         })
         .catch((error) => console.log(error));
     }
-  }, [receiver]);
+  }, [receiver, totalPages]);
 
   const getProfile = (username) => {
     const controller = new AbortController();
@@ -77,57 +79,70 @@ function Chat() {
   };
 
   const {
-    data: PopularData,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
+    data: chatData,
+    fetchPreviousPage: fetchPreviousPage,
+    hasPreviousPage,
+    isFetchingPreviousPage,
   } = useInfiniteQuery({
-    queryKey: ["conversations", receiver],
-    queryFn: async ({ pageParam = 1 }) => {
+    queryKey: [receiver, totalPages],
+    queryFn: async ({ pageParam = Number(totalPages) }) => {
       const response = await axios.get(`/conversations/receivers/${receiver}`, {
         baseURL: import.meta.env.VITE_API_URL,
         headers: {
           Authorization: `Bearer ${localStorage.getItem("access_token")}`,
         },
         params: {
-          limit: 15,
+          limit: 10,
           page: pageParam,
         },
       });
+
       return response.data;
     },
-    getNextPageParam: (lastPage) => {
-      if (lastPage.result.page < lastPage.result.total_pages) {
-        return lastPage.result.page + 1;
+    getPreviousPageParam: (firstPage) => {
+      if (click && firstPage.result.page > 1) {
+        return Number(firstPage.result.page) - 1;
       }
       return undefined;
     },
-    initialPageParam: 1,
+    initialPageParam: totalPages,
+    staleTime: 5 * 60 * 1000,
+    getNextPageParam: () => {
+      return undefined;
+    },
+    select: (data) => ({
+      pages: [...data.pages].reverse(),
+      pageParams: [...data.pageParams].reverse(),
+    }),
   });
-
   const handleObserver = useCallback(
     (entries) => {
       const target = entries[0];
-      if (target.isIntersecting && hasNextPage && !isFetchingNextPage) {
-        fetchNextPage();
+      if (target.isIntersecting && hasPreviousPage && !isFetchingPreviousPage) {
+        const currentScrollHeight = chatContainerRef.current?.scrollHeight || 0;
+
+        fetchPreviousPage().then(() => {
+          requestAnimationFrame(() => {
+            if (chatContainerRef.current) {
+              const newScrollHeight = chatContainerRef.current.scrollHeight;
+              chatContainerRef.current.scrollTop =
+                newScrollHeight - currentScrollHeight;
+            }
+          });
+        });
       }
     },
-    [fetchNextPage, hasNextPage, isFetchingNextPage]
+    [fetchPreviousPage, hasPreviousPage, isFetchingPreviousPage]
   );
 
   useEffect(() => {
-    const element = loadMoreRef.current;
-    const container = chatContainerRef.current;
-
-    if (element && container) {
+    const element = loadPreviousRef.current;
+    if (element) {
       observerRef.current = new IntersectionObserver(handleObserver, {
-        root: container,
-        threshold: 0.1,
-        rootMargin: "100px", // Thêm margin này để trigger sớm hơn
+        threshold: 0.8,
       });
       observerRef.current.observe(element);
     }
-
     return () => {
       if (observerRef.current) {
         observerRef.current.disconnect();
@@ -135,28 +150,27 @@ function Chat() {
     };
   }, [handleObserver]);
 
-  useEffect(() => {
-    if (chatContainerRef.current && previousScrollHeight) {
-      const newScrollHeight = chatContainerRef.current.scrollHeight;
-      const scrollDiff = newScrollHeight - previousScrollHeight;
-      chatContainerRef.current.scrollTop = scrollDiff;
-    }
-  }, [conversation, previousScrollHeight]);
-
   const allMessages = useMemo(
-    () =>
-      PopularData?.pages?.flatMap((page) => page.result.conversations) ?? [],
-    [PopularData]
+    () => chatData?.pages?.flatMap((page) => page.result.conversations) ?? [],
+    [chatData]
   );
 
   useEffect(() => {
     setConversation(allMessages);
-  }, [allMessages]);
+
+    if (
+      !initialScrollSet &&
+      chatContainerRef.current &&
+      allMessages.length > 0
+    ) {
+      chatContainerRef.current.scrollTop =
+        chatContainerRef.current.scrollHeight;
+      setInitialScrollSet(true);
+    }
+  }, [allMessages, initialScrollSet]);
 
   const send = (e) => {
     e.preventDefault();
-    if (!value.trim()) return;
-
     setValue("");
     const conversation = {
       content: value,
@@ -173,13 +187,17 @@ function Chat() {
         _id: new Date().getTime(),
       },
     ]);
-
     if (chatContainerRef.current) {
       chatContainerRef.current.scrollTop =
         chatContainerRef.current.scrollHeight;
     }
   };
-  console.log(allMessages);
+  const handleWheel = useCallback((e) => {
+    if (e.deltaY < 0) {
+      setClick(true);
+    }
+  }, []);
+  console.log(allMessages, isFetchingPreviousPage);
 
   return (
     <div className="container">
@@ -199,6 +217,23 @@ function Chat() {
       </div>
 
       <div
+        ref={loadPreviousRef}
+        className="w-full py-4 text-center flex justify-center items-center"
+      >
+        {isFetchingPreviousPage ? (
+          <div className="flex justify-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+          </div>
+        ) : hasPreviousPage ? (
+          <div className="text-gray-500">
+            Scroll up for previous messages...
+          </div>
+        ) : (
+          <div className="text-gray-500">No more messages to load</div>
+        )}
+      </div>
+
+      <div
         ref={chatContainerRef}
         className="container container_conversation"
         style={{
@@ -207,19 +242,8 @@ function Chat() {
           display: "flex",
           flexDirection: "column",
         }}
+        onWheel={handleWheel}
       >
-        <div ref={loadMoreRef} className="py-4 text-center">
-          {isFetchingNextPage ? (
-            <div className="flex justify-center">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
-            </div>
-          ) : hasNextPage ? (
-            <div className="text-gray-500">Load more messages...</div>
-          ) : (
-            <div className="text-gray-500">No more messages</div>
-          )}
-        </div>
-
         {conversation.map((conversation) => (
           <div key={conversation._id}>
             <div
