@@ -26,6 +26,7 @@ function Chat() {
 
   useEffect(() => {
     socket.auth = {
+      Authorization: `Bearer ${localStorage.getItem("access_token")}`,
       _id: profile._id,
     };
     socket.connect();
@@ -37,6 +38,7 @@ function Chat() {
           chatContainerRef.current.scrollHeight;
       }
     });
+
     return () => {
       socket.disconnect();
     };

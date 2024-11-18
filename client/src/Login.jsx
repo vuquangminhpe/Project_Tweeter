@@ -12,7 +12,6 @@ export default function Login() {
     const verify = params.get("verify");
     localStorage.setItem("access_token", access_token);
     localStorage.setItem("refresh_token", refresh_token);
-    console.log(access_token, refresh_token, newUser);
     navigate("/");
   }, [params, navigate]);
   return <div>Login</div>;

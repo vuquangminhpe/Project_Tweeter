@@ -136,8 +136,6 @@ class MediaService {
   }
   async uploadVideo(req: Request) {
     const files = await handleUploadVideo(req)
-    console.log(files)
-
     const result = await Promise.all(
       files.map(async (file) => {
         const s3Result = await uploadFileS3({

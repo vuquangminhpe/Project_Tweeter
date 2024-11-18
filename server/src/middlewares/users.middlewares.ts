@@ -17,6 +17,7 @@ import { REGEX_USERNAME } from '~/constants/regex'
 import { ParsedQs } from 'qs'
 import { ParamsDictionary } from 'express-serve-static-core'
 import { Response as ExpressResponse } from 'express-serve-static-core'
+import { verifyAccessToken } from '~/utils/common'
 
 type ExpressMiddleware = RequestHandler<ParamsDictionary, any, any, ParsedQs, Record<string, any>>
 const passwordSchema: ParamSchema = {
@@ -210,25 +211,7 @@ export const AccessTokenValidator = validate(
         custom: {
           options: async (value: string, { req }) => {
             const access_token = value.split(' ')[1]
-            if (!access_token) {
-              throw new ErrorWithStatus({
-                message: USERS_MESSAGES.ACCESS_TOKEN_IS_VALID,
-                status: HTTP_STATUS.UNAUTHORIZED
-              })
-            }
-            try {
-              const decode_authorization = await verifyToken({
-                token: access_token,
-                secretOnPublicKey: process.env.JWT_SECRET_ACCESS_TOKEN as string
-              })
-              ;(req as Request).decode_authorization = decode_authorization
-            } catch (error) {
-              throw new ErrorWithStatus({
-                message: _.capitalize((error as JsonWebTokenError).message),
-                status: HTTP_STATUS.UNAUTHORIZED
-              })
-            }
-            return true
+            return await verifyAccessToken(access_token, req as Request)
           }
         }
       }
@@ -506,7 +489,6 @@ export const followValidator = validate(
           const followed_user = await databaseService.users.findOne({
             _id: new ObjectId(value as string)
           })
-          console.log()
 
           if (followed_user === null) {
             throw new ErrorWithStatus({
@@ -565,7 +547,6 @@ export const getConversationsValidator = validate(
             const user = await databaseService.users.findOne({
               _id: new ObjectId(value as string)
             })
-            console.log(user)
 
             if (user) {
               throw new ErrorWithStatus({

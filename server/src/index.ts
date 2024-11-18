@@ -15,10 +15,9 @@ import { searchRouter } from './routes/search.routes'
 import '~/utils/fake'
 import '~/utils/s3'
 import { createServer } from 'http'
-import { Server, Socket } from 'socket.io'
-import Conversations from './models/schemas/conversations.schema'
+
 import conversationsRouter from './routes/conversations.routes'
-import { ObjectId } from 'mongodb'
+import initSocket from './utils/socket'
 
 config()
 databaseService
@@ -49,50 +48,9 @@ app.use('/likes', likesTweetRouter)
 app.use('/search', searchRouter)
 app.use('/conversations', conversationsRouter)
 app.use('/static/video-stream', express.static(UPLOAD_VIDEO_DIR))
-const io = new Server(httpServer, {
-  cors: {
-    origin: 'http://localhost:3002'
-  }
-})
-const users: {
-  [key: string]: {
-    socket_id: string
-  }
-} = {}
-io.on('connection', (socket: Socket) => {
-  console.log(`user ${socket.id} connected`)
-  console.log(socket.handshake.auth)
-  const user_id = socket.handshake.auth._id
-  users[user_id] = {
-    socket_id: socket.id
-  }
 
-  socket.on('send_conversation', async (data) => {
-    const { sender_id, receive_id, content } = data.payload
-
-    const receiver_socket_id = users[receive_id]?.socket_id
-    if (!receiver_socket_id) {
-      return
-    }
-    const conversations = new Conversations({
-      sender_id: new ObjectId(sender_id as string),
-      receive_id: new ObjectId(receive_id as string),
-      content: content
-    })
-    const result = await databaseService.conversations.insertOne(conversations)
-    conversations._id = result.insertedId
-
-    socket.to(receiver_socket_id).emit('receive_conversation', {
-      payload: conversations
-    })
-  })
-  socket.on('disconnect', () => {
-    delete users[user_id]
-    console.log(`user ${socket.id} disconnected`)
-  })
-})
 app.use(defaultErrorHandler)
-
+initSocket(httpServer)
 httpServer.listen(port, () => {
   console.log(`Server listening on port ${port}`)
 })

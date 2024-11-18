@@ -97,7 +97,6 @@ class UserService {
     await databaseService.refreshToken.insertOne(
       new RefreshToken({ user_id: new ObjectId(user_id), token: refresh_token })
     )
-    console.log('test send email')
 
     //Flow verify email
     //1. Server send email to user
@@ -296,8 +295,6 @@ class UserService {
       }
     )
     verifyForgotPassword(user?.email as string, forgot_password_token)
-    console.log(user)
-
     return {
       message: USERS_MESSAGES.CHECK_EMAIL_TO_RESET_PASSWORD
     }

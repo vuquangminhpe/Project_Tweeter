@@ -5,7 +5,6 @@ import { Link } from "react-router-dom";
 function VerifyForgotToken() {
   const [message, setMessage] = useState("");
   const { token } = useQueryParams();
-  console.log(token);
 
   useEffect(() => {
     const controller = new AbortController();
