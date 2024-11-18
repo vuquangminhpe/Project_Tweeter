@@ -228,7 +228,7 @@ function Chat() {
           </div>
         ) : hasPreviousPage ? (
           <div className="text-gray-500">
-            Scroll up for previous messages...
+            Scroll up for previous messages....
           </div>
         ) : (
           <div className="text-gray-500">No more messages to load</div>
