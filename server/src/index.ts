@@ -7,7 +7,7 @@ import { config } from 'dotenv'
 import staticRouter from './routes/static.routes'
 import { initFolderImage, initFolderVideo, initFolderVideoHls } from './utils/file'
 import { UPLOAD_VIDEO_DIR } from './constants/dir'
-import cors from 'cors'
+import cors, { CorsOptions } from 'cors'
 import { tweetsRouter } from './routes/tweets.routes'
 import bookmarksRouter from './routes/bookmarks.routes'
 import { likesTweetRouter } from './routes/likes.routes'
@@ -15,11 +15,11 @@ import { searchRouter } from './routes/search.routes'
 import '~/utils/fake'
 import '~/utils/s3'
 import { createServer } from 'http'
-
+import helmet from 'helmet'
 import conversationsRouter from './routes/conversations.routes'
 import initSocket from './utils/socket'
-import { envConfig } from './constants/config'
-
+import { envConfig, isProduction } from './constants/config'
+import rateLimit from 'express-rate-limit'
 config()
 databaseService
   .connect()
@@ -30,15 +30,27 @@ databaseService
     databaseService.indexTweets()
   })
   .catch()
-
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15p
+  max: 100, // 1 IP => 100 requests 15 phút
+  standardHeaders: true,
+  legacyHeaders: false
+})
+// => trả về lỗi 429 mặc định => giới hạn requests
 const app = express()
 const httpServer = createServer(app)
 const port = envConfig.port || 3000
-app.use(cors())
+app.use(helmet())
+const corsOptions: CorsOptions = {
+  origin: isProduction ? envConfig.client_url : '*'
+}
+app.use(limiter)
+app.use(cors(corsOptions))
 // Tạo 1 folder upload
 initFolderImage()
 initFolderVideo()
 initFolderVideoHls()
+
 app.use(express.json())
 app.use('/users', usersRouter)
 app.use('/medias', mediasRouter)
