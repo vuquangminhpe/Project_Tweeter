@@ -12,8 +12,9 @@ const validationSchema = Yup.object().shape({
 const HomeSection = () => {
   const [activeTab, setActiveTab] = useState('forYou')
   const [uploadingImage, setUploadingImage] = useState(false)
+  const [selectImage, setSelectImage] = useState('')
+
   const handleSubmit = (value) => {
-    const [selectImage, setSelectImage] = useState('')
     console.log('value', value)
   }
   const formik = useFormik({
@@ -26,8 +27,8 @@ const HomeSection = () => {
   })
   const handleSelectImage = (event) => {
     setUploadingImage(true)
-    const imgUrl = event.target.file[0]
-    formik.setFieldValue('image'.imgUrl)
+    const imgUrl = event.target.files[0]
+    formik.setFieldValue('image', imgUrl)
     setSelectImage(imgUrl)
     setUploadingImage(false)
   }
@@ -64,7 +65,7 @@ const HomeSection = () => {
               />
             </div>
             <div className='w-full'>
-              <form>
+              <form onSubmit={formik.handleSubmit}>
                 <div>
                   <input
                     type='text'
@@ -85,6 +86,14 @@ const HomeSection = () => {
                     </label>
                     <IoLocationSharp className='text-[#1d9bf0]' />
                     <CiFaceSmile className='text-[#1d9bf0]' />
+                  </div>
+                  <div>
+                    <button
+                      className='w-full rounded-[25px] py-2 bg-[#1e88e5] text-white hover:bg-[#1565c0] text-base'
+                      type='submit'
+                    >
+                      Post
+                    </button>
                   </div>
                 </div>
               </form>
