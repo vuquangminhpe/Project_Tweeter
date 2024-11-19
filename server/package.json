@@ -2,7 +2,7 @@
   "name": "tweeter_minh",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "index.ts",
   "dependencies": {
     "@aws-sdk/client-s3": "^3.688.0",
     "@aws-sdk/client-ses": "^3.687.0",
@@ -266,7 +266,7 @@
     "tsx": "^4.19.1"
   },
   "scripts": {
-    "dev": "npx nodemon --development",
+   "dev": "npx nodemon --development",
     "dev:prod": "npx nodemon --env=production",
     "build": "rimraf ./dist && tsc && tsc-alias",
     "start:dev": "node dist/index.js --env=development",
