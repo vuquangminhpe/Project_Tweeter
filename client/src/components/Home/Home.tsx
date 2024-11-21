@@ -4,8 +4,8 @@ import { useEffect } from 'react'
 // Base styles for media player and provider (~400B).
 import '@vidstack/react/player/styles/default/theme.css'
 import '@vidstack/react/player/styles/default/layouts/video.css'
-import Navigation from './components/Navigation/Navigation'
-import HomeSection from './pages/User/HomeSection'
+import HomeSection from '@/pages/User/HomeSection'
+import Navigation from '../Navigation/Navigation'
 
 const getGoogleAuthUrl = () => {
   const url = 'https://accounts.google.com/o/oauth2/auth'

@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback, useMemo, useRef, FormEvent, WheelEvent } from 'react'
 import axios from 'axios'
 import { useInfiniteQuery } from '@tanstack/react-query'
-import socket from '@/socket'
+import socket from '@/utils/socket'
 import { Conversation, ConversationResponse } from '@/types/Conversation.type'
 import { Profile } from '@/types/User.type'
 
