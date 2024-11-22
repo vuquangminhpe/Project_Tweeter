@@ -1,30 +1,19 @@
 import './App.css'
 import { ToastContainer } from 'react-toastify'
-import { useEffect } from 'react'
-import axios from 'axios'
+import { useContext, useEffect } from 'react'
 import useRouteElement from './useRouteElement'
 import { HelmetProvider } from 'react-helmet-async'
 import { ThemeProvider } from './components/ThemeProvider/theme-provider'
+import { AppContext } from './Contexts/app.context'
+import { localStorageEventTarget } from './utils/auth'
 function App() {
-  useEffect(() => {
-    const controller = new AbortController()
-    axios
-      .get('/users/me', {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('access_token')}`
-        },
-        baseURL: 'http://localhost:5000',
-        signal: controller.signal
-      })
-      .then((res) => {
-        localStorage.setItem('profile', JSON.stringify(res.data.result))
-      })
-      .catch((err) => console.log(err))
-    return () => {
-      controller.abort()
-    }
-  }, [])
+  const { reset } = useContext(AppContext)
 
+  useEffect(() => {
+    localStorageEventTarget.addEventListener('clearLocalStorage', () => reset())
+
+    return () => localStorageEventTarget.removeEventListener('clearLocalStorage', () => reset())
+  }, [reset])
   const useRouterElement = useRouteElement()
   return (
     <HelmetProvider>

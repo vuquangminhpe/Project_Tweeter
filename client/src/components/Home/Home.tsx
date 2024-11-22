@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 
 import { useEffect } from 'react'
@@ -6,6 +7,7 @@ import '@vidstack/react/player/styles/default/theme.css'
 import '@vidstack/react/player/styles/default/layouts/video.css'
 import HomeSection from '@/pages/User/HomeSection'
 import Navigation from '../Navigation/Navigation'
+import axios from 'axios'
 
 const getGoogleAuthUrl = () => {
   const url = 'https://accounts.google.com/o/oauth2/auth'
@@ -31,8 +33,26 @@ function Home() {
     localStorage.setItem('refresh_token', '')
   }
   useEffect(() => {
-    localStorage.getItem('access_token')
-  }, [isAuthenticated])
+    const controller = new AbortController()
+    axios
+      .get('/users/me', {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('access_token')}`
+        },
+        baseURL: 'http://localhost:5000',
+        signal: controller.signal
+      })
+      .then((res) => {
+        localStorage.setItem('profile', JSON.stringify(res.data.result))
+      })
+      .catch((err) => {
+        console.log('error', err)
+      })
+    return () => {
+      controller.abort()
+    }
+  }, [localStorage.getItem('access_token')])
+
   return (
     <div>
       <div className='flex flex-wrap w-screen px-5 lg:px-0 justify-between'>

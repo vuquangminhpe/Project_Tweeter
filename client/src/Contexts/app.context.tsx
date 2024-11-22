@@ -26,6 +26,7 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
     setProfile(null)
   }
   const [profile, setProfile] = useState<User | null>(initialAppContext.profile)
+
   return (
     <AppContext.Provider
       value={{

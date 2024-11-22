@@ -403,6 +403,15 @@ class UserService {
       message: USERS_MESSAGES.UN_FOLLOWER_SUCCESS
     }
   }
+  async getFollowing(user_id: string) {
+    const result = await databaseService.followers.find({ user_id: new ObjectId(user_id) }).toArray()
+
+    return result
+  }
+  async getFollowers(user_id: string) {
+    const result = await databaseService.followers.find({ followed_user_id: new ObjectId(user_id) }).toArray()
+    return result
+  }
   async changePassword(user_id: string, new_password: string) {
     const changePassword = await databaseService.users.findOneAndUpdate(
       { _id: new ObjectId(user_id) },

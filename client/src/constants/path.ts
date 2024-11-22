@@ -4,6 +4,7 @@ const path = {
   profile: 'profile',
   changePassword: 'changePassword',
   register: '/register',
-  chat: 'chat'
+  chat: 'chat',
+  verifyEmail: 'verify-email'
 } as const
 export default path

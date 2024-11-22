@@ -34,6 +34,7 @@ class Http {
         if (url === path.register || url === path.login) {
           const data = response.data
           this.accessToken = data.data?.access_token
+
           saveAccessTokenToLS(this.accessToken)
           setProfileFromLS(data.data.user)
         } else if (url === '/logout') {

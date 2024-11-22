@@ -9,8 +9,8 @@ export interface User {
   email: string
   date_of_birth?: Date
   password: string
-  created_at?: Date
-  updated_at?: Date
+  created_at?: string
+  updated_at?: string
   email_verify_token?: string //
   forgot_password_token?: string
   verify?: UserVerifyStatus

@@ -60,7 +60,7 @@ export default function Register() {
   console.log(date)
 
   return (
-    <div className='min-h-screen flex-col bg-gradient-to-br from-black to-black-400 flex items-center justify-center p-4'>
+    <div className='min-h-screen w-full flex-col bg-gradient-to-br from-black to-black-400 flex items-center justify-center p-4'>
       <div className='glass'>
         <h1 className='text-2xl text-white font-light mb-6 text-center pt-4'>REGISTER</h1>
 
@@ -137,10 +137,10 @@ export default function Register() {
 
       <button
         onClick={handleRegister}
-        className='w-[55%] mt-6 px-4 py-2  
+        className='w-[25%] mt-6 px-4 py-2  
         bg-gradient-to-r from-black to-purple-50 
-        text-white font-medium hover:opacity-90 
-        transition-opacity '
+        text-white font-medium hover:opacity-50 
+        transition-opacity'
       >
         REGISTER
       </button>

@@ -12,7 +12,7 @@ export const clearLocalStorage = () => {
   localStorageEventTarget.dispatchEvent(clearLSEvent)
 }
 
-export const getAccessTokenFromLS = () => localStorage.getItem('access_token') || ''
+export const getAccessTokenFromLS = () => localStorage.getItem('access_token') || null
 
 export const getProfileFormLS = () => {
   const result = localStorage.getItem('profile')

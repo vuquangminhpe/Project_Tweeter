@@ -22,6 +22,8 @@ function ProtectedRoute() {
 }
 function RejectedRoute() {
   const { isAuthenticated } = useContext(AppContext)
+  console.log(isAuthenticated)
+
   return !isAuthenticated ? <Outlet /> : <Navigate to='/' />
 }
 
@@ -72,6 +74,10 @@ export default function useRouteElement() {
             {
               path: path.chat,
               element: <Chat />
+            },
+            {
+              path: 'verify-email',
+              element: <VerifyEmail />
             }
           ]
         }
@@ -80,10 +86,6 @@ export default function useRouteElement() {
     {
       path: path.home,
       element: <Home />
-    },
-    {
-      path: '/verify-email',
-      element: <VerifyEmail />
     },
     {
       path: '/forgot_password',

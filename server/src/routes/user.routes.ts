@@ -4,6 +4,8 @@ import {
   emailVerifyController,
   followController,
   forgotPasswordController,
+  getFollowersController,
+  getFollowingController,
   getMeController,
   getProfileController,
   loginController,
@@ -83,6 +85,22 @@ usersRouter.patch('/me', AccessTokenValidator, verifiedUserValidator, updateMeVa
  * method: GET
  */
 usersRouter.get('/:username', wrapAsync(getProfileController))
+
+/**
+ * Description:get following
+ * Path: /following
+ * method: get
+ * body: {user_id: string}
+ */
+usersRouter.get('/me/following', AccessTokenValidator, verifiedUserValidator, wrapAsync(getFollowingController))
+
+/**
+ * Description:get followers
+ * Path: /followers
+ * method: get
+ * body: {user_id: string}
+ */
+usersRouter.get('/me/followers', AccessTokenValidator, verifiedUserValidator, wrapAsync(getFollowersController))
 
 /**
  * Description: follow someone
