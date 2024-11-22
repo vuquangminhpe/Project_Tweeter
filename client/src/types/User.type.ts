@@ -27,3 +27,11 @@ export interface Profile {
   _id: string
   username: string
 }
+
+export interface RegisterType {
+  email: string
+  password: string
+  confirm_password: string
+  name?: string
+  date_of_birth: string
+}

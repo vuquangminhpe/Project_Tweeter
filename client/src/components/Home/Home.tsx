@@ -22,7 +22,6 @@ const getGoogleAuthUrl = () => {
   const queryString = new URLSearchParams(query).toString()
   return `${url}?${queryString}`
 }
-console.log('asdfasdfsdafasdfasd')
 
 const googleOAuthUrl = getGoogleAuthUrl()
 function Home() {

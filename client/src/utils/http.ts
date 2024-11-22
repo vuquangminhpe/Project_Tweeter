@@ -7,7 +7,7 @@ class Http {
   instance: AxiosInstance
   private accessToken: string
   constructor() {
-    this.accessToken = getAccessTokenFromLS()
+    this.accessToken = `Bearer ${getAccessTokenFromLS()}`
     this.instance = axios.create({
       baseURL: configBase.baseURL,
       timeout: 10000,

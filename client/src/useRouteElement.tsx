@@ -9,12 +9,12 @@ import MainLayout from './layout/MainLayout'
 import UserLayout from './layout/UserLayout'
 import Profile from './pages/User/Profile'
 import ChangePassword from './pages/User/ChangePassword'
-import Home from './Home'
 import VerifyEmail from './pages/User/VerifyEmail'
 import ForgotPassword from './pages/User/ForgotPassword'
 import VerifyForgotToken from './pages/User/VerifyForgotToken'
 import ResetPassword from './pages/User/ResetPassword'
 import Chat from './pages/User/ChatUser'
+import Home from './components/Home'
 
 function ProtectedRoute() {
   const { isAuthenticated } = useContext(AppContext)
