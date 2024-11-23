@@ -3,11 +3,21 @@ import { useQuery } from '@tanstack/react-query'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel'
 export default function Profile() {
-  const { data, isLoading } = useQuery({
+  const { data: dataProfiles, isLoading } = useQuery({
     queryKey: ['dataProfile'],
     queryFn: () => apiUser.getProfile()
   })
-  const dataProfile = data?.data.result
+  const dataProfile = dataProfiles?.data.result
+  const { data: dataFollowings } = useQuery({
+    queryKey: ['dataFollowings'],
+    queryFn: () => apiUser.getFollowing()
+  })
+  const { data: dataFollowers } = useQuery({
+    queryKey: ['dataFollowers'],
+    queryFn: () => apiUser.getFollowers()
+  })
+  const countDataFollowing = dataFollowings?.data.result.length
+  const countDataFollower = dataFollowers?.data.result.length
   console.log(dataProfile)
   // if (dataProfile?.verify === 0) {
   //   return (
@@ -109,8 +119,8 @@ export default function Profile() {
             <div className='ml-4 '>Joined {getJoined(dataProfile?.created_at as string)}</div>
           </div>
           <div className='flex mt-5 gap-5 text-xl'>
-            <div>{0} Following</div>
-            <div>{0} Followers</div>
+            <div>{countDataFollowing} Following</div>
+            <div>{countDataFollower} Followers</div>
           </div>
           <div className='mt-5 w-full'>
             <Tabs defaultValue='Posts' className='w-full'>
