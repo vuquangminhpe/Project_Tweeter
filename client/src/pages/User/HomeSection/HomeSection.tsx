@@ -8,6 +8,7 @@ import { CiFaceSmile } from 'react-icons/ci'
 import { useQuery } from '@tanstack/react-query'
 import apiUser from '@/apis/user.api'
 import { getAccessTokenFromLS } from '@/utils/auth'
+import TwitterCard from '../TwitterCard'
 
 interface TweetFormValues {
   content: string
@@ -112,6 +113,11 @@ const HomeSection: React.FC = () => {
               </form>
             </div>
           </div>
+        </section>
+        <section>
+          {[1, 1, 1, 1, 1].map((item) => (
+            <TwitterCard />
+          ))}
         </section>
       </div>
     </div>

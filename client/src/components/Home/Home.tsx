@@ -8,6 +8,7 @@ import '@vidstack/react/player/styles/default/layouts/video.css'
 import HomeSection from '@/pages/User/HomeSection'
 import Navigation from '../Navigation/Navigation'
 import axios from 'axios'
+import RightPart from '../RightPart/RightPart'
 
 const getGoogleAuthUrl = () => {
   const url = 'https://accounts.google.com/o/oauth2/auth'
@@ -57,18 +58,18 @@ function Home() {
     <div>
       <div className='flex flex-wrap w-screen px-5 lg:px-0 justify-between'>
         {/* Left Part */}
-        <div className='hidden lg:block lg:w-2/12 w-full relative'>
+        <div className='hidden lg:block lg:w-3/12 w-full relative'>
           <Navigation />
         </div>
 
         {/* Middle Part */}
-        <div className='lg:w-6/12 w-full relative'>
+        <div className='lg:w-5/12 w-full relative'>
           <HomeSection />
         </div>
 
         {/* Right Part */}
-        <div className='hidden lg:block lg:w-3/12 w-full relative'>
-          <p className='text-center'>right part</p>
+        <div className='hidden lg:block lg:w-4/12 w-full relative'>
+          <RightPart />
         </div>
       </div>
     </div>
