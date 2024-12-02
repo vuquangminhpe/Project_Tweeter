@@ -1,6 +1,4 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable no-unused-vars */
 import apiUser from '@/apis/user.api'
 import { AppContext } from '@/Contexts/app.context'
 import { RegisterType } from '@/types/User.type'
@@ -8,22 +6,16 @@ import { useMutation } from '@tanstack/react-query'
 import { useContext, useEffect, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { toast } from 'react-toastify'
+
 type LoginType = Pick<RegisterType, 'email' | 'password'>[]
+
 export default function Login() {
   const [params] = useSearchParams()
   const { isAuthenticated } = useContext(AppContext)
   console.log(isAuthenticated)
   const [data, setData] = useState<LoginType>([{ email: '', password: '' }])
   const navigate = useNavigate()
-  // useEffect(() => {
-  //   const access_token = params.get('access_token')
-  //   const refresh_token = params.get('refresh_token')
-  //   const newUser = params.get('new_user')
-  //   const verify = params.get('verify')
-  //   localStorage.setItem('access_token', access_token as string)
-  //   localStorage.setItem('refresh_token', refresh_token as string)
-  //   navigate('/login')
-  // }, [params, navigate])
+
   console.log(import.meta.env.VITE_GOOGLE_CLIENT_ID)
 
   const getGoogleAuthUrl = () => {
@@ -43,14 +35,49 @@ export default function Login() {
     const queryString = new URLSearchParams(query).toString()
     return `${url}?${queryString}`
   }
+
+  const exchangeCodeForToken = async (code: string) => {
+    try {
+      const response = await fetch('https://oauth2.googleapis.com/token', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body: new URLSearchParams({
+          code,
+          client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
+          client_secret: import.meta.env.VITE_GOOGLE_CLIENT_SECRET,
+          redirect_uri: import.meta.env.VITE_GOOGLE_REDIRECT_URI,
+          grant_type: 'authorization_code'
+        })
+      })
+      return await response.json()
+    } catch (error) {
+      throw new Error(`Failed to exchange code for token: ${error}`)
+    }
+  }
+
   useEffect(() => {
     const code = params.get('code')
-    console.log(code)
-  }, [params])
+    if (code) {
+      exchangeCodeForToken(code)
+        .then((res) => {
+          const { access_token, refresh_token } = res
+          localStorage.setItem('access_token', access_token)
+          localStorage.setItem('refresh_token', refresh_token)
+          navigate('/home')
+        })
+        .catch((error) => {
+          toast.error(error)
+        })
+    }
+  }, [params, navigate])
+
   const googleOAuthUrl = getGoogleAuthUrl()
   const loginUserMutation = useMutation({
     mutationFn: (body: LoginType) => apiUser.loginUser(body)
   })
+
   const handleDataChange = (field: string) => (e: any) => {
     setData((prev) => [
       {
@@ -59,6 +86,7 @@ export default function Login() {
       }
     ])
   }
+
   const handleLogin = () => {
     loginUserMutation.mutate(Object(data[0]), {
       onSuccess: (res) => {
@@ -72,6 +100,7 @@ export default function Login() {
       }
     })
   }
+
   return (
     <div className='min-h-screen w-full flex-col bg-gradient-to-br from-black to-black-400 flex items-center justify-center p-4'>
       <div className='glass'>
@@ -97,16 +126,15 @@ export default function Login() {
           />
         </div>
       </div>
-      <button
-        onClick={handleLogin}
-        className='w-[25%] mt-6 px-4 py-2  
-        bg-gradient-to-r from-black to-purple-50 
-        text-white font-medium hover:opacity-50 
-        transition-opacity'
-      >
-        LOGIN
+      <button onClick={handleLogin} className='w-[25%] mt-6 px-4 py-2 bg-blue-500 text-white rounded-md'>
+        Login
       </button>
-      <div onClick={() => (window.location.href = googleOAuthUrl)}>Login with Google</div>{' '}
+      <button
+        onClick={() => (window.location.href = googleOAuthUrl)}
+        className='w-[25%] mt-6 px-4 py-2 bg-red-500 text-white rounded-xl'
+      >
+        Login with Google
+      </button>
     </div>
   )
 }

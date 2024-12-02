@@ -60,7 +60,7 @@ const RightPart: React.FC = () => {
       </div>
 
       {/* Expiring Section */}
-      <div className='bg-blue-800 text-white rounded-lg p-4 space-y-2 border border-white/20'>
+      <div className='bg-blue-800 text-white rounded-xl p-4 space-y-2 '>
         <p className='font-bold'>Expiring soon!</p>
         <p className='text-sm'>Get 40% off X Premium. Unlock the best of X.</p>
         <button className='bg-white text-blue-800 font-semibold px-4 py-2 rounded-full'>Subscribe</button>

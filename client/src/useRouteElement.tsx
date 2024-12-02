@@ -15,6 +15,7 @@ import VerifyForgotToken from './pages/User/VerifyForgotToken'
 import ResetPassword from './pages/User/ResetPassword'
 import Chat from './pages/User/ChatUser'
 import Home from './components/Home'
+import OAuthCallback from './components/Customs/OAuthCallback'
 
 function ProtectedRoute() {
   const { isAuthenticated } = useContext(AppContext)
@@ -48,11 +49,15 @@ export default function useRouteElement() {
               <Register />
             </RegisterLayout>
           )
+        },
+        {
+          path: path.googleLogin,
+          element: <OAuthCallback />
         }
       ]
     },
     {
-      path: '',
+      path: '/login',
       element: <ProtectedRoute />,
       children: [
         {

@@ -102,7 +102,7 @@ const TwitterCard = () => {
             <div className='cursor-pointer'>
               <p className='mb-2'>Test ABC</p>
               <img
-                className='max-w-md h-auto border border-gray-500 rounded-md overflow-hidden'
+                className='max-w-md h-auto rounded-xl'
                 src='https://anhtoc.vn/wp-content/uploads/2024/09/avatar-vo-tri-meo-2.webp'
                 alt='image-twitter'
               />
