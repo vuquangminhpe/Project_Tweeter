@@ -5,7 +5,7 @@ import apiUser from '@/apis/user.api'
 import { AppContext } from '@/Contexts/app.context'
 import { RegisterType } from '@/types/User.type'
 import { useMutation } from '@tanstack/react-query'
-import { useContext, useState } from 'react'
+import { useContext, useEffect, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { toast } from 'react-toastify'
 type LoginType = Pick<RegisterType, 'email' | 'password'>[]
@@ -24,6 +24,30 @@ export default function Login() {
   //   localStorage.setItem('refresh_token', refresh_token as string)
   //   navigate('/login')
   // }, [params, navigate])
+  console.log(import.meta.env.VITE_GOOGLE_CLIENT_ID)
+
+  const getGoogleAuthUrl = () => {
+    const url = 'https://accounts.google.com/o/oauth2/auth'
+    const query = {
+      client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
+      redirect_uri: import.meta.env.VITE_GOOGLE_REDIRECT_URI,
+      response_type: 'code',
+      scope: [
+        'https://www.googleapis.com/auth/userinfo.profile',
+        'https://www.googleapis.com/auth/userinfo.email'
+      ].join(' '),
+      prompt: 'consent',
+      access_type: 'offline'
+    }
+
+    const queryString = new URLSearchParams(query).toString()
+    return `${url}?${queryString}`
+  }
+  useEffect(() => {
+    const code = params.get('code')
+    console.log(code)
+  }, [params])
+  const googleOAuthUrl = getGoogleAuthUrl()
   const loginUserMutation = useMutation({
     mutationFn: (body: LoginType) => apiUser.loginUser(body)
   })
@@ -82,6 +106,7 @@ export default function Login() {
       >
         LOGIN
       </button>
+      <div onClick={() => (window.location.href = googleOAuthUrl)}>Login with Google</div>{' '}
     </div>
   )
 }
