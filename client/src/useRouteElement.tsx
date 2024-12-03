@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import { useContext } from 'react'
 import { AppContext } from './Contexts/app.context'
 import { Navigate, Outlet, useRoutes } from 'react-router-dom'
@@ -19,19 +20,26 @@ import OAuthCallback from './components/Customs/OAuthCallback'
 
 function ProtectedRoute() {
   const { isAuthenticated } = useContext(AppContext)
-  return isAuthenticated ? <Outlet /> : <Navigate to='/login' />
+  return isAuthenticated ? <Outlet /> : <Navigate to='/login' replace />
 }
+
 function RejectedRoute() {
   const { isAuthenticated } = useContext(AppContext)
-  console.log(isAuthenticated)
-
-  return !isAuthenticated ? <Outlet /> : <Navigate to='/' />
+  return !isAuthenticated ? <Outlet /> : <Navigate to='/home' replace />
 }
 
 export default function useRouteElement() {
   const routeElements = useRoutes([
     {
       path: '/',
+      element: <Navigate to='/home' replace />
+    },
+    {
+      path: '/home',
+      element: <Home />
+    },
+    {
+      path: '/auth',
       element: <RejectedRoute />,
       children: [
         {
@@ -57,11 +65,11 @@ export default function useRouteElement() {
       ]
     },
     {
-      path: '/login',
+      path: '/user',
       element: <ProtectedRoute />,
       children: [
         {
-          path: 'users',
+          path: '',
           element: (
             <MainLayout>
               <UserLayout />
@@ -89,11 +97,7 @@ export default function useRouteElement() {
       ]
     },
     {
-      path: path.home,
-      element: <Home />
-    },
-    {
-      path: '/forgot_password',
+      path: '/forgot-password',
       element: <ForgotPassword />
     },
     {
