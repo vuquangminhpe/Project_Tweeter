@@ -53,14 +53,14 @@ const HomeSection: React.FC = () => {
   ]
 
   return (
-    <div>
+    <div className='container mx-auto px-4 sm:px-6 lg:px-8'>
       <div className='flex justify-center'>
-        <section className='flex space-x-0'>
+        <section className='flex space-x-0 w-full max-w-md'>
           {tabs.map((tab) => (
             <div
               key={tab.id}
-              className={`cursor-pointer px-10 py-5 text-xl font-bold rounded-md transition-all duration-300 gap-0 
-              ${activeTab === tab.id ? 'text-white bg-gray-700 relative' : 'text-gray-500 hover:bg-gray-700'}`}
+              className={`flex-1 text-center cursor-pointer px-4 sm:px-6 py-3 sm:py-5 text-base sm:text-xl font-bold rounded-md transition-all duration-300 
+              ${activeTab === tab.id ? 'text-white bg-gray-700 relative' : 'text-gray-500 hover:bg-gray-700/10'}`}
               onClick={() => setActiveTab(tab.id)}
             >
               {tab.label}
@@ -69,41 +69,46 @@ const HomeSection: React.FC = () => {
           ))}
         </section>
       </div>
-      <div className='space-y-5'>
-        <section className={`pb-10`}>
-          <div className='flex space-x-5'>
-            <div className='w-12 h-12 rounded-full overflow-hidden'>
+
+      <div className='space-y-5 mt-4 sm:mt-6'>
+        <section className='pb-6 sm:pb-10'>
+          <div className='flex space-x-3 sm:space-x-5'>
+            <div className='w-10 h-10 sm:w-12 sm:h-12 rounded-full overflow-hidden flex-shrink-0'>
               <img
                 src='https://anhtoc.vn/wp-content/uploads/2024/09/avatar-vo-tri-meo-2.webp'
                 alt='Avatar'
                 className='w-full h-full object-cover'
               />
             </div>
+
             <div className='w-full'>
               <form onSubmit={formik.handleSubmit}>
                 <div>
                   <input
                     type='text'
-                    placeholder='What is happening'
-                    className={`border-none outline-none text-xl bg-transparent`}
+                    placeholder='What is happening?'
+                    className='w-full border-none outline-none text-base sm:text-xl bg-transparent'
                     {...formik.getFieldProps('content')}
                   />
                   {formik.errors.content && formik.touched.content && (
-                    <span className='text-red-500'>{formik.errors.content}</span>
+                    <span className='text-red-500 text-sm'>{formik.errors.content}</span>
                   )}
                 </div>
-                <div className='flex justify-between items-center mt-5'>
-                  <div className='flex space-x-5 items-center'>
+
+                <div className='flex justify-between items-center mt-3 sm:mt-5'>
+                  <div className='flex space-x-3 sm:space-x-5 items-center'>
                     <label className='flex items-center space-x-2 rounded-md cursor-pointer'>
-                      <CiImageOn className='text-[#1d9bf0]' />
+                      <CiImageOn className='text-[#1d9bf0] text-xl sm:text-2xl' />
                       <input type='file' className='hidden' onChange={handleSelectImage} />
                     </label>
-                    <IoLocationSharp className='text-[#1d9bf0]' />
-                    <CiFaceSmile className='text-[#1d9bf0]' />
+                    <IoLocationSharp className='text-[#1d9bf0] text-xl sm:text-2xl' />
+                    <CiFaceSmile className='text-[#1d9bf0] text-xl sm:text-2xl' />
                   </div>
                   <div>
                     <button
-                      className='w-full rounded-[25px] py-2 bg-[#1e88e5] text-white hover:bg-[#1565c0] text-base'
+                      className='rounded-full px-4 sm:px-6 py-1.5 sm:py-2 
+                        bg-[#1e88e5] text-white hover:bg-[#1565c0] 
+                        text-sm sm:text-base'
                       type='submit'
                     >
                       Post
@@ -114,9 +119,10 @@ const HomeSection: React.FC = () => {
             </div>
           </div>
         </section>
-        <section>
-          {[1, 1, 1, 1, 1].map((item) => (
-            <TwitterCard />
+
+        <section className='space-y-4 sm:space-y-6'>
+          {[1, 1, 1, 1, 1].map((_, index) => (
+            <TwitterCard key={index} />
           ))}
         </section>
       </div>
