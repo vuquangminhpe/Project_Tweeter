@@ -88,7 +88,8 @@ export const TWEET_MESSAGE = {
   GET_TWEET_SUCCESS: 'Get tweet success',
   GET_TWEET_DETAILS_SUCCESS: 'Get tweet details success',
   TWEET_IS_NOT_PUBLIC: 'Tweet is not public',
-  GET_TWEET_CHILDREN_SUCCESS: 'Get tweet children success'
+  GET_TWEET_CHILDREN_SUCCESS: 'Get tweet children success',
+  TWEET_ID_MUST_BE_A_STRING: 'Tweet id must be a string'
 } as const
 
 export const BOOKMARKS_MESSAGE = {

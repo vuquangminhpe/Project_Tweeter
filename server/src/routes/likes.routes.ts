@@ -37,9 +37,15 @@ likesTweetRouter.delete(
 /**
  * Description:Get likes tweet
  * Path: /
- * Method: DELETE
+ * Method: GET
  * Body: {tweet_id: string}
  * header: {Authorization:Bearer <access_token> }
  * type: likesType
  */
-likesTweetRouter.get('/', AccessTokenValidator, verifiedUserValidator, wrapAsync(getLikeTweetController))
+likesTweetRouter.get(
+  '/:tweet_id',
+  AccessTokenValidator,
+  verifiedUserValidator,
+  tweetIdValidator,
+  wrapAsync(getLikeTweetController)
+)

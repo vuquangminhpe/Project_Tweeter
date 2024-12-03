@@ -1,6 +1,7 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useNavigate } from 'react-router-dom'
 import { GoVerified } from 'react-icons/go'
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { FaEllipsisH } from 'react-icons/fa'
 import { BsChat } from 'react-icons/bs'
 import { BiRepost } from 'react-icons/bi'
@@ -27,8 +28,7 @@ const TwitterCard = ({ profile, data }: Props) => {
     queryKey: ['dataTweetComments', data._id, data.type],
     queryFn: () => tweetsApi.getTweetComments(data._id as string, LIMIT, PAGE, data.type)
   })
-  const dataComments = dataTweetComments?.data?.data
-  console.log(dataComments)
+  const dataComments = useMemo(() => dataTweetComments?.data?.data, [dataTweetComments])
 
   const toggleModal = () => {
     setIsModalOpen(!isModalOpen)
@@ -120,7 +120,7 @@ const TwitterCard = ({ profile, data }: Props) => {
               <div className='py-3 flex justify-between items-center text-gray-400'>
                 <div className='flex items-center space-x-2'>
                   <BsChat className='cursor-pointer hover:text-blue-500' onClick={handleOpenReplyModal} />
-                  <p>43</p>
+                  <p>{(dataComments as any)?.tweets.length}</p>
                 </div>
 
                 <div className='flex items-center space-x-2'>
