@@ -13,6 +13,8 @@ import { User } from '@/types/User.type'
 import { Tweets } from '@/types/Tweet.type'
 import { useQuery } from '@tanstack/react-query'
 import tweetsApi from '@/apis/tweets.api'
+import likesApi from '@/apis/likes.api'
+import { Likes } from '@/types/Likes.type'
 interface Props {
   profile: User | null
   data: Tweets
@@ -28,7 +30,13 @@ const TwitterCard = ({ profile, data }: Props) => {
     queryKey: ['dataTweetComments', data._id, data.type],
     queryFn: () => tweetsApi.getTweetComments(data._id as string, LIMIT, PAGE, data.type)
   })
+  const { data: dataLikes } = useQuery({
+    queryKey: ['dataLikes', data._id],
+    queryFn: () => likesApi.getLikesTweet(data._id as string)
+  })
+  const dataLike = useMemo(() => dataLikes?.data.result, [dataLikes])
   const dataComments = useMemo(() => dataTweetComments?.data?.data, [dataTweetComments])
+  console.log(dataLike)
 
   const toggleModal = () => {
     setIsModalOpen(!isModalOpen)
@@ -134,7 +142,7 @@ const TwitterCard = ({ profile, data }: Props) => {
                   ) : (
                     <MdFavoriteBorder className='cursor-pointer hover:text-red-500' onClick={handleLikeTweet} />
                   )}
-                  <p>120</p>
+                  <p>{(dataLike as unknown as Likes[])?.length}</p>
                 </div>
 
                 <div className='flex items-center space-x-2'>

@@ -26,7 +26,8 @@ export const unLikeTweetController = async (req: Request<ParamsDictionary, any, 
 
 export const getLikeTweetController = async (req: Request<ParamsDictionary, any, likeType>, res: Response) => {
   const { user_id } = req.decode_authorization as TokenPayload
-  const result = await likesTweet.getLikesTweet(user_id)
+  const { tweet_id } = req.params
+  const result = await likesTweet.getLikesTweet(user_id, String(tweet_id))
   res.json({
     result
   })

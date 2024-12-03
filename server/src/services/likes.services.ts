@@ -36,10 +36,11 @@ class LikesTweet {
       return { message: LIKES_MESSAGE.ALREADY_UN_LIKED_THIS_TWEET }
     }
   }
-  async getLikesTweet(user_id: string) {
+  async getLikesTweet(user_id: string, tweet_id: string) {
     const getLikeUserTweet = await databaseService.likes
       .find({
-        user_id: new ObjectId(user_id)
+        user_id: new ObjectId(user_id),
+        tweet_id: new ObjectId(tweet_id)
       })
       .toArray()
     return getLikeUserTweet
