@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import React, { useState, ChangeEvent } from 'react'
+import React, { useState, ChangeEvent, useContext } from 'react'
 import { useFormik } from 'formik'
 import * as Yup from 'yup'
 import { CiImageOn } from 'react-icons/ci'
@@ -9,6 +9,8 @@ import { useQuery } from '@tanstack/react-query'
 import apiUser from '@/apis/user.api'
 import { getAccessTokenFromLS } from '@/utils/auth'
 import TwitterCard from '../TwitterCard'
+import { AppContext } from '@/Contexts/app.context'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 
 interface TweetFormValues {
   content: string
@@ -19,7 +21,10 @@ const validationSchema = Yup.object().shape({
   content: Yup.string().required('Tweet text is required')
 })
 
-const HomeSection: React.FC = () => {
+const HomeSection = () => {
+  const { profile } = useContext(AppContext)
+  console.log(profile)
+
   const [activeTab, setActiveTab] = useState<string>('forYou')
   const [uploadingImage, setUploadingImage] = useState<boolean>(false)
   const [selectImage, setSelectImage] = useState<File | string>('')
@@ -74,11 +79,10 @@ const HomeSection: React.FC = () => {
         <section className='pb-6 sm:pb-10'>
           <div className='flex space-x-3 sm:space-x-5'>
             <div className='w-10 h-10 sm:w-12 sm:h-12 rounded-full overflow-hidden flex-shrink-0'>
-              <img
-                src='https://anhtoc.vn/wp-content/uploads/2024/09/avatar-vo-tri-meo-2.webp'
-                alt='Avatar'
-                className='w-full h-full object-cover'
-              />
+              <Avatar>
+                <AvatarImage src={profile?.avatar} />
+                <AvatarFallback>{profile?.name?.split('')[0]}</AvatarFallback>
+              </Avatar>
             </div>
 
             <div className='w-full'>
@@ -122,7 +126,7 @@ const HomeSection: React.FC = () => {
 
         <section className='space-y-4 sm:space-y-6'>
           {[1, 1, 1, 1, 1].map((_, index) => (
-            <TwitterCard key={index} />
+            <TwitterCard profile={profile} key={index} />
           ))}
         </section>
       </div>
