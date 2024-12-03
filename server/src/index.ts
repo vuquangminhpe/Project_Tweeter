@@ -30,13 +30,13 @@ databaseService
     databaseService.indexTweets()
   })
   .catch()
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15p
-  max: 100, // 1 IP => 100 requests 15 phút
-  standardHeaders: true,
-  legacyHeaders: false
-})
-// => trả về lỗi 429 mặc định => giới hạn requests
+// const limiter = rateLimit({
+//   windowMs: 15 * 60 * 1000, // 15p
+//   max: 100, // 1 IP => 100 requests 15 phút
+//   standardHeaders: true,
+//   legacyHeaders: false
+// })
+// // => trả về lỗi 429 mặc định => giới hạn requests
 const app = express()
 const httpServer = createServer(app)
 const port = envConfig.port || 3002
@@ -44,7 +44,7 @@ app.use(helmet())
 const corsOptions: CorsOptions = {
   origin: isProduction ? envConfig.client_url : '*'
 }
-app.use(limiter)
+// app.use(limiter)
 app.use(cors(corsOptions))
 // Tạo 1 folder upload
 initFolderImage()

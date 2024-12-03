@@ -71,14 +71,8 @@ const TwitterCard = ({ profile, data }: Props) => {
         <div className='flex space-x-5'>
           <div
             className='w-12 h-12 rounded-full overflow-hidden cursor-pointer'
-            onClick={() => navigate(`/profile/${6}`)}
-          >
-            <img
-              src='https://anhtoc.vn/wp-content/uploads/2024/09/avatar-vo-tri-meo-2.webp'
-              alt='Avatar'
-              className='w-full h-full object-cover'
-            />
-          </div>
+            onClick={() => navigate(`/user/profile/${profile?._id}`)}
+          ></div>
           <div className='w-full'>
             <div className='flex justify-between items-center'>
               <div className='flex items-center space-x-2'>

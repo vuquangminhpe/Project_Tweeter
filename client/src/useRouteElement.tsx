@@ -20,19 +20,19 @@ import OAuthCallback from './components/Customs/OAuthCallback'
 
 function ProtectedRoute() {
   const { isAuthenticated } = useContext(AppContext)
-  return isAuthenticated ? <Outlet /> : <Navigate to={path.login} replace />
+  return isAuthenticated ? <Outlet /> : <Navigate to={path.login} />
 }
 
 function RejectedRoute() {
   const { isAuthenticated } = useContext(AppContext)
-  return !isAuthenticated ? <Outlet /> : <Navigate to={path.home} replace />
+  return !isAuthenticated ? <Outlet /> : <Navigate to={path.home} />
 }
 
 export default function useRouteElement() {
   const routeElements = useRoutes([
     {
       path: path.asHome,
-      element: <Navigate to={path.home} replace />
+      element: <Navigate to={path.home} />
     },
     {
       path: path.home,
@@ -57,10 +57,6 @@ export default function useRouteElement() {
               <Register />
             </RegisterLayout>
           )
-        },
-        {
-          path: path.googleLogin,
-          element: <OAuthCallback />
         }
       ]
     },
@@ -109,8 +105,12 @@ export default function useRouteElement() {
       element: <ResetPassword />
     },
     {
+      path: path.googleLogin,
+      element: <OAuthCallback />
+    },
+    {
       path: path.any,
-      element: <Navigate to={path.home} replace />
+      element: <Navigate to={path.home} />
     }
   ])
   return routeElements

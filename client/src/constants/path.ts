@@ -4,7 +4,7 @@ const path = {
   profile: '/user/profile',
   changePassword: '/user/changePassword',
   register: '/auth/register',
-  googleLogin: '/auth/login/oauth',
+  googleLogin: '/login/oauth',
   chat: '/user/chat',
   verifyEmail: '/user/verify-email',
   forgotPassword: '/auth/forgot-password',

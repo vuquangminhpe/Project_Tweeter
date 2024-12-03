@@ -62,10 +62,12 @@ export default function Login() {
     if (code) {
       exchangeCodeForToken(code)
         .then((res) => {
+          console.log(res)
+
           const { access_token, refresh_token } = res
           localStorage.setItem('access_token', access_token)
           localStorage.setItem('refresh_token', refresh_token)
-          navigate('/home')
+          // navigate('/home')
         })
         .catch((error) => {
           toast.error(error)

@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { FaEllipsisH } from 'react-icons/fa'
 import NavigationMenu from './NavigationMenu'
 import {
@@ -10,9 +9,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
+import { Link } from 'react-router-dom'
 
 const Navigation = () => {
-  const navigate = useNavigate()
   const [showTitles, setShowTitles] = useState(true)
 
   const toggleTitlesVisibility = () => {
@@ -32,7 +31,8 @@ const Navigation = () => {
 
         <div className='space-y-2.5'>
           {NavigationMenu.map((item, index) => (
-            <div
+            <Link
+              to={item.path}
               key={index}
               className={`
                 cursor-pointer 
@@ -51,7 +51,6 @@ const Navigation = () => {
                 border-transparent
                 ${showTitles ? 'w-full' : 'w-fit justify-center'}
               `}
-              onClick={() => (item.title === 'Profile' ? navigate(`/profile/${5}`) : navigate(item.path))}
             >
               <span className='text-2xl'>{item.icon}</span>
               <p
@@ -65,7 +64,7 @@ const Navigation = () => {
               >
                 {item.title}
               </p>
-            </div>
+            </Link>
           ))}
         </div>
 
