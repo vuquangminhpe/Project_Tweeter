@@ -182,45 +182,62 @@ function Chat() {
   console.log(conversation)
 
   return (
-    <div className='container'>
-      <div>Hello user {profile.username}</div>
-      <h1>Chat</h1>
-      <div className='container_username'>
+    <div className='container mx-auto max-w-4xl px-4 py-8'>
+      {/* User Greeting with Gradient */}
+      <div className='text-center bg-gradient-to-r from-blue-500 to-purple-600 text-white p-4 rounded-t-xl shadow-md'>
+        <div className='text-xl font-medium'>Welcome</div>
+        <h1 className='text-3xl font-bold tracking-wider'>{profile.username}</h1>
+      </div>
+
+      {/* User Selection Buttons */}
+      <div className='flex justify-center space-x-4 my-6'>
         {usernames.map((username) => (
-          <div key={username.value} style={{ display: 'flex', flexDirection: 'column' }}>
-            <button onClick={() => getProfile(username.value)}>{username.value}</button>
-          </div>
+          <button
+            key={username.value}
+            onClick={() => getProfile(username.value)}
+            className='px-6 py-2 bg-blue-500 text-white rounded-full transition duration-300 
+                       hover:bg-blue-600 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-300'
+          >
+            {username.value}
+          </button>
         ))}
       </div>
 
-      <div ref={loadPreviousRef} className='w-full py-4 text-center flex justify-center items-center'>
+      {/* Loading/Previous Messages Indicator */}
+      <div ref={loadPreviousRef} className='w-full py-4 text-center'>
         {isFetchingPreviousPage ? (
           <div className='flex justify-center'>
-            <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900'></div>
+            <div className='animate-spin rounded-full h-10 w-10 border-t-4 border-b-4 border-blue-500'></div>
           </div>
         ) : hasPreviousPage ? (
-          <div className='text-gray-500'>Scroll up for previous messages....</div>
+          <div className='text-gray-500 italic'>Scroll up for previous messages...</div>
         ) : (
-          <div className='text-gray-500'>No more messages to load</div>
+          <div className='text-gray-400'>No more messages to load</div>
         )}
       </div>
 
+      {/* Chat Container with Enhanced Styling */}
       <div
         ref={chatContainerRef}
-        className='container container_conversation'
+        className='bg-white rounded-lg shadow-md border border-gray-200 overflow-y-auto'
         style={{
           height: '500px',
-          overflowY: 'auto',
           display: 'flex',
-          flexDirection: 'column'
+          flexDirection: 'column',
+          padding: '1rem'
         }}
         onWheel={handleWheel}
       >
         {conversation.map((conversation) => (
-          <div key={conversation._id}>
+          <div
+            key={conversation._id}
+            className={`flex mb-3 ${conversation.sender_id === profile._id ? 'justify-end' : 'justify-start'}`}
+          >
             <div
-              className={`conversation_item ${
-                conversation.sender_id === profile._id ? 'conversation-right' : 'conversation-left'
+              className={`max-w-[70%] px-4 py-2 rounded-2xl ${
+                conversation.sender_id === profile._id
+                  ? 'bg-blue-500 text-white rounded-br-none'
+                  : 'bg-gray-200 text-black rounded-bl-none'
               }`}
             >
               {conversation.content}
@@ -229,12 +246,26 @@ function Chat() {
         ))}
       </div>
 
-      <form onSubmit={send} className='mt-4'>
-        <input type='text' onChange={(e) => setValue(e.target.value)} value={value} className='border p-2 mr-2' />
-        <button type='submit' className='px-4 py-2 bg-blue-500 text-white rounded'>
+      {/* Message Input with Enhanced Styling */}
+      <div className='flex items-center mt-4 shadow-sm'>
+        <input
+          type='text'
+          onChange={(e) => setValue(e.target.value)}
+          value={value}
+          placeholder='Type a message...'
+          className='flex-grow p-3 border-2 border-r-0 border-gray-300 rounded-l-lg 
+                     focus:outline-none focus:border-blue-500 transition duration-300'
+        />
+        <button
+          type='submit'
+          onClick={() => send}
+          className='px-6 py-3 bg-blue-500 text-white rounded-r-lg 
+                     hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300 
+                     transition duration-300 ease-in-out'
+        >
           Send
         </button>
-      </form>
+      </div>
     </div>
   )
 }
