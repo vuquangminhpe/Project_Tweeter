@@ -39,7 +39,7 @@ const limiter = rateLimit({
 // => trả về lỗi 429 mặc định => giới hạn requests
 const app = express()
 const httpServer = createServer(app)
-const port = envConfig.port || 3000
+const port = envConfig.port || 3002
 app.use(helmet())
 const corsOptions: CorsOptions = {
   origin: isProduction ? envConfig.client_url : '*'

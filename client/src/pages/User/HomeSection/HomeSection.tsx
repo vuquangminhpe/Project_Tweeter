@@ -6,11 +6,13 @@ import { CiImageOn } from 'react-icons/ci'
 import { IoLocationSharp } from 'react-icons/io5'
 import { CiFaceSmile } from 'react-icons/ci'
 import { useQuery } from '@tanstack/react-query'
-import apiUser from '@/apis/user.api'
+import apiUser from '@/apis/users.api'
 import { getAccessTokenFromLS } from '@/utils/auth'
 import TwitterCard from '../TwitterCard'
 import { AppContext } from '@/Contexts/app.context'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import tweetsApi from '@/apis/tweets.api'
+import { Tweets } from '@/types/Tweet.type'
 
 interface TweetFormValues {
   content: string
@@ -23,8 +25,13 @@ const validationSchema = Yup.object().shape({
 
 const HomeSection = () => {
   const { profile } = useContext(AppContext)
-  console.log(profile)
+  const { data: dataTweets } = useQuery({
+    queryKey: ['dataTweets'],
+    queryFn: tweetsApi.getAllTweets
+  })
+  const allTweets = dataTweets?.data?.data
 
+  console.log(allTweets)
   const [activeTab, setActiveTab] = useState<string>('forYou')
   const [uploadingImage, setUploadingImage] = useState<boolean>(false)
   const [selectImage, setSelectImage] = useState<File | string>('')
@@ -125,9 +132,9 @@ const HomeSection = () => {
         </section>
 
         <section className='space-y-4 sm:space-y-6'>
-          {[1, 1, 1, 1, 1].map((_, index) => (
-            <TwitterCard profile={profile} key={index} />
-          ))}
+          {allTweets?.map((data) =>
+            Array(data).map((element: Tweets) => <TwitterCard data={element} profile={profile} key={data._id} />)
+          )}
         </section>
       </div>
     </div>

@@ -1,4 +1,4 @@
-import apiUser from '@/apis/user.api'
+import apiUser from '@/apis/users.api'
 import { useQuery } from '@tanstack/react-query'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel'

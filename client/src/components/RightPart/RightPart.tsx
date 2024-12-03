@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react'
-import { CiSearch } from 'react-icons/ci'
 import { GoVerified } from 'react-icons/go'
 import { FaEllipsisH } from 'react-icons/fa'
+import SearchGrowing from '../Customs/SearchGrowing'
 
 const RightPart: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState<number | null>(null)
@@ -20,7 +20,6 @@ const RightPart: React.FC = () => {
     // Mở modal cho item được chọn
     setIsModalOpen(index)
   }
-
   // Đóng modal khi click ra ngoài
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -49,15 +48,7 @@ const RightPart: React.FC = () => {
   }
   return (
     <div className='w-full max-w-xs px-4 space-y-5'>
-      {/* Search Bar */}
-      <div className='flex items-center bg-gray-800 rounded-full px-4 py-2 sticky top-0 z-10'>
-        <CiSearch className='text-gray-400 text-xl' />
-        <input
-          type='text'
-          placeholder='Search'
-          className='bg-transparent outline-none text-sm text-white w-full ml-2'
-        />
-      </div>
+      <SearchGrowing />
 
       {/* Expiring Section */}
       <div className='bg-blue-800 text-white rounded-xl p-4 space-y-2 '>

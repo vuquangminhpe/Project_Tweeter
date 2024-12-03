@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import apiUser from '@/apis/user.api'
+import apiUser from '@/apis/users.api'
 import { AppContext } from '@/Contexts/app.context'
 import { RegisterType } from '@/types/User.type'
 import { useMutation } from '@tanstack/react-query'

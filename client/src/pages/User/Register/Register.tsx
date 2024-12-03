@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react'
 import './Register.css'
 import { useMutation } from '@tanstack/react-query'
-import apiUser from '@/apis/user.api'
+import apiUser from '@/apis/users.api'
 import { RegisterType } from '@/types/User.type'
 
 export default function Register() {

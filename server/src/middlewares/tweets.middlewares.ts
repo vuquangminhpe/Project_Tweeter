@@ -97,6 +97,7 @@ export const createTweetValidator = validate(
       custom: {
         options: (value, { req }) => {
           // Yêu cầu mỗi phần tử trong array là Media Object
+
           if (
             value.some((item: any) => {
               return typeof item.url !== 'string' || !mediaTypes.includes(item.type)

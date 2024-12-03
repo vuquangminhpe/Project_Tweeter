@@ -9,14 +9,6 @@ import axios from 'axios'
 import RightPart from '../RightPart/RightPart'
 
 function Home() {
-  const isAuthenticated = Boolean(localStorage.getItem('access_token'))
-  const logout = () => {
-    localStorage.setItem('access_token', '')
-    localStorage.setItem('refresh_token', '')
-  }
-
-  const [showNavigation, setShowNavigation] = useState(false)
-
   useEffect(() => {
     const controller = new AbortController()
     axios
@@ -41,11 +33,7 @@ function Home() {
   return (
     <div>
       <div className='flex  w-screen px-5 lg:px-0 justify-between'>
-        <div
-          className={`lg:block lg:w-3/12 w-full relative transition-all duration-300 ${
-            showNavigation ? 'opacity-100 visible' : 'opacity-0 invisible'
-          }`}
-        >
+        <div className='lg:block lg:w-3/12 w-full relative transition-all duration-300'>
           <Navigation />
         </div>
 
@@ -58,12 +46,7 @@ function Home() {
         </div>
       </div>
 
-      <button
-        className='lg:hidden fixed bottom-4 right-4 bg-blue-500 text-white px-4 py-2 rounded-md shadow-md'
-        onClick={() => setShowNavigation(!showNavigation)}
-      >
-        {showNavigation ? 'Hide Navigation' : 'Show Navigation'}
-      </button>
+      <button className='lg:hidden fixed bottom-4 right-4 bg-blue-500 text-white px-4 py-2 rounded-md shadow-md'></button>
     </div>
   )
 }

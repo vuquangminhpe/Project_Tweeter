@@ -1,24 +1,19 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { FaEllipsisH } from 'react-icons/fa'
 import NavigationMenu from './NavigationMenu'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger
+} from '@/components/ui/dropdown-menu'
 
 const Navigation = () => {
   const navigate = useNavigate()
-  const [isModalOpen, setIsModalOpen] = useState(false)
   const [showTitles, setShowTitles] = useState(true)
-
-  const toggleModal = () => {
-    setIsModalOpen(!isModalOpen)
-  }
-
-  const handleLogOut = () => {
-    console.log('Log Out')
-  }
-
-  const handleSignIn = () => {
-    console.log('Sign In')
-  }
 
   const toggleTitlesVisibility = () => {
     setShowTitles(!showTitles)
@@ -120,7 +115,6 @@ const Navigation = () => {
             border-transparent
             ${showTitles ? 'w-full' : 'w-fit justify-center'}
           `}
-          onClick={toggleModal}
         >
           <div className='w-12 h-12 rounded-full overflow-hidden'>
             <img
@@ -144,25 +138,18 @@ const Navigation = () => {
           <FaEllipsisH className='ml-2 text-gray-500 text-lg' />
         </div>
 
-        {isModalOpen && (
-          <div className='bottom-12 right-0 bg-gray-800 shadow-md rounded-lg px-4 py-3 w-52 relative'>
-            <div className='absolute top-2 right-5 w-4 h-4 bg-gray-800 rotate-45'></div>
-            <ul className='space-y-2'>
-              <li
-                className='text-sm bg-gray-700 hover:bg-gray-600 px-3 py-2 rounded-full cursor-pointer transition-all duration-200 text-center'
-                onClick={handleSignIn}
-              >
-                Add an existing account
-              </li>
-              <li
-                className='text-sm bg-gray-700 hover:bg-gray-600 px-3 py-2 rounded-full cursor-pointer transition-all duration-200 text-center'
-                onClick={handleLogOut}
-              >
-                Logout
-              </li>
-            </ul>
-          </div>
-        )}
+        <DropdownMenu>
+          <DropdownMenuTrigger>
+            {' '}
+            <span className='text-base font-semibold block'>Vũ Hiếu</span>
+            <span className='opacity-70 text-sm block'>@Vuhieu123</span>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent>
+            <DropdownMenuLabel>My Account</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem>Logout</DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
 
         <button
           className='absolute bottom-24 left-6 bg-blue-500 text-white px-3 py-2 rounded-full'
