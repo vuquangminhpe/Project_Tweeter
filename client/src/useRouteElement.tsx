@@ -20,26 +20,26 @@ import OAuthCallback from './components/Customs/OAuthCallback'
 
 function ProtectedRoute() {
   const { isAuthenticated } = useContext(AppContext)
-  return isAuthenticated ? <Outlet /> : <Navigate to='/login' replace />
+  return isAuthenticated ? <Outlet /> : <Navigate to={path.login} replace />
 }
 
 function RejectedRoute() {
   const { isAuthenticated } = useContext(AppContext)
-  return !isAuthenticated ? <Outlet /> : <Navigate to='/home' replace />
+  return !isAuthenticated ? <Outlet /> : <Navigate to={path.home} replace />
 }
 
 export default function useRouteElement() {
   const routeElements = useRoutes([
     {
-      path: '/',
-      element: <Navigate to='/home' replace />
+      path: path.asHome,
+      element: <Navigate to={path.home} replace />
     },
     {
-      path: '/home',
+      path: path.home,
       element: <Home />
     },
     {
-      path: '/auth',
+      path: path.auth,
       element: <RejectedRoute />,
       children: [
         {
@@ -65,11 +65,11 @@ export default function useRouteElement() {
       ]
     },
     {
-      path: '/user',
+      path: path.user,
       element: <ProtectedRoute />,
       children: [
         {
-          path: '',
+          path: path.no,
           element: (
             <MainLayout>
               <UserLayout />
@@ -89,7 +89,7 @@ export default function useRouteElement() {
               element: <Chat />
             },
             {
-              path: 'verify-email',
+              path: path.verifyEmail,
               element: <VerifyEmail />
             }
           ]
@@ -97,16 +97,20 @@ export default function useRouteElement() {
       ]
     },
     {
-      path: '/forgot-password',
+      path: path.forgotPassword,
       element: <ForgotPassword />
     },
     {
-      path: '/verify-forgot-password',
+      path: path.verifyForgotPassword,
       element: <VerifyForgotToken />
     },
     {
-      path: '/reset-password',
+      path: path.resetPassword,
       element: <ResetPassword />
+    },
+    {
+      path: path.any,
+      element: <Navigate to={path.home} replace />
     }
   ])
   return routeElements
