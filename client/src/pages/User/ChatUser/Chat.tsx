@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useMemo, useRef, FormEvent, WheelEvent } from 'react'
+import { useEffect, useState, useCallback, useMemo, useRef, WheelEvent } from 'react'
 import axios from 'axios'
 import { useInfiniteQuery } from '@tanstack/react-query'
 import socket from '@/utils/socket'
@@ -155,8 +155,7 @@ function Chat() {
     }
   }, [allMessages, initialScrollSet])
 
-  const send = (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
+  const send = () => {
     setValue('')
     const conversation: Conversation = {
       content: value,
@@ -183,13 +182,11 @@ function Chat() {
 
   return (
     <div className='container mx-auto max-w-4xl px-4 py-8'>
-      {/* User Greeting with Gradient */}
       <div className='text-center bg-gradient-to-r from-blue-500 to-purple-600 text-white p-4 rounded-t-xl shadow-md'>
         <div className='text-xl font-medium'>Welcome</div>
         <h1 className='text-3xl font-bold tracking-wider'>{profile.username}</h1>
       </div>
 
-      {/* User Selection Buttons */}
       <div className='flex justify-center space-x-4 my-6'>
         {usernames.map((username) => (
           <button
@@ -203,7 +200,6 @@ function Chat() {
         ))}
       </div>
 
-      {/* Loading/Previous Messages Indicator */}
       <div ref={loadPreviousRef} className='w-full py-4 text-center'>
         {isFetchingPreviousPage ? (
           <div className='flex justify-center'>
@@ -216,7 +212,6 @@ function Chat() {
         )}
       </div>
 
-      {/* Chat Container with Enhanced Styling */}
       <div
         ref={chatContainerRef}
         className='bg-white rounded-lg shadow-md border border-gray-200 overflow-y-auto'
@@ -246,7 +241,6 @@ function Chat() {
         ))}
       </div>
 
-      {/* Message Input with Enhanced Styling */}
       <div className='flex items-center mt-4 shadow-sm'>
         <input
           type='text'
@@ -258,7 +252,7 @@ function Chat() {
         />
         <button
           type='submit'
-          onClick={() => send}
+          onClick={send}
           className='px-6 py-3 bg-blue-500 text-white rounded-r-lg 
                      hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300 
                      transition duration-300 ease-in-out'
