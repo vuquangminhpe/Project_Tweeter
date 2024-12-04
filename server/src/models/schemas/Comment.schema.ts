@@ -8,8 +8,8 @@ export interface CommentStatus {
 
 interface CommentType {
   _id?: ObjectId
-  user: ObjectId
-  tweet: ObjectId
+  user_id: ObjectId
+  tweet_id: ObjectId
   commentContent: string
   commentLink?: CommentStatus[]
   createdAt?: Date
@@ -18,17 +18,17 @@ interface CommentType {
 
 class Comment {
   _id?: ObjectId
-  user: ObjectId
-  tweet: ObjectId
+  user_id: ObjectId
+  tweet_id: ObjectId
   commentContent: string
   commentLink?: CommentStatus[]
   createdAt?: Date
   updatedAt?: Date
-  constructor({ _id, user, tweet, commentContent, commentLink, createdAt, updatedAt }: CommentType) {
+  constructor({ _id, user_id, tweet_id, commentContent, commentLink, createdAt, updatedAt }: CommentType) {
     const date = new Date()
     this._id = _id
-    this.user = user
-    this.tweet = tweet
+    this.user_id = user_id
+    this.tweet_id = tweet_id
     this.commentContent = commentContent
     this.commentLink = commentLink
     this.createdAt = createdAt || date

@@ -1,5 +1,9 @@
 import { Router } from 'express'
-import { createCommentController, getCommentTweetController } from '~/controllers/comments.controllers'
+import {
+  createCommentController,
+  editCommentController,
+  getCommentTweetController
+} from '~/controllers/comments.controllers'
 import { createCommentValidator, paginationValidator, tweetIdValidator } from '~/middlewares/tweets.middlewares'
 import { AccessTokenValidator, verifiedUserValidator } from '~/middlewares/users.middlewares'
 import { wrapAsync } from '~/utils/handler'
@@ -23,7 +27,7 @@ commentsRouter.get(
 )
 
 /**
- * Description: create comment
+ * Description: create comment tweet
  * Path: /
  * Method: POST
  * Body: {tweet_id: string}
@@ -37,4 +41,14 @@ commentsRouter.post(
   createCommentValidator,
   wrapAsync(createCommentController)
 )
+
+/**
+ * Description: edit comment tweet
+ * Path: /
+ * Method: POST
+ * Body: {tweet_id: string}
+ * header: {Authorization:Bearer <access_token> }
+ */
+commentsRouter.put('/', AccessTokenValidator, verifiedUserValidator, tweetIdValidator, wrapAsync(editCommentController))
+
 export default commentsRouter

@@ -122,5 +122,7 @@ export const COMMENT_MESSAGES = {
   COMMENT_MUST_BE_A_STRING: 'Comment must be a string',
   COMMENT_LENGTH_MUST_BE_BETWEEN_1_AND_280: 'Comment length must be between 1 and 280',
   COMMENT_LINK_MUST_BE_AN_ARRAY: 'Comment link must be an array',
-  COMMENT_LINK_MUST_BE_AN_ARRAY_OF_MEDIA_OBJECT: 'Comment link must be an array of media object'
+  COMMENT_LINK_MUST_BE_AN_ARRAY_OF_MEDIA_OBJECT: 'Comment link must be an array of media object',
+  EDIT_COMMENT_SUCCESS: 'Edit comment success',
+  NO_EDIT_COMMENT: 'No edit comment'
 }
