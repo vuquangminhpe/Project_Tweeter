@@ -4,7 +4,6 @@ import { GoVerified } from 'react-icons/go'
 import { useMemo, useState } from 'react'
 import { FaEllipsisH } from 'react-icons/fa'
 import { BsChat } from 'react-icons/bs'
-import { BiRepost } from 'react-icons/bi'
 import { MdFavorite, MdFavoriteBorder } from 'react-icons/md'
 import { RiShare2Fill } from 'react-icons/ri'
 import { RiBarChartGroupedLine } from 'react-icons/ri'
@@ -12,31 +11,33 @@ import { CiBookmark } from 'react-icons/ci'
 import { User } from '@/types/User.type'
 import { Tweets } from '@/types/Tweet.type'
 import { useQuery } from '@tanstack/react-query'
-import tweetsApi from '@/apis/tweets.api'
 import likesApi from '@/apis/likes.api'
 import { Likes } from '@/types/Likes.type'
+import commentApi from '@/apis/comments.api'
 interface Props {
   profile: User | null
   data: Tweets
 }
-const LIMIT = 10
+const LIMIT = 1
 const PAGE = 1
 const TwitterCard = ({ profile, data }: Props) => {
   const navigate = useNavigate()
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [liked, setLiked] = useState(false)
-  console.log(data._id)
+
   const { data: dataTweetComments } = useQuery({
     queryKey: ['dataTweetComments', data._id, data.type],
-    queryFn: () => tweetsApi.getTweetComments(data._id as string, LIMIT, PAGE, data.type)
+    queryFn: () => commentApi.getTweetComments(data._id as string, LIMIT, PAGE)
   })
   const { data: dataLikes } = useQuery({
     queryKey: ['dataLikes', data._id],
     queryFn: () => likesApi.getLikesTweet(data._id as string)
   })
-  const dataLike = useMemo(() => dataLikes?.data.result, [dataLikes])
+
+  const dataLike = useMemo(() => dataLikes?.data.data, [dataLikes])
   const dataComments = useMemo(() => dataTweetComments?.data?.data, [dataTweetComments])
-  console.log(dataLike)
+
+  console.log(dataComments)
 
   const toggleModal = () => {
     setIsModalOpen(!isModalOpen)
@@ -54,10 +55,6 @@ const TwitterCard = ({ profile, data }: Props) => {
 
   const handleOpenReplyModal = () => {
     console.log('Open Reply Modal')
-  }
-
-  const handleRepostTweet = () => {
-    console.log('Repost Tweet')
   }
 
   const handleLikeTweet = () => {
@@ -129,11 +126,6 @@ const TwitterCard = ({ profile, data }: Props) => {
                 <div className='flex items-center space-x-2'>
                   <BsChat className='cursor-pointer hover:text-blue-500' onClick={handleOpenReplyModal} />
                   <p>{(dataComments as any)?.tweets.length}</p>
-                </div>
-
-                <div className='flex items-center space-x-2'>
-                  <BiRepost className='cursor-pointer hover:text-green-500' onClick={handleRepostTweet} />
-                  <p>54</p>
                 </div>
 
                 <div className='flex items-center space-x-2'>

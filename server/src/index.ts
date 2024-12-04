@@ -20,7 +20,7 @@ import conversationsRouter from './routes/conversations.routes'
 import initSocket from './utils/socket'
 import { envConfig, isProduction } from './constants/config'
 import rateLimit from 'express-rate-limit'
-import commentsRouter from './routes/comment.routes'
+import commentsRouter from './routes/comments.routes'
 config()
 databaseService
   .connect()

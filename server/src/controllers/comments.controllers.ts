@@ -8,9 +8,8 @@ export const getCommentTweetController = async (
   req: Request<ParamsDictionary, any, getCommentTweetReqBody>,
   res: Response
 ) => {
-  const { tweet_id } = req.body
-  const { limit, page } = req.query
-  const { comment, total } = await commentServices.getAllCommentInTweet(tweet_id, Number(limit), Number(page))
+  const { tweet_id, limit, page } = req.query
+  const { comment, total } = await commentServices.getAllCommentInTweet(tweet_id as string, Number(limit), Number(page))
   res.json({
     message: COMMENT_MESSAGES.GET_COMMENT_SUCCESS,
     results: {

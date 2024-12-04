@@ -1,4 +1,4 @@
-import { ObjectId } from 'bson'
+import { ObjectId } from 'mongodb'
 import databaseService from './database.services'
 import Comment, { CommentStatus } from '~/models/schemas/Comment.schema'
 import { MediaTypeQuery } from '~/constants/enums'
@@ -6,13 +6,17 @@ import { COMMENT_MESSAGES } from '~/constants/messages'
 
 class CommentServices {
   async getAllCommentInTweet(tweet_id: string, limit: number, page: number) {
+    console.log(tweet_id, limit, page)
+
     const comment = await databaseService.comments
       .find({ tweet_id: new ObjectId(tweet_id) })
       .skip(limit * (page - 1))
       .limit(limit)
       .toArray()
-    const total = await databaseService.comments.countDocuments(comment)
-    return { comment, total: total || 0 }
+    // const totalResult = await databaseService.comments
+    //   .aggregate([{ $match: { tweet_id: new ObjectId(tweet_id) } }, { $count: 'total' }])
+    //   .toArray()
+    return { comment, total: comment.length || 0 }
   }
   async createComment(tweet_id: string, user_id: string, commentContent: string, commentLink: CommentStatus[]) {
     const _id = new ObjectId()
