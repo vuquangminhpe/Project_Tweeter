@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import React, { useState, useRef, useEffect } from 'react'
 import { GoVerified } from 'react-icons/go'
 import { FaEllipsisH } from 'react-icons/fa'

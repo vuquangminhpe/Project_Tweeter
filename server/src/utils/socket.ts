@@ -53,9 +53,7 @@ const initSocket = (httpServer: ServerHttp) => {
       const { sender_id, receive_id, content } = data.payload
 
       const receiver_socket_id = users[receive_id]?.socket_id
-      if (!receiver_socket_id) {
-        return
-      }
+
       const conversations = new Conversations({
         sender_id: new ObjectId(sender_id as string),
         receive_id: new ObjectId(receive_id as string),
