@@ -1,4 +1,7 @@
+import { ObjectId } from 'bson'
 import databaseService from './database.services'
+import Comment, { CommentStatus } from '~/models/schemas/Comment.schema'
+import { MediaTypeQuery } from '~/constants/enums'
 
 class CommentServices {
   async getAllCommentInTweet(tweet_id: string, limit: number, page: number) {
@@ -9,6 +12,20 @@ class CommentServices {
       .toArray()
     const total = await databaseService.comments.countDocuments({ tweet_id })
     return { comment, total: total || 0 }
+  }
+  async createComment(tweet_id: string, user_id: string, commentContent: string, commentLink: CommentStatus[]) {
+    const _id = new ObjectId()
+    const comment = await databaseService.comments.insertOne(
+      new Comment({
+        _id,
+        tweet: new ObjectId(tweet_id),
+        user: new ObjectId(user_id),
+        commentContent,
+        commentLink
+      })
+    )
+
+    return comment
   }
 }
 

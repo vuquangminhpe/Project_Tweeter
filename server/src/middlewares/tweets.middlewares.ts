@@ -1,10 +1,10 @@
 import { NextFunction, Response, Request } from 'express'
 import { checkSchema } from 'express-validator'
-import { isEmpty, isNumber } from 'lodash'
+import { isEmpty, isLength, isNumber } from 'lodash'
 import { ObjectId } from 'mongodb'
 import { MediaType, TweetAudience, TweetType, UserVerifyStatus } from '~/constants/enums'
 import HTTP_STATUS from '~/constants/httpStatus'
-import { TWEET_MESSAGE, USERS_MESSAGES } from '~/constants/messages'
+import { COMMENT_MESSAGES, TWEET_MESSAGE, USERS_MESSAGES } from '~/constants/messages'
 import { ErrorWithStatus } from '~/models/Errors'
 import Tweet from '~/models/schemas/Tweet.schema'
 import databaseService from '~/services/database.services'
@@ -355,4 +355,35 @@ export const paginationValidator = validate(
     },
     ['query']
   )
+)
+
+export const createCommentValidator = validate(
+  checkSchema({
+    commentContent: {
+      isString: {
+        errorMessage: COMMENT_MESSAGES.COMMENT_MUST_BE_A_STRING
+      },
+      isLength: {
+        options: { min: 1, max: 280 },
+        errorMessage: COMMENT_MESSAGES.COMMENT_LENGTH_MUST_BE_BETWEEN_1_AND_280
+      }
+    },
+    commentLink: {
+      isArray: {
+        errorMessage: COMMENT_MESSAGES.COMMENT_LINK_MUST_BE_AN_ARRAY
+      },
+      custom: {
+        options: (value) => {
+          if (
+            value.some((item: any) => {
+              return typeof item.url !== 'string' || !mediaTypes.includes(item.type)
+            })
+          ) {
+            throw new Error(COMMENT_MESSAGES.COMMENT_LINK_MUST_BE_AN_ARRAY_OF_MEDIA_OBJECT)
+          }
+          return true
+        }
+      }
+    }
+  })
 )

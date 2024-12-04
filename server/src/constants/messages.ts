@@ -117,5 +117,10 @@ export const CONVERSATIONS_MESSAGE = {
   GET_CONVERSATION_SUCCESSFULLY: 'Get conversation successfully'
 }
 export const COMMENT_MESSAGES = {
-  GET_COMMENT_SUCCESS: 'Get comment success'
+  GET_COMMENT_SUCCESS: 'Get comment success',
+  CREATE_COMMENT_SUCCESS: 'Create comment success',
+  COMMENT_MUST_BE_A_STRING: 'Comment must be a string',
+  COMMENT_LENGTH_MUST_BE_BETWEEN_1_AND_280: 'Comment length must be between 1 and 280',
+  COMMENT_LINK_MUST_BE_AN_ARRAY: 'Comment link must be an array',
+  COMMENT_LINK_MUST_BE_AN_ARRAY_OF_MEDIA_OBJECT: 'Comment link must be an array of media object'
 }

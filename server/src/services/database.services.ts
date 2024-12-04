@@ -9,6 +9,7 @@ import { Bookmark } from '~/models/schemas/Bookmark.schema'
 import { Like } from '~/models/schemas/Like.schema'
 import Conversations from '~/models/schemas/conversations.schema'
 import { envConfig } from '../constants/config'
+import Comment from '~/models/schemas/Comment.schema'
 
 const uri = `mongodb+srv://${envConfig.db_username}:${envConfig.db_password}@minhdevmongo.hzvnp.mongodb.net/?retryWrites=true&w=majority&appName=minhdevMongo`
 
