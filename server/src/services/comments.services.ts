@@ -45,6 +45,20 @@ class CommentServices {
     )
     return result
   }
+  async deleteComment(tweet_id: string, user_id: string) {
+    const commentTweet = await databaseService.comments.findOne({
+      tweet_id: new ObjectId(tweet_id),
+      user_id: new ObjectId(user_id)
+    })
+    if (!commentTweet) {
+      return { message: COMMENT_MESSAGES.NO_COMMENT_TO_DELETE }
+    }
+    const result = await databaseService.comments.deleteOne({
+      tweet_id: new ObjectId(tweet_id),
+      user_id: new ObjectId(user_id)
+    })
+    return result
+  }
 }
 
 const commentServices = new CommentServices()

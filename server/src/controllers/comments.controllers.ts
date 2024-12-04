@@ -1,7 +1,7 @@
 import { Request, Response } from 'express'
 import { ParamsDictionary } from 'express-serve-static-core'
 import { COMMENT_MESSAGES } from '~/constants/messages'
-import { getCommentTweetReqBody } from '~/models/request/Comments.requests'
+import { deleteCommentTweetReqBody, getCommentTweetReqBody } from '~/models/request/Comments.requests'
 import { TokenPayload } from '~/models/request/User.request'
 import commentServices from '~/services/comments.services'
 export const getCommentTweetController = async (
@@ -38,4 +38,14 @@ export const editCommentController = async (
   const { user_id } = (req as Request).decode_authorization as TokenPayload
   const result = await commentServices.editComment(tweet_id, user_id, commentContent)
   res.json({ message: COMMENT_MESSAGES.EDIT_COMMENT_SUCCESS, result })
+}
+
+export const deleteCommentController = async (
+  req: Request<ParamsDictionary, any, deleteCommentTweetReqBody>,
+  res: Response
+) => {
+  const { user_id } = (req as Request).decode_authorization as TokenPayload
+  const { tweet_id } = req.body
+  const result = await commentServices.deleteComment(tweet_id, user_id)
+  res.json({ message: COMMENT_MESSAGES.DELETE_COMMENT_SUCCESS, result })
 }

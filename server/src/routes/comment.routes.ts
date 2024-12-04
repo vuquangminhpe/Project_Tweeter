@@ -1,6 +1,7 @@
 import { Router } from 'express'
 import {
   createCommentController,
+  deleteCommentController,
   editCommentController,
   getCommentTweetController
 } from '~/controllers/comments.controllers'
@@ -51,4 +52,18 @@ commentsRouter.post(
  */
 commentsRouter.put('/', AccessTokenValidator, verifiedUserValidator, tweetIdValidator, wrapAsync(editCommentController))
 
+/**
+ * Description: delete comment tweet
+ * Path: /
+ * Method: DELETE
+ * Body: {tweet_id: string}
+ * header: {Authorization:Bearer <access_token> }
+ */
+commentsRouter.delete(
+  '/',
+  AccessTokenValidator,
+  verifiedUserValidator,
+  tweetIdValidator,
+  wrapAsync(deleteCommentController)
+)
 export default commentsRouter

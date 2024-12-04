@@ -124,5 +124,7 @@ export const COMMENT_MESSAGES = {
   COMMENT_LINK_MUST_BE_AN_ARRAY: 'Comment link must be an array',
   COMMENT_LINK_MUST_BE_AN_ARRAY_OF_MEDIA_OBJECT: 'Comment link must be an array of media object',
   EDIT_COMMENT_SUCCESS: 'Edit comment success',
-  NO_EDIT_COMMENT: 'No edit comment'
+  NO_EDIT_COMMENT: 'No edit comment',
+  DELETE_COMMENT_SUCCESS: 'Delete comment success',
+  NO_COMMENT_TO_DELETE: 'No comment to delete'
 }

@@ -5,3 +5,6 @@ export interface getCommentTweetReqBody {
   commentContent: string
   commentLink: CommentStatus[]
 }
+export interface deleteCommentTweetReqBody {
+  tweet_id: string
+}
