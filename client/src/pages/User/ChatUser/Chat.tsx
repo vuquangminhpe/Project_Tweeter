@@ -1,9 +1,10 @@
-import { useEffect, useState, useCallback, useMemo, useRef, WheelEvent } from 'react'
+import { useEffect, useState, useCallback, useMemo, useRef, WheelEvent, Fragment } from 'react'
 import axios from 'axios'
 import { useInfiniteQuery } from '@tanstack/react-query'
 import socket from '@/utils/socket'
 import { Conversation, ConversationResponse } from '@/types/Conversation.type'
 import { Profile } from '@/types/User.type'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 
 function Chat() {
   const observerRef = useRef<IntersectionObserver | null>(null)
@@ -228,15 +229,40 @@ function Chat() {
             key={conversation._id}
             className={`flex mb-3 ${conversation.sender_id === profile._id ? 'justify-end' : 'justify-start'}`}
           >
-            <div
-              className={`max-w-[70%] px-4 py-2 rounded-2xl ${
-                conversation.sender_id === profile._id
-                  ? 'bg-blue-500 text-white rounded-br-none'
-                  : 'bg-gray-200 text-black rounded-bl-none'
-              }`}
-            >
-              {conversation.content}
-            </div>
+            {conversation.sender_id !== profile._id ? (
+              <Fragment>
+                <Avatar className='mr-3'>
+                  <AvatarImage src='https://github.com/shadcn.png' />
+                  <AvatarFallback>CN</AvatarFallback>
+                </Avatar>
+
+                <div
+                  className={` max-w-[70%] px-4 py-2 rounded-2xl ${
+                    conversation.sender_id === profile._id
+                      ? 'bg-blue-500 text-white rounded-br-none'
+                      : 'bg-gray-200 text-black rounded-bl-none'
+                  }`}
+                >
+                  {conversation.content}
+                </div>
+              </Fragment>
+            ) : (
+              <Fragment>
+                <div
+                  className={` max-w-[70%] px-4 py-2 rounded-2xl ${
+                    conversation.sender_id === profile._id
+                      ? 'bg-blue-500 text-white rounded-br-none'
+                      : 'bg-gray-200 text-black rounded-bl-none'
+                  }`}
+                >
+                  {conversation.content}
+                </div>
+                <Avatar className='ml-3'>
+                  <AvatarImage src='https://github.com/shadcn.png' />
+                  <AvatarFallback>CN</AvatarFallback>
+                </Avatar>
+              </Fragment>
+            )}
           </div>
         ))}
       </div>
@@ -247,13 +273,13 @@ function Chat() {
           onChange={(e) => setValue(e.target.value)}
           value={value}
           placeholder='Type a message...'
-          className='flex-grow p-3 border-2 border-r-0 border-gray-300 rounded-l-lg 
+          className='flex-grow p-3 border-2 border-r-0 border-gray-300 rounded-xl mr-2
                      focus:outline-none focus:border-blue-500 transition duration-300'
         />
         <button
           type='submit'
           onClick={send}
-          className='px-6 py-3 bg-blue-500 text-white rounded-r-lg 
+          className='px-6 py-3 bg-blue-500 text-white
                      hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300 
                      transition duration-300 ease-in-out'
         >

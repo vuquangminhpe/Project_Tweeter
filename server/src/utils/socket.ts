@@ -20,24 +20,26 @@ const initSocket = (httpServer: ServerHttp) => {
       socket_id: string
     }
   } = {}
-  io.use(async (socket, next) => {
-    const { Authorization } = socket.handshake.auth
-    const access_token = Authorization?.split(' ')[1]
-
-    try {
-      const decoded_authorization = await verifyAccessToken(access_token)
-      const { verify } = decoded_authorization as TokenPayload
-      if (verify !== UserVerifyStatus.Verified) {
-        throw new ErrorWithStatus({
-          message: USERS_MESSAGES.USER_NOT_VERIFIED,
-          status: HTTP_STATUS.FORBIDDEN
-        })
-      }
-      next()
-    } catch (error) {
-      next(error as ExtendedError)
-    }
-  })
+  // io.use(async (socket, next) => {
+  //   const { Authorization } = socket.handshake.auth
+  //   const access_token = Authorization?.split(' ')[1]
+  //   if (access_token) {
+  //     console.log('no access token')
+  //   }
+  //   try {
+  //     const decoded_authorization = await verifyAccessToken(access_token)
+  //     const { verify } = decoded_authorization as TokenPayload
+  //     if (verify !== UserVerifyStatus.Verified) {
+  //       throw new ErrorWithStatus({
+  //         message: USERS_MESSAGES.USER_NOT_VERIFIED,
+  //         status: HTTP_STATUS.FORBIDDEN
+  //       })
+  //     }
+  //     next()
+  //   } catch (error) {
+  //     next(error as ExtendedError)
+  //   }
+  // })
   io.on('connection', (socket: Socket) => {
     console.log(`user ${socket.id} connected`)
     const user_id = socket.handshake.auth._id

@@ -6,7 +6,6 @@ export const isProduction = options.env === 'production'
 config({
   path: options.env ? `.env.${options.env}` : '.env'
 })
-console.log(options.env)
 
 export const envConfig = {
   port: process.env.PORT,

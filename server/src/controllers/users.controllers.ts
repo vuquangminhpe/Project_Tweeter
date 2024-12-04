@@ -211,7 +211,6 @@ export const UnController = async (req: Request<ParamsDictionary, any, FollowReq
 export const getFollowingController = async (req: Request<ParamsDictionary, any, any>, res: Response) => {
   const { user_id } = req.decode_authorization as TokenPayload
   const result = await usersService.getFollowing(user_id)
-  console.log(result)
 
   res.json({
     message: USERS_MESSAGES.GET_FOLLOWING_SUCCESSFULLY,

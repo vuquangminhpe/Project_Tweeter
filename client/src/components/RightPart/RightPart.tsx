@@ -43,7 +43,6 @@ const RightPart: React.FC = () => {
   }, [])
 
   const handleRemoveTrend = (option: string) => {
-    console.log(`Removed: ${option}`)
     setIsModalOpen(null)
   }
   return (
