@@ -20,6 +20,7 @@ import conversationsRouter from './routes/conversations.routes'
 import initSocket from './utils/socket'
 import { envConfig, isProduction } from './constants/config'
 import rateLimit from 'express-rate-limit'
+import commentsRouter from './routes/comment.routes'
 config()
 databaseService
   .connect()
@@ -60,6 +61,7 @@ app.use('/bookmarks', bookmarksRouter)
 app.use('/likes', likesTweetRouter)
 app.use('/search', searchRouter)
 app.use('/conversations', conversationsRouter)
+app.use('/comments', commentsRouter)
 app.use('/static/video-stream', express.static(UPLOAD_VIDEO_DIR))
 
 app.use(defaultErrorHandler)

@@ -81,6 +81,9 @@ class DatabaseService {
   get conversations(): Collection<Conversations> {
     return this.db.collection(envConfig.conversationsCollection)
   }
+  get comments(): Collection<Comment> {
+    return this.db.collection(envConfig.commentCollection)
+  }
 }
 
 const databaseService = new DatabaseService()

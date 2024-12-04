@@ -116,3 +116,6 @@ export const SEARCH_MESSAGE = {
 export const CONVERSATIONS_MESSAGE = {
   GET_CONVERSATION_SUCCESSFULLY: 'Get conversation successfully'
 }
+export const COMMENT_MESSAGES = {
+  GET_COMMENT_SUCCESS: 'Get comment success'
+}

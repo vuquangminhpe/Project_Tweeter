@@ -23,6 +23,7 @@ export const envConfig = {
   VideoStatusCollection: process.env.DB_VIDEO_STATUS_COLLECTION as string,
   hashtagsCollection: process.env.DB_HASHTAGS_COLLECTION as string,
   bookmarksCollection: process.env.DB_BOOKMARKS_COLLECTION as string,
+  commentCollection: process.env.DB_COMMENTS_COLLECTION as string,
   likesCollection: process.env.DB_LIKES_COLLECTION as string,
   conversationsCollection: process.env.DB_CONVERSATIONS_COLLECTION as string,
   region: process.env.AWS_REGION,
