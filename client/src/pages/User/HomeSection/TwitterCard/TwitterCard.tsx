@@ -26,18 +26,17 @@ const TwitterCard = ({ profile, data }: Props) => {
   const [liked, setLiked] = useState(false)
 
   const { data: dataTweetComments } = useQuery({
-    queryKey: ['dataTweetComments', data._id, data.type],
-    queryFn: () => commentApi.getTweetComments(data._id as string, LIMIT, PAGE)
+    queryKey: ['dataTweetComments', data._id],
+    queryFn: () => commentApi.getTweetComments(data?._id as string, LIMIT, PAGE)
   })
   const { data: dataLikes } = useQuery({
     queryKey: ['dataLikes', data._id],
     queryFn: () => likesApi.getLikesTweet(data._id as string)
   })
+  console.log(data._id)
 
   const dataLike = useMemo(() => dataLikes?.data.data, [dataLikes])
   const dataComments = useMemo(() => dataTweetComments?.data?.data, [dataTweetComments])
-
-  console.log(dataComments)
 
   const toggleModal = () => {
     setIsModalOpen(!isModalOpen)

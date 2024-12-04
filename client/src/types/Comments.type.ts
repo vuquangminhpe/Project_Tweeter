@@ -1,7 +1,7 @@
 export interface Comment {
   comment: CommentRequest[]
-  page: 1
-  total_pages: 1
+  page: number
+  total_pages: number
 }
 
 export interface CommentRequest {
