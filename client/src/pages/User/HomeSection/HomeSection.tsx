@@ -98,7 +98,7 @@ const HomeSection = () => {
     )
   }
   return (
-    <div className='max-w-xl mx-auto px-4 py-6 bg-white shadow-sm rounded-xl'>
+    <div className='container mx-auto px-4 py-6 bg-white shadow-sm rounded-xl'>
       <div className='mb-6'>
         <div className='flex justify-center bg-gray-50 rounded-lg p-1'>
           {tabs.map((tab) => (
@@ -144,7 +144,7 @@ const HomeSection = () => {
               {imagePreview && (
                 <div className='relative mt-4'>
                   {typeof imagePreview === 'string' && (
-                    <img src={imagePreview} alt='Preview' className='w-full h-48 object-cover rounded-lg' />
+                    <img src={imagePreview} alt='Preview' className='size-96 object-cover rounded-xl' />
                   )}
                   <button
                     type='button'
