@@ -14,15 +14,21 @@ import { useQuery } from '@tanstack/react-query'
 import likesApi from '@/apis/likes.api'
 import { Likes } from '@/types/Likes.type'
 import commentApi from '@/apis/comments.api'
+import { Comment, CommentRequest } from '@/types/Comments.type'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { ScrollArea } from '@/components/ui/scroll-area'
+import { Separator } from '@/components/ui/separator'
+
 interface Props {
   profile: User | null
   data: Tweets
 }
-const LIMIT = 1
+const LIMIT = 10
 const PAGE = 1
 const TwitterCard = ({ profile, data }: Props) => {
   const navigate = useNavigate()
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [commentModalOpen, setCommentModalOpen] = useState(false)
   const [liked, setLiked] = useState(false)
 
   const { data: dataTweetComments } = useQuery({
@@ -33,14 +39,13 @@ const TwitterCard = ({ profile, data }: Props) => {
     queryKey: ['dataLikes', data._id],
     queryFn: () => likesApi.getLikesTweet(data._id as string)
   })
-  console.log(data._id)
 
-  const dataLike = useMemo(() => dataLikes?.data.data, [dataLikes])
-  const dataComments = useMemo(() => dataTweetComments?.data?.data, [dataTweetComments])
-
+  const dataLike = useMemo(() => dataLikes?.data.result, [dataLikes])
+  const dataComments = useMemo(() => dataTweetComments?.data?.results, [dataTweetComments])
   const toggleModal = () => {
     setIsModalOpen(!isModalOpen)
   }
+  console.log(dataLike)
 
   const handleDeleteTweet = () => {
     console.log('Delete Tweet')
@@ -122,9 +127,9 @@ const TwitterCard = ({ profile, data }: Props) => {
               </div>
 
               <div className='py-3 flex justify-between items-center text-gray-400'>
-                <div className='flex items-center space-x-2'>
+                <div className='flex items-center space-x-2' onClick={() => setCommentModalOpen(!commentModalOpen)}>
                   <BsChat className='cursor-pointer hover:text-blue-500' onClick={handleOpenReplyModal} />
-                  <p>{(dataComments as any)?.tweets.length}</p>
+                  <p>{(dataComments as any)?.comments.length}</p>
                 </div>
 
                 <div className='flex items-center space-x-2'>
@@ -149,6 +154,34 @@ const TwitterCard = ({ profile, data }: Props) => {
                   <RiShare2Fill className='cursor-pointer hover:text-blue-500' onClick={handleShareTweet} />
                 </div>
               </div>
+              {commentModalOpen && (
+                <div className='h-auto w-full transition-all flex flex-col gap-3 mx-auto'>
+                  {(dataComments as unknown as Comment)?.comments?.map((comment: CommentRequest) => (
+                    <div key={comment?._id} className='flex flex-col gap-3'>
+                      <div className='flex flex-row gap-2'>
+                        <Avatar className='w-8 h-8 bg-gray-500 rounded-full object-cover'>
+                          <AvatarImage src={comment?.user_info?.avatar} alt='@shadcn' />
+                          <AvatarFallback>{comment?.user_info?.username?.split('')[0].toUpperCase()}</AvatarFallback>
+                        </Avatar>
+
+                        <div className='translate-y-1'>{comment?.user_info?.username}</div>
+                      </div>
+                      <div>{comment?.commentContent}</div>
+                    </div>
+                  ))}
+                </div>
+              )}
+              <ScrollArea className='h-auto w-48 rounded-md border'>
+                <div className='p-4'>
+                  <h4 className='mb-4 text-sm font-medium leading-none'>TYM</h4>
+                  {(dataLike as unknown as Likes[])?.map((like) => (
+                    <div key={like._id}>
+                      <div className='text-sm'>{like.user_info.username}</div>
+                      <Separator className='my-2' />
+                    </div>
+                  ))}
+                </div>
+              </ScrollArea>
             </div>
           </div>
         </div>

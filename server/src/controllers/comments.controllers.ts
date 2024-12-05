@@ -9,11 +9,16 @@ export const getCommentTweetController = async (
   res: Response
 ) => {
   const { tweet_id, limit, page } = req.query
-  const { comment, total } = await commentServices.getAllCommentInTweet(tweet_id as string, Number(limit), Number(page))
+
+  const { comments, total } = await commentServices.getAllCommentInTweet(
+    tweet_id as string,
+    Number(limit),
+    Number(page)
+  )
   res.json({
     message: COMMENT_MESSAGES.GET_COMMENT_SUCCESS,
     results: {
-      comment,
+      comments,
       page: Number(page),
       total_pages: Math.round(total / Number(limit))
     }

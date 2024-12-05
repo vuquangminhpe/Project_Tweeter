@@ -1,5 +1,7 @@
+import { user_info_comment } from './Utils.type'
+
 export interface Comment {
-  comment: CommentRequest[]
+  comments: CommentRequest[]
   page: number
   total_pages: number
 }
@@ -12,6 +14,7 @@ export interface CommentRequest {
   commentLink: commentLinkType[]
   createdAt: string
   updatedAt: string
+  user_info: user_info_comment
 }
 export interface commentLinkType {
   url: string

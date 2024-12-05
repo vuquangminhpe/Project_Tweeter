@@ -23,7 +23,6 @@ commentsRouter.get(
   AccessTokenValidator,
   verifiedUserValidator,
   paginationValidator,
-  tweetIdValidator,
   wrapAsync(getCommentTweetController)
 )
 

@@ -38,11 +38,37 @@ class LikesTweet {
   }
   async getLikesTweet(user_id: string, tweet_id: string) {
     const getLikeUserTweet = await databaseService.likes
-      .find({
-        user_id: new ObjectId(user_id),
-        tweet_id: new ObjectId(tweet_id)
-      })
+      .aggregate([
+        {
+          $match: { tweet_id: new ObjectId(tweet_id), user_id: new ObjectId(user_id) }
+        },
+        {
+          $lookup: {
+            from: 'users',
+            localField: 'user_id',
+            foreignField: '_id',
+            as: 'user_info'
+          }
+        },
+        {
+          $unwind: '$user_info'
+        },
+        {
+          $project: {
+            _id: 1,
+            tweet_id: 1,
+            user_id: 1,
+            commentContent: 1,
+            commentLink: 1,
+            createdAt: 1,
+            updatedAt: 1,
+            'user_info.username': 1,
+            'user_info.avatar': 1
+          }
+        }
+      ])
       .toArray()
+
     return getLikeUserTweet
   }
 }
