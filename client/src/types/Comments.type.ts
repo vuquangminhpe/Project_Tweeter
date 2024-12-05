@@ -12,11 +12,17 @@ export interface CommentRequest {
   tweet_id: string
   commentContent: string
   commentLink: commentLinkType[]
-  createdAt: string
-  updatedAt: string
+  createdAt: Date
+  updatedAt: Date
   user_info: user_info_comment
 }
 export interface commentLinkType {
   url: string
   type: number
+}
+
+export interface createCommentType {
+  tweet_id: string
+  commentContent: string
+  commentLink: commentLinkType[]
 }

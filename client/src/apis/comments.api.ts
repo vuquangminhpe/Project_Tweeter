@@ -1,3 +1,4 @@
+import { createCommentType } from '@/types/Comments.type'
 import { SuccessResponse } from '@/types/Utils.type'
 import http from '@/utils/http'
 
@@ -9,6 +10,7 @@ const commentApi = {
         limit,
         page
       }
-    })
+    }),
+  createComment: (body: createCommentType) => http.post<SuccessResponse<Comment>>('/comments/', body)
 }
 export default commentApi

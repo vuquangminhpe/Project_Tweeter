@@ -10,7 +10,7 @@ import { RiBarChartGroupedLine } from 'react-icons/ri'
 import { CiBookmark } from 'react-icons/ci'
 import { User } from '@/types/User.type'
 import { Tweets } from '@/types/Tweet.type'
-import { useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery } from '@tanstack/react-query'
 import likesApi from '@/apis/likes.api'
 import { Likes } from '@/types/Likes.type'
 import commentApi from '@/apis/comments.api'
@@ -30,8 +30,12 @@ const TwitterCard = ({ profile, data }: Props) => {
   const [commentModalOpen, setCommentModalOpen] = useState(false)
   const [likeModalOpen, setLikeModalOpen] = useState(false)
   const [liked, setLiked] = useState(false)
-
-  const { data: dataTweetComments } = useQuery({
+  const [idTweetComment, setIdTweetComment] = useState('')
+  const [comment, setComment] = useState('')
+  const createCommentMutation = useMutation({
+    mutationFn: () => commentApi.createComment({ tweet_id: idTweetComment, commentContent: comment, commentLink: [] })
+  })
+  const { data: dataTweetComments, refetch } = useQuery({
     queryKey: ['dataTweetComments', data._id],
     queryFn: () => commentApi.getTweetComments(data?._id as string, LIMIT, PAGE)
   })
@@ -45,7 +49,6 @@ const TwitterCard = ({ profile, data }: Props) => {
   const toggleModal = () => {
     setIsModalOpen(!isModalOpen)
   }
-  console.log(dataLike)
 
   const handleDeleteTweet = () => {
     console.log('Delete Tweet')
@@ -69,10 +72,36 @@ const TwitterCard = ({ profile, data }: Props) => {
   const handleShareTweet = () => {
     console.log('Share Tweet')
   }
-
+  const handleCreateComment = () => {
+    createCommentMutation.mutate(undefined, {
+      onSuccess: () => {
+        refetch()
+      },
+      onError: () => {
+        console.log('Error')
+      }
+    })
+    refetch()
+  }
   const handleViewAnalytics = () => {
     console.log('View Analytics')
   }
+  const commentTime = (date: Date) => {
+    const currentDate = new Date()
+    const tweetDate = new Date(date)
+    const diffTime = Math.abs(currentDate.getTime() - tweetDate.getTime())
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+    const diffHours = Math.ceil(diffTime / (1000 * 60 * 60))
+    const diffMinutes = Math.ceil(diffTime / (1000 * 60))
+    if (diffDays > 0) {
+      return `${diffDays}d`
+    } else if (diffHours > 0) {
+      return `${diffHours}h`
+    } else {
+      return `${diffMinutes}m`
+    }
+  }
+  console.log(idTweetComment)
 
   return (
     <div className='bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300 overflow-hidden'>
@@ -98,11 +127,13 @@ const TwitterCard = ({ profile, data }: Props) => {
                 <GoVerified className='text-blue-500' />
               </div>
               <div className='relative'>
-                <FaEllipsisH
-                  className='text-gray-500 text-lg cursor-pointer hover:text-blue-500 transition'
-                  onClick={toggleModal}
-                />
-                {isModalOpen && (
+                {data?.user_id === profile?._id && (
+                  <FaEllipsisH
+                    className='text-gray-500 text-lg cursor-pointer hover:text-blue-500 transition'
+                    onClick={toggleModal}
+                  />
+                )}
+                {isModalOpen || (
                   <div className='absolute top-full right-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg w-48 py-2 z-50'>
                     <ul>
                       <li
@@ -136,7 +167,10 @@ const TwitterCard = ({ profile, data }: Props) => {
               <div className='py-4 flex justify-between items-center text-gray-500'>
                 <div
                   className='flex items-center space-x-2 hover:text-blue-500 transition group cursor-pointer'
-                  onClick={() => setCommentModalOpen(!commentModalOpen)}
+                  onClick={() => {
+                    setCommentModalOpen(!commentModalOpen)
+                    setIdTweetComment(data._id as string)
+                  }}
                 >
                   <BsChat className='group-hover:text-blue-500' onClick={handleOpenReplyModal} />
                   <p>{(dataComments as any)?.comments.length}</p>
@@ -161,7 +195,7 @@ const TwitterCard = ({ profile, data }: Props) => {
                         {(dataLike as Likes[])?.map((like: Likes) => (
                           <div key={like._id} className='mb-2 pb-2 border-b last:border-b-0'>
                             <div className='flex items-center space-x-2'>
-                              <Avatar className='w-8 h-8'>
+                              <Avatar className='w-8 h-8 bg-gray-400'>
                                 <AvatarImage src={like.user_info.avatar} alt={like.user_info.username} />
                                 <AvatarFallback>{like.user_info.username.charAt(0).toUpperCase()}</AvatarFallback>
                               </Avatar>
@@ -192,20 +226,46 @@ const TwitterCard = ({ profile, data }: Props) => {
                 <div className='mt-4 space-y-3'>
                   {(dataComments as unknown as Comment)?.comments?.map((comment: CommentRequest) => (
                     <div key={comment?._id} className='flex items-start space-x-3 bg-gray-50 p-3 rounded-lg'>
-                      <Avatar className='w-8 h-8'>
+                      <Avatar className='w-8 h-8 bg-gray-300'>
                         <AvatarImage src={comment.user_info.avatar} alt={comment.user_info.username} />
                         <AvatarFallback>{comment.user_info.username.charAt(0).toUpperCase()}</AvatarFallback>
                       </Avatar>
 
-                      <div>
-                        <div className='flex items-center space-x-2'>
+                      <div className='w-full'>
+                        <div className='flex items-center relative space-x-2'>
                           <span className='font-semibold text-sm text-gray-800'>{comment.user_info.username}</span>
-                          <span className='text-xs text-gray-500'>2m</span>
+                          <span className='text-xs text-gray-500'>{commentTime(comment.updatedAt)}</span>
+                          <span className='right-0 absolute'>
+                            {Number(new Date(comment.updatedAt).getTime()) -
+                              Number(new Date(comment.createdAt).getTime()) <=
+                            0
+                              ? ''
+                              : 'đã chỉnh sửa'}
+                          </span>
                         </div>
                         <p className='text-sm text-gray-700 mt-1'>{comment?.commentContent}</p>
                       </div>
                     </div>
                   ))}
+                  <div className='flex gap-4 items-center'>
+                    <div className='w-full border-2 border-gray-400 focus:ring-2 rounded-2xl focus:ring-blue-200'>
+                      <textarea
+                        className='items-center p-1 w-full rounded-xl focus:outline-none'
+                        placeholder='comment tweet .....'
+                        onMouseEnter={(e) => {
+                          setComment(e.currentTarget.value)
+                          handleCreateComment()
+                        }}
+                        onChange={(e) => setComment(e.currentTarget.value)}
+                      />
+                    </div>
+                    <div
+                      onClick={handleCreateComment}
+                      className='bg-blue-950 p-4 items-center text-center text-white rounded-xl cursor-pointer font-semibold'
+                    >
+                      Send
+                    </div>
+                  </div>
                 </div>
               )}
             </div>
