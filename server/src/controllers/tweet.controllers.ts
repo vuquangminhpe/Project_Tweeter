@@ -95,7 +95,9 @@ export const editTweetController = async (req: Request<ParamsDictionary, any, Ed
 }
 export const deleteTweetController = async (req: Request<ParamsDictionary, any, any, TweetQuery>, res: Response) => {
   const { user_id } = req.decode_authorization as TokenPayload
-  const result = await tweetsService.deleteTweet(user_id, req.query.tweet_id as string)
+  const { tweet_id } = req.params
+
+  const result = await tweetsService.deleteTweet(user_id, tweet_id as string)
   res.json({
     message: TWEET_MESSAGE.DELETE_TWEET_SUCCESS,
     data: result

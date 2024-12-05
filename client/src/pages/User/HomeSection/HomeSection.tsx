@@ -25,13 +25,16 @@ const validationSchema = Yup.object().shape({
 
 const HomeSection = () => {
   const { profile } = useContext(AppContext)
-  const { data: dataTweets, isLoading: isLoadingAllDataTweet } = useQuery({
+  const {
+    data: dataTweets,
+    isLoading: isLoadingAllDataTweet,
+    refetch: refetchAllDataTweet
+  } = useQuery({
     queryKey: ['dataTweets'],
     queryFn: tweetsApi.getAllTweets
   })
   const allTweets = dataTweets?.data?.data
 
-  console.log(allTweets)
   const [activeTab, setActiveTab] = useState<string>('forYou')
   const [uploadingImage, setUploadingImage] = useState<boolean>(false)
   const [imagePreview, setImagePreview] = useState<string | ArrayBuffer | null>(null)
@@ -187,7 +190,12 @@ const HomeSection = () => {
       <div className='mt-6 space-y-4'>
         {allTweets?.map((data) =>
           Array(data).map((element, index) => (
-            <TwitterCard key={`${element._id}-${index}`} data={element} profile={profile} />
+            <TwitterCard
+              refetchAllDataTweet={refetchAllDataTweet}
+              key={`${element._id}-${index}`}
+              data={element}
+              profile={profile}
+            />
           ))
         )}
       </div>

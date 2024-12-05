@@ -10,7 +10,7 @@ import { RiBarChartGroupedLine } from 'react-icons/ri'
 import { CiBookmark } from 'react-icons/ci'
 import { User } from '@/types/User.type'
 import { Tweets } from '@/types/Tweet.type'
-import { useMutation, useQuery } from '@tanstack/react-query'
+import { QueryObserverResult, RefetchOptions, useMutation, useQuery } from '@tanstack/react-query'
 import likesApi from '@/apis/likes.api'
 import { Likes } from '@/types/Likes.type'
 import commentApi from '@/apis/comments.api'
@@ -18,27 +18,36 @@ import { Comment, CommentRequest } from '@/types/Comments.type'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { toast } from 'sonner'
+import tweetsApi from '@/apis/tweets.api'
+import { AxiosResponse } from 'axios'
+import { SuccessResponse } from '@/types/Utils.type'
 
 interface Props {
   profile: User | null
   data: Tweets
+  refetchAllDataTweet: (
+    options?: RefetchOptions
+  ) => Promise<QueryObserverResult<AxiosResponse<SuccessResponse<Tweets[]>, any>, Error>>
 }
 const LIMIT = 10
 const PAGE = 1
-const TwitterCard = ({ profile, data }: Props) => {
+const TwitterCard = ({ profile, data, refetchAllDataTweet }: Props) => {
   const navigate = useNavigate()
-  const [isModalOpen, setIsModalOpen] = useState(false)
   const [commentModalOpen, setCommentModalOpen] = useState(false)
   const [likeModalOpen, setLikeModalOpen] = useState(false)
   const [liked, setLiked] = useState(false)
-  const [idTweetComment, setIdTweetComment] = useState('')
   const [comment, setComment] = useState('')
   const createCommentMutation = useMutation({
-    mutationFn: () => commentApi.createComment({ tweet_id: idTweetComment, commentContent: comment, commentLink: [] })
+    mutationFn: (idTweetComment: string) =>
+      commentApi.createComment({ tweet_id: idTweetComment, commentContent: comment, commentLink: [] })
   })
   const { data: dataTweetComments, refetch } = useQuery({
     queryKey: ['dataTweetComments', data._id],
     queryFn: () => commentApi.getTweetComments(data?._id as string, LIMIT, PAGE)
+  })
+  const handleDeletedMutation = useMutation({
+    mutationFn: (tweet_id: string) => tweetsApi.deleteTweet(tweet_id)
   })
   const { data: dataLikes } = useQuery({
     queryKey: ['dataLikes', data._id],
@@ -47,18 +56,23 @@ const TwitterCard = ({ profile, data }: Props) => {
 
   const dataLike = useMemo(() => dataLikes?.data.result, [dataLikes])
   const dataComments = useMemo(() => dataTweetComments?.data?.results, [dataTweetComments])
-  const toggleModal = () => {
-    setIsModalOpen(!isModalOpen)
-  }
 
-  const handleDeleteTweet = () => {
-    console.log('Delete Tweet')
-    toggleModal()
+  const handleDeleteTweet = async (tweet_id: string) => {
+    handleDeletedMutation.mutateAsync(tweet_id, {
+      onSuccess: (res) => {
+        console.log(res)
+        refetchAllDataTweet()
+        toast.success(`${(res as any).data.message}`)
+        refetch()
+      },
+      onError: () => {
+        toast.error('Delete Tweet Fail')
+      }
+    })
   }
 
   const handleEditTweet = () => {
     console.log('Edit Tweet')
-    toggleModal()
   }
 
   const handleOpenReplyModal = () => {
@@ -73,10 +87,9 @@ const TwitterCard = ({ profile, data }: Props) => {
   const handleShareTweet = () => {
     console.log('Share Tweet')
   }
-  const handleCreateComment = () => {
-    createCommentMutation.mutate(undefined, {
+  const handleCreateComment = (idTweetComment: string) => {
+    createCommentMutation.mutate(idTweetComment, {
       onSuccess: () => {
-        refetch()
         setComment('')
       },
       onError: () => {
@@ -141,7 +154,12 @@ const TwitterCard = ({ profile, data }: Props) => {
                   <div className='cursor-pointer font-semibold hover:bg-gray-600 transition-all px-3 py-1 rounded-xl'>
                     Edit
                   </div>
-                  <div className='cursor-pointer font-semibold hover:bg-gray-600 px-3 py-1 rounded-xl'>Delete</div>
+                  <div
+                    onClick={() => handleDeleteTweet(data?._id as string)}
+                    className='cursor-pointer font-semibold hover:bg-gray-600 px-3 py-1 rounded-xl'
+                  >
+                    Delete
+                  </div>
                 </PopoverContent>
               </Popover>
             </div>
@@ -161,7 +179,6 @@ const TwitterCard = ({ profile, data }: Props) => {
                   className='flex items-center space-x-2 hover:text-blue-500 transition group cursor-pointer'
                   onClick={() => {
                     setCommentModalOpen(!commentModalOpen)
-                    setIdTweetComment(data._id as string)
                   }}
                 >
                   <BsChat className='group-hover:text-blue-500' onClick={handleOpenReplyModal} />
@@ -248,7 +265,7 @@ const TwitterCard = ({ profile, data }: Props) => {
                       />
                     </div>
                     <div
-                      onClick={handleCreateComment}
+                      onClick={() => handleCreateComment(data?._id as string)}
                       className='bg-blue-950 p-4 items-center text-center text-white rounded-xl cursor-pointer font-semibold'
                     >
                       Send

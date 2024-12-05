@@ -21,7 +21,6 @@ class Http {
         if (this.accessToken && config.headers) {
           config.headers.authorization = this.accessToken
         }
-        console.log(this.accessToken)
 
         return config
       },
@@ -40,8 +39,6 @@ class Http {
           saveAccessTokenToLS(this.accessToken)
           setProfileFromLS(data.data.user)
         } else if (url === '/logout') {
-          console.log('t')
-
           this.accessToken = ''
           clearLocalStorage()
         }
