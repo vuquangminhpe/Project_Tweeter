@@ -387,3 +387,75 @@ export const createCommentValidator = validate(
     }
   })
 )
+
+export const editTweetValidator = validate(
+  checkSchema({
+    tweet_id: {
+      custom: {
+        options: async (value, { req }) => {
+          const tweet = await databaseService.tweets.findOne({
+            _id: new ObjectId(value as string)
+          })
+
+          if (tweet === null) {
+            throw new ErrorWithStatus({
+              message: TWEET_MESSAGE.TWEET_NOT_FOUND,
+              status: HTTP_STATUS.NOT_FOUND
+            })
+          }
+
+          if (tweet.user_id.toString() !== req.decode_authorization.user_id) {
+            throw new ErrorWithStatus({
+              message: TWEET_MESSAGE.UNAUTHORIZED,
+              status: HTTP_STATUS.UNAUTHORIZED
+            })
+          }
+        }
+      }
+    },
+    newContent: {
+      isString: {
+        errorMessage: TWEET_MESSAGE.NEW_CONTENT_MUST_BE_A_NON_EMPTY_STRING
+      },
+      custom: {
+        options: (value) => {
+          if (value === '') {
+            throw new Error(TWEET_MESSAGE.NEW_CONTENT_MUST_BE_A_NON_EMPTY_STRING)
+          }
+          return true
+        }
+      }
+    }
+  })
+)
+
+export const deleteTweetValidator = validate(
+  checkSchema({
+    tweet_id: {
+      isString: {
+        errorMessage: TWEET_MESSAGE.INVALID_TWEET_ID
+      },
+      custom: {
+        options: async (value, { req }) => {
+          const tweet = await databaseService.tweets.findOne({
+            _id: new ObjectId(value as string)
+          })
+
+          if (tweet === null) {
+            throw new ErrorWithStatus({
+              message: TWEET_MESSAGE.TWEET_NOT_FOUND,
+              status: HTTP_STATUS.NOT_FOUND
+            })
+          }
+
+          if (tweet.user_id.toString() !== req.decode_authorization.user_id) {
+            throw new ErrorWithStatus({
+              message: TWEET_MESSAGE.UNAUTHORIZED,
+              status: HTTP_STATUS.UNAUTHORIZED
+            })
+          }
+        }
+      }
+    }
+  })
+)

@@ -17,6 +17,7 @@ import commentApi from '@/apis/comments.api'
 import { Comment, CommentRequest } from '@/types/Comments.type'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { ScrollArea } from '@/components/ui/scroll-area'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 
 interface Props {
   profile: User | null
@@ -76,6 +77,7 @@ const TwitterCard = ({ profile, data }: Props) => {
     createCommentMutation.mutate(undefined, {
       onSuccess: () => {
         refetch()
+        setComment('')
       },
       onError: () => {
         console.log('Error')
@@ -90,9 +92,10 @@ const TwitterCard = ({ profile, data }: Props) => {
     const currentDate = new Date()
     const tweetDate = new Date(date)
     const diffTime = Math.abs(currentDate.getTime() - tweetDate.getTime())
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
-    const diffHours = Math.ceil(diffTime / (1000 * 60 * 60))
-    const diffMinutes = Math.ceil(diffTime / (1000 * 60))
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24))
+    const diffHours = Math.floor(diffTime / (1000 * 60 * 60))
+    const diffMinutes = Math.floor(diffTime / (1000 * 60))
+
     if (diffDays > 0) {
       return `${diffDays}d`
     } else if (diffHours > 0) {
@@ -101,7 +104,6 @@ const TwitterCard = ({ profile, data }: Props) => {
       return `${diffMinutes}m`
     }
   }
-  console.log(idTweetComment)
 
   return (
     <div className='bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300 overflow-hidden'>
@@ -123,35 +125,25 @@ const TwitterCard = ({ profile, data }: Props) => {
             <div className='flex justify-between items-center'>
               <div className='flex items-center space-x-2'>
                 <span className='text-base font-bold text-gray-800 hover:underline'>{profile?.name}</span>
-                <span className='text-sm text-gray-500'>@{profile?.username || 'no user name'} · 2m</span>
+                <span className='text-sm text-gray-500'>
+                  @{profile?.username || 'no user name'} · {commentTime(data?.updated_at as Date)}
+                </span>
                 <GoVerified className='text-blue-500' />
               </div>
-              <div className='relative'>
-                {data?.user_id === profile?._id && (
-                  <FaEllipsisH
-                    className='text-gray-500 text-lg cursor-pointer hover:text-blue-500 transition'
-                    onClick={toggleModal}
-                  />
-                )}
-                {isModalOpen || (
-                  <div className='absolute top-full right-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg w-48 py-2 z-50'>
-                    <ul>
-                      <li
-                        className='px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer transition'
-                        onClick={handleDeleteTweet}
-                      >
-                        Delete
-                      </li>
-                      <li
-                        className='px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer transition'
-                        onClick={handleEditTweet}
-                      >
-                        Edit
-                      </li>
-                    </ul>
+
+              <Popover>
+                <PopoverTrigger>
+                  {data?.user_id === profile?._id && (
+                    <FaEllipsisH className='text-gray-500 text-lg cursor-pointer hover:text-blue-500 transition' />
+                  )}
+                </PopoverTrigger>
+                <PopoverContent className='flex gap-5 justify-around max-w-44 bg-slate-100 rounded-xl shadow-xl'>
+                  <div className='cursor-pointer font-semibold hover:bg-gray-600 transition-all px-3 py-1 rounded-xl'>
+                    Edit
                   </div>
-                )}
-              </div>
+                  <div className='cursor-pointer font-semibold hover:bg-gray-600 px-3 py-1 rounded-xl'>Delete</div>
+                </PopoverContent>
+              </Popover>
             </div>
 
             <div className='mt-3'>
@@ -252,10 +244,6 @@ const TwitterCard = ({ profile, data }: Props) => {
                       <textarea
                         className='items-center p-1 w-full rounded-xl focus:outline-none'
                         placeholder='comment tweet .....'
-                        onMouseEnter={(e) => {
-                          setComment(e.currentTarget.value)
-                          handleCreateComment()
-                        }}
                         onChange={(e) => setComment(e.currentTarget.value)}
                       />
                     </div>

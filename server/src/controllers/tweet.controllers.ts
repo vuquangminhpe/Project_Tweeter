@@ -2,7 +2,13 @@ import { ObjectId } from 'mongodb'
 
 import { Request, Response } from 'express'
 import { ParamsDictionary } from 'express-serve-static-core'
-import { Pagination, TweetParam, TweetQuery, TweetRequestBody } from '~/models/request/Tweet.request'
+import {
+  EditTweetRequestBody,
+  Pagination,
+  TweetParam,
+  TweetQuery,
+  TweetRequestBody
+} from '~/models/request/Tweet.request'
 import tweetsService from '~/services/tweets.services'
 import { TokenPayload } from '~/models/request/User.request'
 import { TWEET_MESSAGE } from '~/constants/messages'
@@ -76,5 +82,22 @@ export const getNewTweetController = async (req: Request<ParamsDictionary, any, 
     message: 'Get New Feeds Success',
     results: tweets,
     total
+  })
+}
+export const editTweetController = async (req: Request<ParamsDictionary, any, EditTweetRequestBody>, res: Response) => {
+  const { user_id } = req.decode_authorization as TokenPayload
+
+  const result = await tweetsService.editTweet(user_id, req.body)
+  res.json({
+    message: TWEET_MESSAGE.EDIT_TWEET_SUCCESS,
+    data: result
+  })
+}
+export const deleteTweetController = async (req: Request<ParamsDictionary, any, any, TweetQuery>, res: Response) => {
+  const { user_id } = req.decode_authorization as TokenPayload
+  const result = await tweetsService.deleteTweet(user_id, req.query.tweet_id as string)
+  res.json({
+    message: TWEET_MESSAGE.DELETE_TWEET_SUCCESS,
+    data: result
   })
 }

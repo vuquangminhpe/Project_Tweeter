@@ -1,6 +1,8 @@
 import { Router } from 'express'
 import {
   createTweetController,
+  deleteTweetController,
+  editTweetController,
   getAllTweetController,
   getNewTweetController,
   getTweetChildrenController,
@@ -9,6 +11,8 @@ import {
 import {
   audienceValidator,
   createTweetValidator,
+  deleteTweetValidator,
+  editTweetValidator,
   getTweetChildrenValidator,
   paginationValidator,
   tweetIdValidator
@@ -94,4 +98,33 @@ tweetsRouter.get(
   AccessTokenValidator,
   verifiedUserValidator,
   wrapAsync(getNewTweetController)
+)
+
+/**
+ * Description: edit tweet
+ * Path: /edit
+ * Method: PUT
+ * Body:  tweet_id: string, new_tweetContent: string
+ * Header: {Authorization: Bearer <access_token>}
+ */
+tweetsRouter.put(
+  '/edit',
+  AccessTokenValidator,
+  verifiedUserValidator,
+  editTweetValidator,
+  wrapAsync(editTweetController)
+)
+
+/**
+ * Description: delete tweet
+ * Path: /:tweet_id
+ * Method: PUT
+ * Header: {Authorization: Bearer <access_token>}
+ */
+tweetsRouter.delete(
+  '/:tweet_id',
+  AccessTokenValidator,
+  verifiedUserValidator,
+  deleteTweetValidator,
+  wrapAsync(deleteTweetController)
 )

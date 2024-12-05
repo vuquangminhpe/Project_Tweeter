@@ -1,7 +1,7 @@
 import { checkSchema, ParamSchema } from 'express-validator'
 import { validate } from '../utils/validation'
 import usersService from '../services/users.services'
-import { USERS_MESSAGES } from '~/constants/messages'
+import { TWEET_MESSAGE, USERS_MESSAGES } from '~/constants/messages'
 import databaseService from '~/services/database.services'
 import { hashPassword } from '~/utils/crypto'
 import { verifyToken } from '~/utils/jwt'
@@ -562,3 +562,5 @@ export const getConversationsValidator = validate(
     ['params']
   )
 )
+
+

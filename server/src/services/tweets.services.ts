@@ -1,4 +1,4 @@
-import { TweetRequestBody } from '~/models/request/Tweet.request'
+import { EditTweetRequestBody, TweetRequestBody } from '~/models/request/Tweet.request'
 import databaseService from './database.services'
 import Tweet from '~/models/schemas/Tweet.schema'
 import { ObjectId, WithId } from 'mongodb'
@@ -496,6 +496,45 @@ class TweetService {
       }
     })
     return { tweets, total: total[0].total }
+  }
+  async editTweet(user_id: string, body: EditTweetRequestBody) {
+    const results = await databaseService.tweets.findOneAndUpdate(
+      {
+        _id: new ObjectId(body.tweet_id as string),
+        user_id: new ObjectId(user_id)
+      },
+      {
+        $set: {
+          content: body.content,
+          medias: body.medias
+        },
+        $currentDate: {
+          updated_at: true
+        }
+      },
+      {
+        returnDocument: 'after'
+      }
+    )
+    return results
+  }
+  async deleteTweet(user_id: string, tweet_id: string) {
+    const [results] = await Promise.all([
+      databaseService.tweets.findOneAndDelete({
+        _id: new ObjectId(tweet_id),
+        user_id: new ObjectId(user_id)
+      }),
+      databaseService.likes.deleteMany({
+        tweet_id: new ObjectId(tweet_id)
+      }),
+      databaseService.bookmarks.deleteMany({
+        tweet_id: new ObjectId(tweet_id)
+      }),
+      databaseService.comments.deleteMany({
+        tweet_id: new ObjectId(tweet_id)
+      })
+    ])
+    return results
   }
 }
 const tweetsService = new TweetService()

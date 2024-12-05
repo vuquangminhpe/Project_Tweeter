@@ -89,7 +89,12 @@ export const TWEET_MESSAGE = {
   GET_TWEET_DETAILS_SUCCESS: 'Get tweet details success',
   TWEET_IS_NOT_PUBLIC: 'Tweet is not public',
   GET_TWEET_CHILDREN_SUCCESS: 'Get tweet children success',
-  TWEET_ID_MUST_BE_A_STRING: 'Tweet id must be a string'
+  TWEET_ID_MUST_BE_A_STRING: 'Tweet id must be a string',
+  UNAUTHORIZED: 'Unauthorized',
+  NEW_CONTENT_MUST_BE_A_NON_EMPTY_STRING: 'New content must be a non empty string',
+
+  EDIT_TWEET_SUCCESS: 'Edit tweet success',
+  DELETE_TWEET_SUCCESS: 'Delete tweet success'
 } as const
 
 export const BOOKMARKS_MESSAGE = {

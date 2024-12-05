@@ -22,3 +22,11 @@ export interface Pagination {
   limit: string
   page: string
 }
+
+export interface EditTweetRequestBody {
+  tweet_id: string
+  content: string
+  hashtags: string[]
+  mentions: string[]
+  medias: Media[]
+}
