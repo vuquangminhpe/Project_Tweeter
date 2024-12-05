@@ -17,7 +17,6 @@ import commentApi from '@/apis/comments.api'
 import { Comment, CommentRequest } from '@/types/Comments.type'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { Separator } from '@/components/ui/separator'
 
 interface Props {
   profile: User | null
@@ -29,6 +28,7 @@ const TwitterCard = ({ profile, data }: Props) => {
   const navigate = useNavigate()
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [commentModalOpen, setCommentModalOpen] = useState(false)
+  const [likeModalOpen, setLikeModalOpen] = useState(false)
   const [liked, setLiked] = useState(false)
 
   const { data: dataTweetComments } = useQuery({
@@ -75,113 +75,139 @@ const TwitterCard = ({ profile, data }: Props) => {
   }
 
   return (
-    <div>
-      <div className='p-4 relative border-b border-gray-700'>
-        <div className='flex space-x-5'>
+    <div className='bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300 overflow-hidden'>
+      <div className='p-4 border-b border-gray-100'>
+        <div className='flex space-x-4'>
           <div
-            className='w-12 h-12 rounded-full overflow-hidden cursor-pointer'
+            className='w-12 h-12 rounded-full overflow-hidden cursor-pointer ring-2 ring-blue-100 hover:ring-blue-300 transition'
             onClick={() => navigate(`/user/profile/${profile?._id}`)}
-          ></div>
+          >
+            <Avatar className='w-full h-full'>
+              <AvatarImage src={profile?.avatar} alt={profile?.name} className='object-cover' />
+              <AvatarFallback className='bg-blue-100 text-blue-600'>
+                {profile?.name?.charAt(0).toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
+          </div>
+
           <div className='w-full'>
             <div className='flex justify-between items-center'>
               <div className='flex items-center space-x-2'>
-                <span className='text-base font-semibold'>{profile?.name}</span>
-                <span className='opacity-70 text-sm'>
-                  @{profile?.username ? profile?.username : 'no user name'} · 2m
-                </span>
+                <span className='text-base font-bold text-gray-800 hover:underline'>{profile?.name}</span>
+                <span className='text-sm text-gray-500'>@{profile?.username || 'no user name'} · 2m</span>
                 <GoVerified className='text-blue-500' />
               </div>
-              <FaEllipsisH
-                className='ml-2 text-gray-500 text-lg cursor-pointer hover:text-gray-400'
-                onClick={toggleModal}
-              />
+              <div className='relative'>
+                <FaEllipsisH
+                  className='text-gray-500 text-lg cursor-pointer hover:text-blue-500 transition'
+                  onClick={toggleModal}
+                />
+                {isModalOpen && (
+                  <div className='absolute top-full right-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg w-48 py-2 z-50'>
+                    <ul>
+                      <li
+                        className='px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer transition'
+                        onClick={handleDeleteTweet}
+                      >
+                        Delete
+                      </li>
+                      <li
+                        className='px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer transition'
+                        onClick={handleEditTweet}
+                      >
+                        Edit
+                      </li>
+                    </ul>
+                  </div>
+                )}
+              </div>
             </div>
 
-            {isModalOpen && (
-              <div className='absolute top-10 right-0 bg-black border border-gray-700 shadow-lg rounded-lg w-48 py-2 z-50'>
-                <ul className='space-y-1'>
-                  <li
-                    className='text-sm text-white px-4 py-2 cursor-pointer hover:bg-gray-800 rounded-md transition'
-                    onClick={handleDeleteTweet}
-                  >
-                    Delete
-                  </li>
-                  <li
-                    className='text-sm text-white px-4 py-2 cursor-pointer hover:bg-gray-800 rounded-md transition'
-                    onClick={handleEditTweet}
-                  >
-                    Edit
-                  </li>
-                </ul>
-              </div>
-            )}
-
-            <div className='mt-2'>
+            <div className='mt-3'>
               <div className='cursor-pointer'>
-                <p className='mb-2'>{data?.content}</p>
+                <p className='text-gray-800 mb-3'>{data?.content}</p>
                 <img
-                  className='max-w-md h-auto rounded-xl'
+                  className='w-full max-h-96 object-cover rounded-xl'
                   src='https://anhtoc.vn/wp-content/uploads/2024/09/avatar-vo-tri-meo-2.webp'
                   alt='image-twitter'
                 />
               </div>
 
-              <div className='py-3 flex justify-between items-center text-gray-400'>
-                <div className='flex items-center space-x-2' onClick={() => setCommentModalOpen(!commentModalOpen)}>
-                  <BsChat className='cursor-pointer hover:text-blue-500' onClick={handleOpenReplyModal} />
+              <div className='py-4 flex justify-between items-center text-gray-500'>
+                <div
+                  className='flex items-center space-x-2 hover:text-blue-500 transition group cursor-pointer'
+                  onClick={() => setCommentModalOpen(!commentModalOpen)}
+                >
+                  <BsChat className='group-hover:text-blue-500' onClick={handleOpenReplyModal} />
                   <p>{(dataComments as any)?.comments.length}</p>
                 </div>
 
-                <div className='flex items-center space-x-2'>
+                <div
+                  className='flex items-center space-x-2 hover:text-red-500 transition group cursor-pointer'
+                  onMouseEnter={() => setLikeModalOpen(true)}
+                  onMouseLeave={() => setLikeModalOpen(false)}
+                >
                   {liked ? (
-                    <MdFavorite className='cursor-pointer text-red-500 hover:text-red-600' onClick={handleLikeTweet} />
+                    <MdFavorite className='text-red-500 group-hover:text-red-600' onClick={handleLikeTweet} />
                   ) : (
-                    <MdFavoriteBorder className='cursor-pointer hover:text-red-500' onClick={handleLikeTweet} />
+                    <MdFavoriteBorder className='group-hover:text-red-500' onClick={handleLikeTweet} />
                   )}
                   <p>{(dataLike as unknown as Likes[])?.length}</p>
+
+                  {likeModalOpen && (
+                    <ScrollArea className='fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 max-h-64 bg-white rounded-lg shadow-lg border p-4 z-50 overflow-auto'>
+                      <div>
+                        <h4 className='mb-4 text-sm font-semibold text-gray-700'>Likes</h4>
+                        {(dataLike as Likes[])?.map((like: Likes) => (
+                          <div key={like._id} className='mb-2 pb-2 border-b last:border-b-0'>
+                            <div className='flex items-center space-x-2'>
+                              <Avatar className='w-8 h-8'>
+                                <AvatarImage src={like.user_info.avatar} alt={like.user_info.username} />
+                                <AvatarFallback>{like.user_info.username.charAt(0).toUpperCase()}</AvatarFallback>
+                              </Avatar>
+                              <span className='text-sm text-gray-800'>{like.user_info.username}</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </ScrollArea>
+                  )}
                 </div>
 
-                <div className='flex items-center space-x-2'>
-                  <RiBarChartGroupedLine className='cursor-pointer hover:text-blue-500' onClick={handleViewAnalytics} />{' '}
+                <div className='flex items-center space-x-2 hover:text-blue-500 transition group cursor-pointer'>
+                  <RiBarChartGroupedLine onClick={handleViewAnalytics} />
                   <p>54</p>
                 </div>
 
                 <div className='flex items-center space-x-4'>
                   <CiBookmark
-                    className='cursor-pointer hover:text-blue-500'
+                    className='cursor-pointer hover:text-blue-500 transition'
                     onClick={() => console.log('Bookmark Tweet')}
                   />
-                  <RiShare2Fill className='cursor-pointer hover:text-blue-500' onClick={handleShareTweet} />
+                  <RiShare2Fill className='cursor-pointer hover:text-blue-500 transition' onClick={handleShareTweet} />
                 </div>
               </div>
-              {commentModalOpen && (
-                <div className='h-auto w-full transition-all flex flex-col gap-3 mx-auto'>
-                  {(dataComments as unknown as Comment)?.comments?.map((comment: CommentRequest) => (
-                    <div key={comment?._id} className='flex flex-col gap-3'>
-                      <div className='flex flex-row gap-2'>
-                        <Avatar className='w-8 h-8 bg-gray-500 rounded-full object-cover'>
-                          <AvatarImage src={comment?.user_info?.avatar} alt='@shadcn' />
-                          <AvatarFallback>{comment?.user_info?.username?.split('')[0].toUpperCase()}</AvatarFallback>
-                        </Avatar>
 
-                        <div className='translate-y-1'>{comment?.user_info?.username}</div>
+              {commentModalOpen && (
+                <div className='mt-4 space-y-3'>
+                  {(dataComments as unknown as Comment)?.comments?.map((comment: CommentRequest) => (
+                    <div key={comment?._id} className='flex items-start space-x-3 bg-gray-50 p-3 rounded-lg'>
+                      <Avatar className='w-8 h-8'>
+                        <AvatarImage src={comment.user_info.avatar} alt={comment.user_info.username} />
+                        <AvatarFallback>{comment.user_info.username.charAt(0).toUpperCase()}</AvatarFallback>
+                      </Avatar>
+
+                      <div>
+                        <div className='flex items-center space-x-2'>
+                          <span className='font-semibold text-sm text-gray-800'>{comment.user_info.username}</span>
+                          <span className='text-xs text-gray-500'>2m</span>
+                        </div>
+                        <p className='text-sm text-gray-700 mt-1'>{comment?.commentContent}</p>
                       </div>
-                      <div>{comment?.commentContent}</div>
                     </div>
                   ))}
                 </div>
               )}
-              <ScrollArea className='h-auto w-48 rounded-md border'>
-                <div className='p-4'>
-                  <h4 className='mb-4 text-sm font-medium leading-none'>TYM</h4>
-                  {(dataLike as unknown as Likes[])?.map((like) => (
-                    <div key={like._id}>
-                      <div className='text-sm'>{like.user_info.username}</div>
-                      <Separator className='my-2' />
-                    </div>
-                  ))}
-                </div>
-              </ScrollArea>
             </div>
           </div>
         </div>
