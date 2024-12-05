@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useNavigate } from 'react-router-dom'
 import { GoVerified } from 'react-icons/go'
@@ -36,20 +37,25 @@ const TwitterCard = ({ profile, data, refetchAllDataTweet }: Props) => {
   const navigate = useNavigate()
   const [commentModalOpen, setCommentModalOpen] = useState(false)
   const [likeModalOpen, setLikeModalOpen] = useState(false)
-  const [liked, setLiked] = useState(false)
   const [comment, setComment] = useState('')
   const createCommentMutation = useMutation({
     mutationFn: (idTweetComment: string) =>
       commentApi.createComment({ tweet_id: idTweetComment, commentContent: comment, commentLink: [] })
   })
-  const { data: dataTweetComments, refetch } = useQuery({
+  const { data: dataTweetComments, refetch: refetchDataComment } = useQuery({
     queryKey: ['dataTweetComments', data._id],
     queryFn: () => commentApi.getTweetComments(data?._id as string, LIMIT, PAGE)
   })
   const handleDeletedMutation = useMutation({
     mutationFn: (tweet_id: string) => tweetsApi.deleteTweet(tweet_id)
   })
-  const { data: dataLikes } = useQuery({
+  const handleLikeTweetMutation = useMutation({
+    mutationFn: (tweet_id: string) => likesApi.likeTweet(tweet_id)
+  })
+  const handleUnlikeTweetMutation = useMutation({
+    mutationFn: (tweet_id: string) => likesApi.unlikeTweet(tweet_id)
+  })
+  const { data: dataLikes, refetch: refetchDataLikes } = useQuery({
     queryKey: ['dataLikes', data._id],
     queryFn: () => likesApi.getLikesTweet(data._id as string)
   })
@@ -62,15 +68,23 @@ const TwitterCard = ({ profile, data, refetchAllDataTweet }: Props) => {
       onSuccess: (res) => {
         console.log(res)
         refetchAllDataTweet()
-        toast.success(`${(res as any).data.message}`)
-        refetch()
       },
       onError: () => {
         toast.error('Delete Tweet Fail')
       }
     })
   }
-
+  const handleUnLikesTweet = async (tweet_id: string) => {
+    handleUnlikeTweetMutation.mutateAsync(tweet_id, {
+      onSuccess: () => {
+        refetchDataLikes()
+        refetchAllDataTweet()
+      },
+      onError: () => {
+        toast.error('Delete Tweet Fail')
+      }
+    })
+  }
   const handleEditTweet = () => {
     console.log('Edit Tweet')
   }
@@ -79,9 +93,16 @@ const TwitterCard = ({ profile, data, refetchAllDataTweet }: Props) => {
     console.log('Open Reply Modal')
   }
 
-  const handleLikeTweet = () => {
-    setLiked(!liked)
-    console.log(liked ? 'Unliked Tweet' : 'Liked Tweet')
+  const handleLikeTweet = async (tweet_id: string) => {
+    handleLikeTweetMutation.mutateAsync(tweet_id, {
+      onSuccess: () => {
+        refetchDataComment()
+        refetchDataLikes()
+      },
+      onError: () => {
+        console.log('Error')
+      }
+    })
   }
 
   const handleShareTweet = () => {
@@ -91,16 +112,20 @@ const TwitterCard = ({ profile, data, refetchAllDataTweet }: Props) => {
     createCommentMutation.mutate(idTweetComment, {
       onSuccess: () => {
         setComment('')
+        refetchDataComment()
       },
       onError: () => {
         console.log('Error')
       }
     })
-    refetch()
+    refetchDataComment()
   }
   const handleViewAnalytics = () => {
     console.log('View Analytics')
   }
+  const userLike = dataLike?.filter((like) => like.user_info.username === profile?.username)
+  console.log(userLike)
+
   const commentTime = (date: Date) => {
     const currentDate = new Date()
     const tweetDate = new Date(date)
@@ -190,10 +215,16 @@ const TwitterCard = ({ profile, data, refetchAllDataTweet }: Props) => {
                   onMouseEnter={() => setLikeModalOpen(true)}
                   onMouseLeave={() => setLikeModalOpen(false)}
                 >
-                  {liked ? (
-                    <MdFavorite className='text-red-500 group-hover:text-red-600' onClick={handleLikeTweet} />
+                  {Number(userLike?.length) > 0 ? (
+                    <MdFavorite
+                      className='text-red-500 group-hover:text-red-600'
+                      onClick={() => handleUnLikesTweet(data?._id as string)}
+                    />
                   ) : (
-                    <MdFavoriteBorder className='group-hover:text-red-500' onClick={handleLikeTweet} />
+                    <MdFavoriteBorder
+                      className='group-hover:text-red-500'
+                      onClick={() => handleLikeTweet(data?._id as string)}
+                    />
                   )}
                   <p>{(dataLike as unknown as Likes[])?.length}</p>
 

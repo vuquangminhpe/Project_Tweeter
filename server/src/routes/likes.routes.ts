@@ -27,7 +27,7 @@ likesTweetRouter.post(
  * header: {Authorization:Bearer <access_token> }
  */
 likesTweetRouter.delete(
-  '/tweets/:tweet_id',
+  '/:tweet_id',
   AccessTokenValidator,
   verifiedUserValidator,
   tweetIdValidator,
