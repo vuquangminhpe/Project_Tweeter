@@ -120,7 +120,7 @@ const Navigation = () => {
             <Avatar>
               <AvatarImage src={profile?.avatar} alt='@shadcn' />
               <AvatarFallback className='bg-blue-100 text-blue-500'>
-                {profile?.username.split('')[0].toUpperCase()}
+                {profile?.username?.split('')[0].toUpperCase()}
               </AvatarFallback>
             </Avatar>
           </div>

@@ -12,15 +12,15 @@ import TwitterCard from './TwitterCard'
 import { AppContext } from '@/Contexts/app.context'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import tweetsApi from '@/apis/tweets.api'
-import { Tweets } from '@/types/Tweet.type'
 
 interface TweetFormValues {
   content: string
-  image: File | string
+  images: File[]
 }
 
 const validationSchema = Yup.object().shape({
-  content: Yup.string().required('Tweet text is required')
+  content: Yup.string().required('Tweet text is required'),
+  images: Yup.array().max(4, 'You can upload maximum 4 files')
 })
 
 const HomeSection = () => {
@@ -37,7 +37,9 @@ const HomeSection = () => {
 
   const [activeTab, setActiveTab] = useState<string>('forYou')
   const [uploadingImage, setUploadingImage] = useState<boolean>(false)
-  const [imagePreview, setImagePreview] = useState<string | ArrayBuffer | null>(null)
+  const [selectImages, setSelectImages] = useState<File[]>([])
+  const [imagePreviews, setImagePreviews] = useState<(string | ArrayBuffer)[]>([])
+
   const [selectImage, setSelectImage] = useState<File | string>('')
 
   const handleSubmit = (values: TweetFormValues) => {
@@ -48,21 +50,34 @@ const HomeSection = () => {
   const formik = useFormik<TweetFormValues>({
     initialValues: {
       content: '',
-      image: ''
+      images: []
     },
     onSubmit: handleSubmit,
     validationSchema
   })
-  const handleImageSelect = (e: any) => {
-    handleSelectImage(e)
-    const file = e.target.files[0]
-    if (file) {
-      const reader = new FileReader()
-      reader.onloadend = () => {
-        setImagePreview(reader.result)
-      }
-      reader.readAsDataURL(file)
+  const handleImageSelect = (event: ChangeEvent<HTMLInputElement>) => {
+    setUploadingImage(true)
+    const files = event.target.files
+    if (files) {
+      const fileArray = Array.from(files)
+
+      setSelectImages(fileArray)
+
+      const previews: (string | ArrayBuffer)[] = []
+      fileArray.forEach((file) => {
+        const reader = new FileReader()
+        reader.onloadend = () => {
+          previews.push(reader.result as any)
+          if (previews.length === fileArray.length) {
+            setImagePreviews(previews)
+          }
+        }
+        reader.readAsDataURL(file)
+      })
+
+      formik.setFieldValue('image', fileArray)
     }
+    setUploadingImage(false)
   }
   const handleSelectImage = (event: ChangeEvent<HTMLInputElement>) => {
     setUploadingImage(true)
@@ -145,19 +160,31 @@ const HomeSection = () => {
                 <p className='text-red-500 text-sm mt-2'>{formik.errors.content}</p>
               )}
 
-              {imagePreview && (
-                <div className='relative mt-4'>
-                  {typeof imagePreview === 'string' && (
-                    <img src={imagePreview} alt='Preview' className='size-96 object-cover rounded-xl' />
-                  )}
-                  <button
-                    type='button'
-                    onClick={() => setImagePreview(null)}
-                    className='absolute top-2 right-2 bg-black/50 text-white 
-                    rounded-full p-1 hover:bg-black/70 transition'
-                  >
-                    ✕
-                  </button>
+              {imagePreviews.length > 0 && (
+                <div className='grid grid-cols-3 gap-4 mt-4'>
+                  {imagePreviews.map((preview, index) => (
+                    <div key={index} className='relative'>
+                      {typeof preview === 'string' && (
+                        <img src={preview} alt={`Preview ${index}`} className='w-full h-48 object-cover rounded-xl' />
+                      )}
+                      <button
+                        type='button'
+                        onClick={() => {
+                          const newPreviews = [...imagePreviews]
+                          const newImages = [...selectImages]
+                          newPreviews.splice(index, 1)
+                          newImages.splice(index, 1)
+                          setImagePreviews(newPreviews)
+                          setSelectImages(newImages)
+                          formik.setFieldValue('image', newImages)
+                        }}
+                        className='absolute top-2 right-2 bg-black/50 text-white 
+          rounded-full p-1 hover:bg-black/70 transition'
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  ))}
                 </div>
               )}
 
@@ -165,7 +192,13 @@ const HomeSection = () => {
                 <div className='flex space-x-4 text-blue-600'>
                   <label className='cursor-pointer hover:text-blue-800 transition'>
                     <CiImageOn className='text-2xl' />
-                    <input type='file' className='hidden' onChange={handleImageSelect} />
+                    <input
+                      type='file'
+                      className='hidden'
+                      multiple
+                      accept='image/*,video/*'
+                      onChange={handleImageSelect}
+                    />
                   </label>
                   <button type='button' className='hover:text-blue-800 transition'>
                     <IoLocationSharp className='text-2xl' />
