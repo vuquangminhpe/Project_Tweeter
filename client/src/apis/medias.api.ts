@@ -12,6 +12,17 @@ const mediasApi = {
         'Content-Type': 'multipart/form-data'
       }
     })
+  },
+  deleteS3: (filename: string) => http.delete<SuccessResponse<Media>>(`/medias/delete-s3`, { data: { filename } }),
+  uploadVideo: (video: File) => {
+    const formData = new FormData()
+    formData.append('video', video)
+
+    return http.post<SuccessResponse<Media>>('/medias/upload-video-hls', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    })
   }
 }
 export default mediasApi
