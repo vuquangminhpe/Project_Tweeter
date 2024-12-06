@@ -129,13 +129,6 @@ const RightPart: React.FC = () => {
         </div>
         <button className='text-blue-400 hover:underline'>Show more</button>
       </div>
-
-      {/* Footer Section */}
-      <div className='text-gray-500 text-xs space-y-2'>
-        <p>Terms of Service Privacy Policy Cookie Policy</p>
-        <p>Accessibility Ads info More...</p>
-        <p>© 2024 X Corp.</p>
-      </div>
     </div>
   )
 }

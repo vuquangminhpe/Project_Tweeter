@@ -10,8 +10,9 @@ import {
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
 import { Link } from 'react-router-dom'
-
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 const Navigation = () => {
+  const profile = JSON.parse(localStorage.getItem('profile') || '{}')
   const [showTitles, setShowTitles] = useState(true)
 
   const toggleTitlesVisibility = () => {
@@ -116,39 +117,38 @@ const Navigation = () => {
           `}
         >
           <div className='w-12 h-12 rounded-full overflow-hidden'>
-            <img
-              src='https://anhtoc.vn/wp-content/uploads/2024/09/avatar-vo-tri-meo-2.webp'
-              alt='Avatar'
-              className='w-full h-full object-cover'
-            />
+            <Avatar>
+              <AvatarImage src={profile?.avatar} alt='@shadcn' />
+              <AvatarFallback className='bg-blue-100 text-blue-500'>
+                {profile?.username.split('')[0].toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
           </div>
-          <div
-            className={`
+          <DropdownMenu>
+            <DropdownMenuTrigger>
+              <div
+                className={`
               transition-all 
               duration-300 
               ease-in-out 
               overflow-hidden
               ${showTitles ? 'opacity-100 max-w-full visible' : 'opacity-0 max-w-0 invisible absolute'}
             `}
-          >
-            <span className='text-base font-semibold block'>Vũ Hiếu</span>
-            <span className='opacity-70 text-sm block'>@Vuhieu123</span>
-          </div>
-          <FaEllipsisH className='ml-2 text-gray-500 text-lg' />
-        </div>
+              >
+                <span className='opacity-70 text-sm block'>{profile.username}</span>
+              </div>
+              <FaEllipsisH className='ml-2 text-gray-500 text-lg' />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              <DropdownMenuLabel className='cursor-pointer'>My Account</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem className='cursor-pointer'>Profile</DropdownMenuItem>
+              <DropdownMenuItem className='cursor-pointer'>Messages</DropdownMenuItem>
 
-        <DropdownMenu>
-          <DropdownMenuTrigger>
-            {' '}
-            <span className='text-base font-semibold block'>Vũ Hiếu</span>
-            <span className='opacity-70 text-sm block'>@Vuhieu123</span>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent>
-            <DropdownMenuLabel>My Account</DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem>Logout</DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+              <DropdownMenuItem>Logout</DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
 
         <button
           className='absolute bottom-24 left-6 bg-blue-500 text-white px-3 py-2 rounded-full'
