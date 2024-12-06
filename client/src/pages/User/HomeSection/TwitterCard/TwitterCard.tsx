@@ -8,7 +8,7 @@ import { BsChat } from 'react-icons/bs'
 import { MdFavorite, MdFavoriteBorder } from 'react-icons/md'
 import { RiShare2Fill } from 'react-icons/ri'
 import { RiBarChartGroupedLine } from 'react-icons/ri'
-import { CiBookmark } from 'react-icons/ci'
+import { FaBookmark } from 'react-icons/fa'
 import { User } from '@/types/User.type'
 import { Tweets } from '@/types/Tweet.type'
 import { QueryObserverResult, RefetchOptions, useMutation, useQuery } from '@tanstack/react-query'
@@ -24,6 +24,8 @@ import tweetsApi from '@/apis/tweets.api'
 import { AxiosResponse } from 'axios'
 import { SuccessResponse } from '@/types/Utils.type'
 import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from '@/components/ui/context-menu'
+import bookmarksApi from '@/apis/bookmarks.api'
+import { Bookmark } from '@/types/Bookmarks.type'
 
 interface Props {
   profile: User | null
@@ -32,20 +34,30 @@ interface Props {
     options?: RefetchOptions
   ) => Promise<QueryObserverResult<AxiosResponse<SuccessResponse<Tweets[]>, any>, Error>>
 }
+// định nghĩa các hằng số
+// đọc các comment ở dưới để hiểu rõ hơn (cấm viết khác để debug code dễ hơn )
 const LIMIT = 10
 const PAGE = 1
 const TwitterCard = ({ profile, data, refetchAllDataTweet }: Props) => {
   const navigate = useNavigate()
   const [commentModalOpen, setCommentModalOpen] = useState(false)
   const [comment, setComment] = useState('')
-  const createCommentMutation = useMutation({
-    mutationFn: (idTweetComment: string) =>
-      commentApi.createComment({ tweet_id: idTweetComment, commentContent: comment, commentLink: [] })
+
+  // khu vực data Query => chỉ viết data Query ở đây
+  const { data: dataBookmark, refetch: refetchDataBookmark } = useQuery({
+    queryKey: ['dataBookmark'],
+    queryFn: () => bookmarksApi.getBookmarks()
   })
   const { data: dataTweetComments, refetch: refetchDataComment } = useQuery({
     queryKey: ['dataTweetComments', data._id],
     queryFn: () => commentApi.getTweetComments(data?._id as string, LIMIT, PAGE)
   })
+  const { data: dataLikes, refetch: refetchDataLikes } = useQuery({
+    queryKey: ['dataLikes', data._id],
+    queryFn: () => likesApi.getLikesTweet(data._id as string)
+  })
+
+  // khu vực action bằng mutation => chi viết action ở đây
   const handleDeletedMutation = useMutation({
     mutationFn: (tweet_id: string) => tweetsApi.deleteTweet(tweet_id)
   })
@@ -55,14 +67,22 @@ const TwitterCard = ({ profile, data, refetchAllDataTweet }: Props) => {
   const handleUnlikeTweetMutation = useMutation({
     mutationFn: (tweet_id: string) => likesApi.unlikeTweet(tweet_id)
   })
-  const { data: dataLikes, refetch: refetchDataLikes } = useQuery({
-    queryKey: ['dataLikes', data._id],
-    queryFn: () => likesApi.getLikesTweet(data._id as string)
+  const createCommentMutation = useMutation({
+    mutationFn: (idTweetComment: string) =>
+      commentApi.createComment({ tweet_id: idTweetComment, commentContent: comment, commentLink: [] })
   })
-
+  const bookmarksTweetMutation = useMutation({
+    mutationFn: (tweet_id: string) => bookmarksApi.bookmarkTweet(tweet_id)
+  })
+  const unBookmarksTweetMutation = useMutation({
+    mutationFn: (tweet_id: string) => bookmarksApi.unBookmarkTweet(tweet_id)
+  })
+  // khu vực data Query => chỉ viết data Query ở đây (mặc định dùng useMemo để ko bị tính toán lại data)
+  const dataBookmarks = useMemo(() => dataBookmark?.data?.data, [dataBookmark])
   const dataLike = useMemo(() => dataLikes?.data.result, [dataLikes])
   const dataComments = useMemo(() => dataTweetComments?.data?.results, [dataTweetComments])
 
+  // khu vực handle action => chỉ viết handle action ở đây
   const handleDeleteTweet = async (tweet_id: string) => {
     handleDeletedMutation.mutateAsync(tweet_id, {
       onSuccess: (res) => {
@@ -84,13 +104,6 @@ const TwitterCard = ({ profile, data, refetchAllDataTweet }: Props) => {
         toast.error('Delete Tweet Fail')
       }
     })
-  }
-  const handleEditTweet = () => {
-    console.log('Edit Tweet')
-  }
-
-  const handleOpenReplyModal = () => {
-    console.log('Open Reply Modal')
   }
 
   const handleLikeTweet = async (tweet_id: string) => {
@@ -120,12 +133,31 @@ const TwitterCard = ({ profile, data, refetchAllDataTweet }: Props) => {
     })
     refetchDataComment()
   }
-  const handleViewAnalytics = () => {
-    console.log('View Analytics')
+  const handleBookmarksTweet = async (tweet_id: string) => {
+    bookmarksTweetMutation.mutateAsync(tweet_id, {
+      onSuccess: () => {
+        refetchDataBookmark()
+      },
+      onError: () => {
+        toast.error('Bookmarks Tweet Fail')
+      }
+    })
   }
+  const handleUnBookmarksTweet = async (tweet_id: string) => {
+    unBookmarksTweetMutation.mutateAsync(tweet_id, {
+      onSuccess: () => {
+        refetchDataBookmark()
+      },
+      onError: () => {
+        toast.error('UnBookmarks Tweet Fail')
+      }
+    })
+  }
+  // khu vực custom data => chỉ viết custom data ở đây
   const userLike = dataLike?.filter((like) => like.user_info.username === profile?.username)
-  console.log(userLike)
+  const filterBookmark = dataBookmarks?.filter((bookmark) => bookmark.tweet_id === data._id)
 
+  // khu vực custom function => chỉ viết custom function ở đây
   const commentTime = (date: Date) => {
     const currentDate = new Date()
     const tweetDate = new Date(date)
@@ -206,8 +238,8 @@ const TwitterCard = ({ profile, data, refetchAllDataTweet }: Props) => {
                     setCommentModalOpen(!commentModalOpen)
                   }}
                 >
-                  <BsChat className='group-hover:text-blue-500' onClick={handleOpenReplyModal} />
-                  <p>{(dataComments as any)?.comments.length}</p>
+                  <BsChat className='group-hover:text-blue-500' />
+                  <p>{(dataComments as any)?.comments?.length}</p>
                 </div>
                 <ContextMenu>
                   <ContextMenuTrigger>
@@ -248,15 +280,22 @@ const TwitterCard = ({ profile, data, refetchAllDataTweet }: Props) => {
                 </ContextMenu>
 
                 <div className='flex items-center space-x-2 hover:text-blue-500 transition group cursor-pointer'>
-                  <RiBarChartGroupedLine onClick={handleViewAnalytics} />
-                  <p>54</p>
+                  <RiBarChartGroupedLine />
+                  <p>{Number(data?.guest_views) + Number(data?.user_views)}</p>
                 </div>
 
                 <div className='flex items-center space-x-4'>
-                  <CiBookmark
-                    className='cursor-pointer hover:text-blue-500 transition'
-                    onClick={() => console.log('Bookmark Tweet')}
+                  <FaBookmark
+                    className={`cursor-pointer hover:text-blue-500 transition ${
+                      (filterBookmark as Bookmark[])?.length > 0 ? 'text-blue-500' : 'text-gray-500'
+                    }`}
+                    onClick={() =>
+                      (filterBookmark as Bookmark[])?.length === 0
+                        ? handleBookmarksTweet(data?._id as string)
+                        : handleUnBookmarksTweet(data?._id as string)
+                    }
                   />
+
                   <RiShare2Fill className='cursor-pointer hover:text-blue-500 transition' onClick={handleShareTweet} />
                 </div>
               </div>

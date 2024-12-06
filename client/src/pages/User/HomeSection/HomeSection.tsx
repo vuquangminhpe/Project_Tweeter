@@ -43,6 +43,7 @@ const HomeSection = () => {
   const handleSubmit = (values: TweetFormValues) => {
     console.log('value', values)
   }
+  console.log(allTweets)
 
   const formik = useFormik<TweetFormValues>({
     initialValues: {
