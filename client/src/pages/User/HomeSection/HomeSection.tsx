@@ -1,12 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import React, { useState, ChangeEvent, useContext } from 'react'
+import { useState, ChangeEvent, useContext } from 'react'
 import { useFormik } from 'formik'
 import * as Yup from 'yup'
 import { CiImageOn } from 'react-icons/ci'
-import { IoLocationSharp } from 'react-icons/io5'
-import { CiFaceSmile } from 'react-icons/ci'
 import { useQuery } from '@tanstack/react-query'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 
 import TwitterCard from './TwitterCard'
 import { AppContext } from '@/Contexts/app.context'
@@ -176,7 +175,7 @@ const HomeSection = () => {
                           newImages.splice(index, 1)
                           setImagePreviews(newPreviews)
                           setSelectImages(newImages)
-                          formik.setFieldValue('image', newImages)
+                          formik.setFieldValue('images', newImages)
                         }}
                         className='absolute top-2 right-2 bg-black/50 text-white 
           rounded-full p-1 hover:bg-black/70 transition'
@@ -200,12 +199,55 @@ const HomeSection = () => {
                       onChange={handleImageSelect}
                     />
                   </label>
-                  <button type='button' className='hover:text-blue-800 transition'>
-                    <IoLocationSharp className='text-2xl' />
-                  </button>
-                  <button type='button' className='hover:text-blue-800 transition'>
-                    <CiFaceSmile className='text-2xl' />
-                  </button>
+                  <Popover>
+                    <PopoverTrigger>
+                      <svg
+                        xmlns='http://www.w3.org/2000/svg'
+                        fill='none'
+                        viewBox='0 0 24 24'
+                        strokeWidth={1.5}
+                        stroke='currentColor'
+                        className='size-6'
+                      >
+                        <path
+                          strokeLinecap='round'
+                          strokeLinejoin='round'
+                          d='M5.25 8.25h15m-16.5 7.5h15m-1.8-13.5-3.9 19.5m-2.1-19.5-3.9 19.5'
+                        />
+                      </svg>
+                    </PopoverTrigger>
+                    <PopoverContent className='bg-gray-400 rounded-xl'>
+                      <input type='text' className='bg-gray-100 rounded-xl w-full px-1 py-3 mb-3' />
+                      <div className='capitalize bg-gray-100 rounded-xl p-1 cursor-pointer font-semibold w-32 text-center'>
+                        add hash tag
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+
+                  <Popover>
+                    <PopoverTrigger>
+                      <svg
+                        xmlns='http://www.w3.org/2000/svg'
+                        fill='none'
+                        viewBox='0 0 24 24'
+                        strokeWidth={1.5}
+                        stroke='currentColor'
+                        className='size-6'
+                      >
+                        <path
+                          strokeLinecap='round'
+                          strokeLinejoin='round'
+                          d='M16.5 12a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0Zm0 0c0 1.657 1.007 3 2.25 3S21 13.657 21 12a9 9 0 1 0-2.636 6.364M16.5 12V8.25'
+                        />
+                      </svg>
+                    </PopoverTrigger>
+                    <PopoverContent className='bg-gray-400 rounded-xl'>
+                      <input type='text' className='bg-gray-100 rounded-xl w-full px-1 py-3 mb-3' />
+                      <div className='capitalize bg-gray-100 rounded-xl p-1 cursor-pointer font-semibold w-32 text-center'>
+                        add mention
+                      </div>
+                    </PopoverContent>
+                  </Popover>
                 </div>
                 <button
                   type='submit'
