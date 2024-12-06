@@ -23,6 +23,7 @@ import { toast } from 'sonner'
 import tweetsApi from '@/apis/tweets.api'
 import { AxiosResponse } from 'axios'
 import { SuccessResponse } from '@/types/Utils.type'
+import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from '@/components/ui/context-menu'
 
 interface Props {
   profile: User | null
@@ -36,7 +37,6 @@ const PAGE = 1
 const TwitterCard = ({ profile, data, refetchAllDataTweet }: Props) => {
   const navigate = useNavigate()
   const [commentModalOpen, setCommentModalOpen] = useState(false)
-  const [likeModalOpen, setLikeModalOpen] = useState(false)
   const [comment, setComment] = useState('')
   const createCommentMutation = useMutation({
     mutationFn: (idTweetComment: string) =>
@@ -209,28 +209,27 @@ const TwitterCard = ({ profile, data, refetchAllDataTweet }: Props) => {
                   <BsChat className='group-hover:text-blue-500' onClick={handleOpenReplyModal} />
                   <p>{(dataComments as any)?.comments.length}</p>
                 </div>
-
-                <div
-                  className='flex items-center space-x-2 hover:text-red-500 transition group cursor-pointer'
-                  onMouseEnter={() => setLikeModalOpen(true)}
-                  onMouseLeave={() => setLikeModalOpen(false)}
-                >
-                  {Number(userLike?.length) > 0 ? (
-                    <MdFavorite
-                      className='text-red-500 group-hover:text-red-600'
-                      onClick={() => handleUnLikesTweet(data?._id as string)}
-                    />
-                  ) : (
-                    <MdFavoriteBorder
-                      className='group-hover:text-red-500'
-                      onClick={() => handleLikeTweet(data?._id as string)}
-                    />
-                  )}
-                  <p>{(dataLike as unknown as Likes[])?.length}</p>
-
-                  {likeModalOpen && (
-                    <ScrollArea className='fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 max-h-64 bg-white rounded-lg shadow-lg border p-4 z-50 overflow-auto'>
-                      <div>
+                <ContextMenu>
+                  <ContextMenuTrigger>
+                    {' '}
+                    <div className='flex items-center space-x-2 hover:text-red-500 transition group cursor-pointer'>
+                      {Number(userLike?.length) > 0 ? (
+                        <MdFavorite
+                          className='text-red-500 group-hover:text-red-600'
+                          onClick={() => handleUnLikesTweet(data?._id as string)}
+                        />
+                      ) : (
+                        <MdFavoriteBorder
+                          className='group-hover:text-red-500'
+                          onClick={() => handleLikeTweet(data?._id as string)}
+                        />
+                      )}
+                      <p>{(dataLike as unknown as Likes[])?.length}</p>
+                    </div>
+                  </ContextMenuTrigger>
+                  <ContextMenuContent className='max-w-44 translate-x-2 -translate-y-12 overflow-y-auto rounded-xl bg bg-slate-300 shadow-xl'>
+                    <ContextMenuItem>
+                      <ScrollArea>
                         <h4 className='mb-4 text-sm font-semibold text-gray-700'>Likes</h4>
                         {(dataLike as Likes[])?.map((like: Likes) => (
                           <div key={like._id} className='mb-2 pb-2 border-b last:border-b-0'>
@@ -243,10 +242,10 @@ const TwitterCard = ({ profile, data, refetchAllDataTweet }: Props) => {
                             </div>
                           </div>
                         ))}
-                      </div>
-                    </ScrollArea>
-                  )}
-                </div>
+                      </ScrollArea>
+                    </ContextMenuItem>
+                  </ContextMenuContent>
+                </ContextMenu>
 
                 <div className='flex items-center space-x-2 hover:text-blue-500 transition group cursor-pointer'>
                   <RiBarChartGroupedLine onClick={handleViewAnalytics} />
