@@ -1,5 +1,6 @@
 import { Router } from 'express'
 import {
+  deletedS3Controller,
   uploadImageController,
   uploadVideoController,
   uploadVideoHLSController,
@@ -13,5 +14,5 @@ mediasRouter.post('/upload-image', AccessTokenValidator, verifiedUserValidator, 
 mediasRouter.post('/upload-video', AccessTokenValidator, verifiedUserValidator, wrapAsync(uploadVideoController))
 mediasRouter.post('/upload-video-hls', AccessTokenValidator, verifiedUserValidator, wrapAsync(uploadVideoHLSController))
 mediasRouter.get('/video-status/:id', AccessTokenValidator, verifiedUserValidator, wrapAsync(videoStatusController))
-
+mediasRouter.delete('/delete-s3', AccessTokenValidator, verifiedUserValidator, wrapAsync(deletedS3Controller))
 export default mediasRouter

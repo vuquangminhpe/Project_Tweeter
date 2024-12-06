@@ -24,6 +24,8 @@ export const uploadFileS3 = async ({
   filePath: string
   contentType: string
 }) => {
+  console.log(filePath, '////', filename, '//////', contentType)
+
   const parallelUploads3 = await new Upload({
     client: s3,
     params: {
@@ -57,6 +59,8 @@ export const uploadFileS3 = async ({
 
 export const sendFileFromS3 = async (res: Response, filepath: string) => {
   try {
+    console.log('filepath', filepath)
+
     const data = await s3.getObject({
       Bucket: envConfig.Bucket_Name as string,
       Key: filepath
@@ -66,5 +70,22 @@ export const sendFileFromS3 = async (res: Response, filepath: string) => {
     ;(data.Body as any)?.pipe(res)
   } catch (error) {
     res.status(HTTP_STATUS.NOT_FOUND).send('Not Found')
+  }
+}
+export const deleteFileFromS3 = async (s3Url: string): Promise<void> => {
+  try {
+    const bucketName = envConfig.Bucket_Name as string
+    const urlPattern = `https://${bucketName}.s3.${envConfig.region}.amazonaws.com/`
+    const fileKey = s3Url.replace(urlPattern, '')
+
+    await s3.deleteObject({
+      Bucket: bucketName,
+      Key: fileKey
+    })
+
+    console.log(`File ${fileKey} đã được xóa khỏi S3`)
+  } catch (error) {
+    console.error('Lỗi khi xóa file từ S3:', error)
+    throw new Error('Không thể xóa file trên S3')
   }
 }

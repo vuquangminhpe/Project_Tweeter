@@ -5,7 +5,7 @@ import path from 'path'
 import mime from 'mime'
 import fs from 'fs'
 import { UPLOAD_IMAGES_DIR, UPLOAD_VIDEO_DIR } from '~/constants/dir'
-import { sendFileFromS3 } from '~/utils/s3'
+import { deleteFileFromS3, sendFileFromS3 } from '~/utils/s3'
 export const uploadImageController = async (req: Request, res: Response, next: NextFunction) => {
   const url = await mediaService.uploadImage(req)
   res.json({ message: USERS_MESSAGES.UPLOAD_SUCCESS, result: url })
@@ -88,4 +88,10 @@ export const serveSegmentController = (req: Request, res: Response, next: NextFu
   //     res.status((err as any).status).send('Not found')
   //   }
   // })
+}
+
+export const deletedS3Controller = async (req: Request, res: Response, next: NextFunction) => {
+  const { url } = req.body
+  deleteFileFromS3(url)
+  res.json({ message: USERS_MESSAGES.DELETE_SUCCESS })
 }

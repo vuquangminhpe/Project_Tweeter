@@ -107,6 +107,8 @@ class Queue {
 const queue = new Queue()
 class MediaService {
   async uploadImage(req: Request) {
+    console.log(req)
+
     const files = await handleUploadImage(req)
     const result = await Promise.all(
       files.map(async (file) => {

@@ -69,7 +69,8 @@ export const USERS_MESSAGES = {
   REFRESH_TOKEN_SUCCESS: 'Refresh token success',
   GET_VIDEO_STATUS_SUCCESS: 'Get video status success',
   GET_FOLLOWING_SUCCESSFULLY: 'Get following successfully',
-  GET_FOLLOWERS_SUCCESSFULLY: 'Get followers successfully'
+  GET_FOLLOWERS_SUCCESSFULLY: 'Get followers successfully',
+  DELETE_SUCCESS: 'Delete success'
 } as const
 
 export const TWEET_MESSAGE = {

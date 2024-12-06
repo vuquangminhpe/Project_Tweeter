@@ -4,13 +4,15 @@ import { useState, ChangeEvent, useContext } from 'react'
 import { useFormik } from 'formik'
 import * as Yup from 'yup'
 import { CiImageOn } from 'react-icons/ci'
-import { useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery } from '@tanstack/react-query'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 
 import TwitterCard from './TwitterCard'
 import { AppContext } from '@/Contexts/app.context'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import tweetsApi from '@/apis/tweets.api'
+import VideoPlayer from '@/components/Customs/VideoHLSPlayer'
+import mediasApi from '@/apis/medias.api'
 
 interface TweetFormValues {
   content: string
@@ -33,18 +35,35 @@ const HomeSection = () => {
     queryFn: tweetsApi.getAllTweets
   })
   const allTweets = dataTweets?.data?.data
-
+  const uploadImagesMutation = useMutation({
+    mutationFn: mediasApi.uploadImages,
+    onMutate: () => {
+      setUploadingImage(true)
+    },
+    onSuccess: (data) => {
+      console.log('Upload thành công:', data)
+    },
+    onError: (error) => {
+      console.error('Upload thất bại:', error)
+    },
+    onSettled: () => {
+      setUploadingImage(false)
+    }
+  })
   const [activeTab, setActiveTab] = useState<string>('forYou')
   const [uploadingImage, setUploadingImage] = useState<boolean>(false)
   const [selectImages, setSelectImages] = useState<File[]>([])
   const [imagePreviews, setImagePreviews] = useState<(string | ArrayBuffer)[]>([])
+  const [allLinkCreatedTweet, setAllLinkCreatedTweet] = useState<string[]>([])
 
-  const [selectImage, setSelectImage] = useState<File | string>('')
-
-  const handleSubmit = (values: TweetFormValues) => {
-    console.log('value', values)
+  const handleSubmit = async (values: TweetFormValues) => {
+    try {
+      await handleUploadImages()
+      console.log('values', values)
+    } catch (error) {
+      console.error('error', error)
+    }
   }
-  console.log(allTweets)
 
   const formik = useFormik<TweetFormValues>({
     initialValues: {
@@ -55,39 +74,37 @@ const HomeSection = () => {
     validationSchema
   })
   const handleImageSelect = (event: ChangeEvent<HTMLInputElement>) => {
-    setUploadingImage(true)
     const files = event.target.files
     if (files) {
       const fileArray = Array.from(files)
-
       setSelectImages(fileArray)
+      const previews = fileArray.map((file) => URL.createObjectURL(file))
+      setImagePreviews(previews)
 
-      const previews: (string | ArrayBuffer)[] = []
-      fileArray.forEach((file) => {
-        const reader = new FileReader()
-        reader.onloadend = () => {
-          previews.push(reader.result as any)
-          if (previews.length === fileArray.length) {
-            setImagePreviews(previews)
+      formik.setFieldValue('images', fileArray)
+    }
+  }
+
+  const handleUploadImages = async () => {
+    if (selectImages.length > 0) {
+      try {
+        const response = await uploadImagesMutation.mutateAsync(selectImages, {
+          onSuccess: (data) => {
+            console.log('Upload thành công:', data)
+            setAllLinkCreatedTweet(data.data.result.map((item: any) => item.url))
+          },
+          onError: (error) => {
+            console.error('error upload:', error)
           }
-        }
-        reader.readAsDataURL(file)
-      })
-
-      formik.setFieldValue('image', fileArray)
+        })
+        return response
+      } catch (error) {
+        console.error('error:', error)
+      }
+    } else {
+      console.warn('no data to upload')
     }
-    setUploadingImage(false)
   }
-  const handleSelectImage = (event: ChangeEvent<HTMLInputElement>) => {
-    setUploadingImage(true)
-    const imgFile = event.target.files?.[0]
-    if (imgFile) {
-      formik.setFieldValue('image', imgFile)
-      setSelectImage(imgFile)
-    }
-    setUploadingImage(false)
-  }
-
   const tabs = [
     { id: 'forYou', label: 'For You' },
     { id: 'following', label: 'Following' }
@@ -251,6 +268,7 @@ const HomeSection = () => {
                 </div>
                 <button
                   type='submit'
+                  // onClick={() => handleUploadImages()}
                   className='bg-blue-600 text-white px-6 py-2 rounded-full 
                   hover:bg-blue-700 transition-colors duration-300 
                   focus:outline-none focus:ring-2 focus:ring-blue-400'
@@ -262,7 +280,7 @@ const HomeSection = () => {
           </div>
         </div>
       </div>
-
+      <VideoPlayer src='https://twitter-clone-minh-ap-southeast-1.s3.ap-southeast-1.amazonaws.com/videos-hls/%5CNEwRz_dmPn_vNzDl7BgsW/master.m3u8' />
       <div className='mt-6 space-y-4'>
         {allTweets?.map((data) =>
           Array(data).map((element, index) => (

@@ -6,7 +6,7 @@ import mediasRouter from './routes/medias.routes'
 import { config } from 'dotenv'
 import staticRouter from './routes/static.routes'
 import { initFolderImage, initFolderVideo, initFolderVideoHls } from './utils/file'
-import { UPLOAD_VIDEO_DIR } from './constants/dir'
+import { UPLOAD_VIDEO_DIR, UPLOAD_VIDEO_HLS_DIR } from './constants/dir'
 import cors, { CorsOptions } from 'cors'
 import { tweetsRouter } from './routes/tweets.routes'
 import bookmarksRouter from './routes/bookmarks.routes'
@@ -43,8 +43,10 @@ const httpServer = createServer(app)
 const port = envConfig.port || 3002
 app.use(helmet())
 const corsOptions: CorsOptions = {
-  origin: isProduction ? envConfig.client_url : '*'
+  origin: isProduction ? envConfig.client_url : '*',
+  optionsSuccessStatus: 200
 }
+
 // app.use(limiter)
 app.use(cors(corsOptions))
 // Tạo 1 folder upload
@@ -62,7 +64,7 @@ app.use('/likes', likesTweetRouter)
 app.use('/search', searchRouter)
 app.use('/conversations', conversationsRouter)
 app.use('/comments', commentsRouter)
-app.use('/static/video-stream', express.static(UPLOAD_VIDEO_DIR))
+app.use('/static/video-hls', express.static(UPLOAD_VIDEO_HLS_DIR))
 
 app.use(defaultErrorHandler)
 initSocket(httpServer)
