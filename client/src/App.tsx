@@ -3,9 +3,9 @@ import { ToastContainer } from 'react-toastify'
 import { useContext, useEffect } from 'react'
 import useRouteElement from './useRouteElement'
 import { HelmetProvider } from 'react-helmet-async'
-import { ThemeProvider } from './components/ThemeProvider/theme-provider'
 import { AppContext } from './Contexts/app.context'
 import { localStorageEventTarget } from './utils/auth'
+import ThemeProvider from './components/ThemeProvider'
 function App() {
   const { reset } = useContext(AppContext)
 

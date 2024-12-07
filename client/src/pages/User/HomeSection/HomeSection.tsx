@@ -17,6 +17,7 @@ import { Media } from '@/types/Medias.type'
 import { TweetAudience, TweetType } from '@/constants/enum'
 import apiUser from '@/apis/users.api'
 import { log } from 'console'
+import ModeToggle from '@/components/ModeToogle'
 
 interface TweetFormValues {
   content: string

@@ -108,6 +108,6 @@ module.exports = {
         }
       })
     }),
-    require('tailwindcss-animate', 'daisyui')
+    require('tailwindcss-animate')
   ]
 }
