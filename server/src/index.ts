@@ -64,7 +64,7 @@ app.use('/likes', likesTweetRouter)
 app.use('/search', searchRouter)
 app.use('/conversations', conversationsRouter)
 app.use('/comments', commentsRouter)
-app.use('/static/video-hls', express.static(UPLOAD_VIDEO_HLS_DIR))
+// app.use('/static/video-hls', express.static(UPLOAD_VIDEO_HLS_DIR))
 
 app.use(defaultErrorHandler)
 initSocket(httpServer)

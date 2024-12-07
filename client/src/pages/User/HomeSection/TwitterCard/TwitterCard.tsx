@@ -26,6 +26,7 @@ import { SuccessResponse } from '@/types/Utils.type'
 import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from '@/components/ui/context-menu'
 import bookmarksApi from '@/apis/bookmarks.api'
 import { Bookmark } from '@/types/Bookmarks.type'
+import { Media } from '@/types/Medias.type'
 
 interface Props {
   profile: User | null
@@ -153,6 +154,7 @@ const TwitterCard = ({ profile, data, refetchAllDataTweet }: Props) => {
       }
     })
   }
+
   // khu vực custom data => chỉ viết custom data ở đây
   const userLike = dataLike?.filter((like) => like.user_info.username === profile?.username)
   const filterBookmark = dataBookmarks?.filter((bookmark) => bookmark.tweet_id === data._id)
@@ -224,11 +226,14 @@ const TwitterCard = ({ profile, data, refetchAllDataTweet }: Props) => {
             <div className='mt-3'>
               <div className='cursor-pointer'>
                 <p className='text-gray-800 mb-3'>{data?.content}</p>
-                <img
-                  className='w-full max-h-96 object-cover rounded-xl'
-                  src='https://anhtoc.vn/wp-content/uploads/2024/09/avatar-vo-tri-meo-2.webp'
-                  alt='image-twitter'
-                />
+                {data?.medias?.map((media: Media) => (
+                  <img
+                    key={media.url}
+                    className='w-full max-h-96 object-cover rounded-xl'
+                    src={media.url}
+                    alt='image-twitter'
+                  />
+                ))}
               </div>
 
               <div className='py-4 flex justify-between items-center text-gray-500'>

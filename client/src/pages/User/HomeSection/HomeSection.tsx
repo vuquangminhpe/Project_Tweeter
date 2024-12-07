@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { useState, ChangeEvent, useContext, useEffect } from 'react'
+import { useState, ChangeEvent, useContext, useEffect, useCallback, useRef } from 'react'
 import { useFormik } from 'formik'
 import * as Yup from 'yup'
 import { CiImageOn } from 'react-icons/ci'
@@ -16,12 +16,14 @@ import mediasApi from '@/apis/medias.api'
 import { Media } from '@/types/Medias.type'
 import { TweetAudience, TweetType } from '@/constants/enum'
 import apiUser from '@/apis/users.api'
+import { log } from 'console'
 
 interface TweetFormValues {
   content: string
   images: File[]
   audience: TweetAudience
   hashtags: string[]
+  medias: Media[]
   mentions: string[]
   currentHashtag: string
   currentMention: string
@@ -34,13 +36,20 @@ const validationSchema = Yup.object().shape({
 })
 
 const HomeSection = () => {
+  const [activeTab, setActiveTab] = useState<string>('forYou')
+  const [uploadingImage, setUploadingImage] = useState<boolean>(false)
+  const [selectItemInTweet, setSelectItemInTweet] = useState<File[]>([])
+  const [imagePreviews, setImagePreviews] = useState<(string | ArrayBuffer)[]>([])
+  const [allLinkCreatedTweet, setAllLinkCreatedTweet] = useState<Media[]>([])
+  const [allIdWithMentionName, setAllIdWithMentionName] = useState<string[]>([])
+  const [allIdWithMentionName_Undefined, setAllIdWithMentionName_Undefined] = useState<string[]>([])
+  const { profile } = useContext(AppContext)
   const handleSubmit = async (values: TweetFormValues) => {
     try {
-      console.log(values)
+      const uploadedLinks = await handleUploadItems()
+      setAllLinkCreatedTweet(uploadedLinks)
 
-      await handleUploadItems()
-      await handleCreatedTweet(values)
-      console.log('values', values)
+      await handleCreatedTweet(values, uploadedLinks)
     } catch (error) {
       console.error('error', error)
     }
@@ -52,6 +61,7 @@ const HomeSection = () => {
       images: [],
       audience: TweetAudience.Everyone,
       hashtags: [],
+      medias: allLinkCreatedTweet || [],
       mentions: [],
       currentHashtag: '',
       currentMention: '',
@@ -60,14 +70,7 @@ const HomeSection = () => {
     onSubmit: handleSubmit,
     validationSchema
   })
-  const [activeTab, setActiveTab] = useState<string>('forYou')
-  const [uploadingImage, setUploadingImage] = useState<boolean>(false)
-  const [selectItemInTweet, setSelectItemInTweet] = useState<File[]>([])
-  const [imagePreviews, setImagePreviews] = useState<(string | ArrayBuffer)[]>([])
-  const [allLinkCreatedTweet, setAllLinkCreatedTweet] = useState<Media[]>([])
-  const [allIdWithMentionName, setAllIdWithMentionName] = useState<string[]>([])
-  const [allIdWithMentionName_Undefined, setAllIdWithMentionName_Undefined] = useState<string[]>([])
-  const { profile } = useContext(AppContext)
+
   const {
     data: dataTweets,
     isLoading: isLoadingAllDataTweet,
@@ -84,8 +87,6 @@ const HomeSection = () => {
           const userIds = await Promise.all(
             formik.values.mentions.map(async (username) => {
               const userData = await apiUser.getProfileByUserName(username)
-              console.log(userData)
-
               return userData?.data?._id
             })
           )
@@ -181,37 +182,24 @@ const HomeSection = () => {
         )
 
         const successfulUploads = uploadedFiles.filter(Boolean)
-
-        setAllLinkCreatedTweet(
-          successfulUploads.flatMap((item) =>
-            (item as any)?.data.result.map((i: any) => ({
-              url: i.url,
-              type: i.type
-            }))
-          )
+        const uploadedLinks = successfulUploads.flatMap((item) =>
+          (item as any)?.data.result.map((i: any) => ({
+            url: i.url,
+            type: i.type
+          }))
         )
+
+        return uploadedLinks
       } catch (error) {
         console.error('error:', error)
+        return []
       }
     } else {
       console.warn('no data to upload')
+      return []
     }
   }
-  const handleCreatedTweet = async (data: TweetFormValues) => {
-    try {
-      await createdTweetMutation.mutateAsync({
-        content: data.content,
-        medias: allLinkCreatedTweet,
-        type: formik.values.type,
-        parent_id: null,
-        hashtags: data.hashtags,
-        mentions: data.mentions,
-        audience: data.audience
-      })
-    } catch (error) {
-      console.error('error:', error)
-    }
-  }
+
   const tabs = [
     { id: 'forYou', label: 'For You' },
     { id: 'following', label: 'Following' }
@@ -230,8 +218,21 @@ const HomeSection = () => {
       formik.setFieldValue('currentMention', '')
     }
   }
-  console.log(allIdWithMentionName)
-
+  const handleCreatedTweet = useCallback(
+    async (data: TweetFormValues, uploadedLinks: Media[]) => {
+      console.log('Uploaded links:', uploadedLinks)
+      await createdTweetMutation.mutateAsync({
+        content: data.content,
+        medias: uploadedLinks,
+        type: formik.values.type,
+        parent_id: null,
+        hashtags: data.hashtags,
+        mentions: allIdWithMentionName,
+        audience: data.audience
+      })
+    },
+    [allIdWithMentionName, createdTweetMutation, formik.values.type]
+  )
   if (isLoadingAllDataTweet) {
     return (
       <div role='status'>
@@ -508,7 +509,6 @@ const HomeSection = () => {
           </div>
         </div>
       </div>
-      <VideoPlayer src='https://twitter-clone-minh-ap-southeast-1.s3.ap-southeast-1.amazonaws.com/videos-hls/%5CNEwRz_dmPn_vNzDl7BgsW/master.m3u8' />
       <div className='mt-6 space-y-4'>
         {allTweets?.map((data) =>
           Array(data).map((element, index) => (

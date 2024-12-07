@@ -22,23 +22,31 @@ class Queue {
     this.items = []
     this.encoding = false
   }
-  async enqueue(item: string) {
-    this.items.push(item)
-    const idName = item.replace(/\\/g, '\\\\').split('\\').pop() as string
-    await databaseService.videoStatus.insertOne(
-      new VideoStatus({
-        name: idName,
-        status: EncodingStatus.Pending
-      })
-    )
-    this.processEncode()
+  async enqueue(item: string): Promise<string> {
+    return new Promise((resolve, reject) => {
+      this.items.push(item)
+      const idName = item.replace(/\\/g, '\\\\').split('\\').pop() as string
+      databaseService.videoStatus
+        .insertOne(
+          new VideoStatus({
+            name: idName,
+            status: EncodingStatus.Pending
+          })
+        )
+        .then(() => {
+          this.processEncode(resolve, reject)
+        })
+        .catch(reject)
+    })
   }
-  async processEncode() {
+
+  async processEncode(onComplete?: (m3u8Url: string) => void, onError?: (error: any) => void) {
     if (this.encoding) return
     if (this.items.length > 0) {
       this.encoding = true
       const videoPath = this.items[0]
       const idName = videoPath.replace(/\\/g, '\\\\').split('\\').pop() as string
+
       await databaseService.videoStatus.updateOne(
         { name: idName },
         {
@@ -50,21 +58,33 @@ class Queue {
           }
         }
       )
+
       try {
         await encodeHLSWithMultipleVideoStreams(videoPath)
         this.items.shift()
 
         const files = getFiles(path.resolve(UPLOAD_VIDEO_HLS_DIR, idName))
-        files.map((filepath) => {
-          const fileName = 'videos-hls/' + filepath.replace(path.resolve(UPLOAD_VIDEO_HLS_DIR), '')
-          return uploadFileS3({
-            filePath: filepath,
-            filename: fileName,
-            contentType: mime.getType(filepath) as string
+        let m3u8Url = ''
+
+        await Promise.all(
+          files.map(async (filepath) => {
+            const fileName = 'videos-hls/' + filepath.replace(path.resolve(UPLOAD_VIDEO_HLS_DIR), '')
+            const s3Upload = await uploadFileS3({
+              filePath: filepath,
+              filename: fileName,
+              contentType: mime.getType(filepath) as string
+            })
+
+            if (filepath.endsWith('.m3u8')) {
+              m3u8Url = (s3Upload as CompleteMultipartUploadCommandOutput).Location as string
+            }
+
+            console.log((s3Upload as CompleteMultipartUploadCommandOutput).Location)
+            return s3Upload
           })
-        })
+        )
+
         fs.unlinkSync(videoPath)
-        // await Promise.all([fsPromise.unlink(videoPath), fsPromise.unlink(path.resolve(UPLOAD_VIDEO_HLS_DIR, idName))])
         await databaseService.videoStatus.updateOne(
           { name: idName },
           {
@@ -76,7 +96,10 @@ class Queue {
             }
           }
         )
+
         console.log(`Encode video ${videoPath} success`)
+
+        if (onComplete && m3u8Url) onComplete(m3u8Url)
       } catch (error) {
         await databaseService.videoStatus
           .updateOne(
@@ -91,11 +114,12 @@ class Queue {
             }
           )
           .catch((err) => {
-            console.log('Update video status error ', err)
+            console.log('Update video status error', err)
           })
-        console.error(`Encode video ${videoPath} error`)
-        console.error(error)
+        console.error(`Encode video ${videoPath} error`, error)
+        if (onError) onError(error)
       }
+
       this.encoding = false
       this.processEncode()
     } else {
@@ -164,19 +188,21 @@ class MediaService {
   }
   async uploadVideoHLS(req: Request) {
     const files = await handleUploadVideoHLS(req)
+
     const result: Media[] = await Promise.all(
       files.map(async (file) => {
-        queue.enqueue(file.filepath)
+        const m3u8Url = await queue.enqueue(file.filepath)
+
         return {
-          url: isProduction
-            ? `${envConfig.host}/static/video-hls/${file.newFilename}/master.m3u8`
-            : `http://localhost:${envConfig.port}/static/video-hls/${file.newFilename}/master.m3u8`,
+          url: m3u8Url,
           type: MediaType.HLS
         }
       })
     )
+
     return result
   }
+
   async getVideoStatus(idStatus: string) {
     const result = await databaseService.videoStatus.findOne({ name: idStatus })
     return result
