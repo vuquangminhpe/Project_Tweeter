@@ -10,7 +10,8 @@ const apiUser = {
     http.post<SuccessResponse<LoginResponse>>('/users/login', body),
   getProfile: () => http.get<SuccessResponse<User>>('/users/me'),
   getFollowing: () => http.get<SuccessResponse<User[]>>('/users/me/following'),
-  getFollowers: () => http.get<SuccessResponse<User[]>>('/users/me/followers')
+  getFollowers: () => http.get<SuccessResponse<User[]>>('/users/me/followers'),
+  getProfileByUserName: (username: string) => http.get<SuccessResponse<User>>(`/users/${username}`)
 }
 
 export default apiUser

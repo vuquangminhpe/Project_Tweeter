@@ -13,10 +13,18 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import tweetsApi from '@/apis/tweets.api'
 import VideoPlayer from '@/components/Customs/VideoHLSPlayer'
 import mediasApi from '@/apis/medias.api'
+import { Media } from '@/types/Medias.type'
+import { TweetAudience, TweetType } from '@/constants/enum'
 
 interface TweetFormValues {
   content: string
   images: File[]
+  audience: TweetAudience
+  hashtags: string[]
+  mentions: string[]
+  currentHashtag: string
+  currentMention: string
+  type: TweetType
 }
 
 const validationSchema = Yup.object().shape({
@@ -25,6 +33,11 @@ const validationSchema = Yup.object().shape({
 })
 
 const HomeSection = () => {
+  const [activeTab, setActiveTab] = useState<string>('forYou')
+  const [uploadingImage, setUploadingImage] = useState<boolean>(false)
+  const [selectItemInTweet, setSelectItemInTweet] = useState<File[]>([])
+  const [imagePreviews, setImagePreviews] = useState<(string | ArrayBuffer)[]>([])
+  const [allLinkCreatedTweet, setAllLinkCreatedTweet] = useState<Media[]>([])
   const { profile } = useContext(AppContext)
   const {
     data: dataTweets,
@@ -35,16 +48,32 @@ const HomeSection = () => {
     queryFn: tweetsApi.getAllTweets
   })
   const allTweets = dataTweets?.data?.data
+  const createdTweetMutation = useMutation({
+    mutationFn: tweetsApi.createTweet,
+    onMutate: () => {
+      setUploadingImage(true)
+    },
+    onSuccess: (data) => {
+      console.log('tạo tweet thành công:', data)
+      refetchAllDataTweet()
+    },
+    onError: (error) => {
+      console.error('tạo tweet thất bại:', error)
+    },
+    onSettled: () => {
+      setUploadingImage(false)
+    }
+  })
   const uploadImagesMutation = useMutation({
     mutationFn: mediasApi.uploadImages,
     onMutate: () => {
       setUploadingImage(true)
     },
     onSuccess: (data) => {
-      console.log('Upload thành công:', data)
+      console.log('Upload images thành công:', data)
     },
     onError: (error) => {
-      console.error('Upload thất bại:', error)
+      console.error('Upload images thất bại:', error)
     },
     onSettled: () => {
       setUploadingImage(false)
@@ -56,24 +85,22 @@ const HomeSection = () => {
       setUploadingImage(true)
     },
     onSuccess: (data) => {
-      console.log('Upload thành công:', data)
+      console.log('Upload video thành công:', data)
     },
     onError: (error) => {
-      console.error('Upload thất bại:', error)
+      console.error('Upload video thất bại:', error)
     },
     onSettled: () => {
       setUploadingImage(false)
     }
   })
-  const [activeTab, setActiveTab] = useState<string>('forYou')
-  const [uploadingImage, setUploadingImage] = useState<boolean>(false)
-  const [selectItemInTweet, setSelectItemInTweet] = useState<File[]>([])
-  const [imagePreviews, setImagePreviews] = useState<(string | ArrayBuffer)[]>([])
-  const [allLinkCreatedTweet, setAllLinkCreatedTweet] = useState<string[]>([])
 
   const handleSubmit = async (values: TweetFormValues) => {
     try {
-      await handleUploadImages()
+      console.log(values)
+
+      await handleUploadItems()
+      handleCreatedTweet(values)
       console.log('values', values)
     } catch (error) {
       console.error('error', error)
@@ -83,7 +110,13 @@ const HomeSection = () => {
   const formik = useFormik<TweetFormValues>({
     initialValues: {
       content: '',
-      images: []
+      images: [],
+      audience: TweetAudience.Everyone,
+      hashtags: [],
+      mentions: [],
+      currentHashtag: '',
+      currentMention: '',
+      type: TweetType.Tweet
     },
     onSubmit: handleSubmit,
     validationSchema
@@ -100,11 +133,9 @@ const HomeSection = () => {
     }
   }
 
-  const handleUploadImages = async () => {
+  const handleUploadItems = async () => {
     if (selectItemInTweet.length > 0) {
       try {
-        console.log('selectItemInTweet:', selectItemInTweet)
-
         const uploadedFiles = await Promise.all(
           selectItemInTweet.map(async (item) => {
             if (item.type.startsWith('image/')) {
@@ -120,7 +151,14 @@ const HomeSection = () => {
 
         const successfulUploads = uploadedFiles.filter(Boolean)
 
-        setAllLinkCreatedTweet(successfulUploads.map((item) => (item as any)?.data.result.map((i: any) => i.url)))
+        setAllLinkCreatedTweet(
+          successfulUploads.flatMap((item) =>
+            (item as any)?.data.result.map((i: any) => ({
+              url: i.url,
+              type: i.type
+            }))
+          )
+        )
       } catch (error) {
         console.error('error:', error)
       }
@@ -128,10 +166,39 @@ const HomeSection = () => {
       console.warn('no data to upload')
     }
   }
+  const handleCreatedTweet = async (data: TweetFormValues) => {
+    try {
+      await createdTweetMutation.mutateAsync({
+        content: data.content,
+        medias: allLinkCreatedTweet,
+        type: formik.values.type,
+        parent_id: null,
+        hashtags: data.hashtags,
+        mentions: data.mentions,
+        audience: data.audience
+      })
+    } catch (error) {
+      console.error('error:', error)
+    }
+  }
   const tabs = [
     { id: 'forYou', label: 'For You' },
     { id: 'following', label: 'Following' }
   ]
+  const addHashtag = () => {
+    const newHashtag = formik.values.currentHashtag.trim()
+    if (newHashtag && !formik.values.hashtags.includes(newHashtag)) {
+      formik.setFieldValue('hashtags', [...formik.values.hashtags, newHashtag])
+      formik.setFieldValue('currentHashtag', '')
+    }
+  }
+  const addMention = () => {
+    const newMention = formik.values.currentMention.trim()
+    if (newMention && !formik.values.mentions.includes(newMention)) {
+      formik.setFieldValue('mentions', [...formik.values.mentions, newMention])
+      formik.setFieldValue('currentMention', '')
+    }
+  }
   if (isLoadingAllDataTweet) {
     return (
       <div role='status'>
@@ -155,6 +222,7 @@ const HomeSection = () => {
       </div>
     )
   }
+
   return (
     <div className='container mx-auto px-4 py-6 bg-white shadow-sm rounded-xl'>
       <div className='mb-6'>
@@ -256,10 +324,38 @@ const HomeSection = () => {
                         />
                       </svg>
                     </PopoverTrigger>
-                    <PopoverContent className='bg-gray-400 rounded-xl'>
-                      <input type='text' className='bg-gray-100 rounded-xl w-full px-1 py-3 mb-3' />
-                      <div className='capitalize bg-gray-100 rounded-xl p-1 cursor-pointer font-semibold w-32 text-center'>
+                    <PopoverContent>
+                      <input
+                        type='text'
+                        value={formik.values.currentHashtag}
+                        onChange={formik.handleChange}
+                        name='currentHashtag'
+                        className='bg-gray-100 rounded-xl w-full px-1 py-3 mb-3'
+                      />
+                      <div
+                        onClick={addHashtag}
+                        className='capitalize bg-gray-100 rounded-xl p-1 cursor-pointer font-semibold w-32 text-center'
+                      >
                         add hash tag
+                      </div>
+                      <div className='mt-4 flex flex-wrap gap-2'>
+                        {formik?.values?.hashtags?.map((hashtag, index) => (
+                          <span
+                            key={index}
+                            className='bg-blue-500 text-white px-2 py-1 rounded-full text-sm flex items-center'
+                          >
+                            #{hashtag}
+                            <button
+                              onClick={() => {
+                                const newHashtags = formik.values.hashtags.filter((_, i) => i !== index)
+                                formik.setFieldValue('hashtags', newHashtags)
+                              }}
+                              className='ml-2 text-black hover:text-red-300'
+                            >
+                              ×
+                            </button>
+                          </span>
+                        ))}
                       </div>
                     </PopoverContent>
                   </Popover>
@@ -281,17 +377,89 @@ const HomeSection = () => {
                         />
                       </svg>
                     </PopoverTrigger>
-                    <PopoverContent className='bg-gray-400 rounded-xl'>
-                      <input type='text' className='bg-gray-100 rounded-xl w-full px-1 py-3 mb-3' />
-                      <div className='capitalize bg-gray-100 rounded-xl p-1 cursor-pointer font-semibold w-32 text-center'>
+                    <PopoverContent>
+                      <input
+                        type='text'
+                        value={formik.values.currentMention}
+                        onChange={formik.handleChange}
+                        name='currentMention'
+                        className='bg-gray-100 rounded-xl w-full px-1 py-3 mb-3'
+                      />
+                      <div
+                        onClick={addMention}
+                        className='capitalize bg-gray-100 rounded-xl p-1 cursor-pointer font-semibold w-32 text-center'
+                      >
                         add mention
+                      </div>
+                      <div className='mt-4 flex flex-wrap gap-2'>
+                        {formik?.values?.mentions?.map((mention, index) => (
+                          <span
+                            key={index}
+                            className='bg-green-300 text-black px-2 py-1 rounded-full text-sm flex items-center'
+                          >
+                            @{mention}
+                            <button
+                              onClick={() => {
+                                const newMentions = formik.values.mentions.filter((_, i) => i !== index)
+                                formik.setFieldValue('mentions', newMentions)
+                              }}
+                              className='ml-2 text-black hover:text-red-300'
+                            >
+                              ×
+                            </button>
+                          </span>
+                        ))}
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+
+                  <Popover>
+                    <PopoverTrigger>
+                      <svg
+                        xmlns='http://www.w3.org/2000/svg'
+                        fill='none'
+                        viewBox='0 0 24 24'
+                        strokeWidth={1.5}
+                        stroke='currentColor'
+                        className='size-6'
+                      >
+                        <path
+                          strokeLinecap='round'
+                          strokeLinejoin='round'
+                          d='M10.343 3.94c.09-.542.56-.94 1.11-.94h1.093c.55 0 1.02.398 1.11.94l.149.894c.07.424.384.764.78.93.398.164.855.142 1.205-.108l.737-.527a1.125 1.125 0 0 1 1.45.12l.773.774c.39.389.44 1.002.12 1.45l-.527.737c-.25.35-.272.806-.107 1.204.165.397.505.71.93.78l.893.15c.543.09.94.559.94 1.109v1.094c0 .55-.397 1.02-.94 1.11l-.894.149c-.424.07-.764.383-.929.78-.165.398-.143.854.107 1.204l.527.738c.32.447.269 1.06-.12 1.45l-.774.773a1.125 1.125 0 0 1-1.449.12l-.738-.527c-.35-.25-.806-.272-1.203-.107-.398.165-.71.505-.781.929l-.149.894c-.09.542-.56.94-1.11.94h-1.094c-.55 0-1.019-.398-1.11-.94l-.148-.894c-.071-.424-.384-.764-.781-.93-.398-.164-.854-.142-1.204.108l-.738.527c-.447.32-1.06.269-1.45-.12l-.773-.774a1.125 1.125 0 0 1-.12-1.45l.527-.737c.25-.35.272-.806.108-1.204-.165-.397-.506-.71-.93-.78l-.894-.15c-.542-.09-.94-.56-.94-1.109v-1.094c0-.55.398-1.02.94-1.11l.894-.149c.424-.07.765-.383.93-.78.165-.398.143-.854-.108-1.204l-.526-.738a1.125 1.125 0 0 1 .12-1.45l.773-.773a1.125 1.125 0 0 1 1.45-.12l.737.527c.35.25.807.272 1.204.107.397-.165.71-.505.78-.929l.15-.894Z'
+                        />
+                        <path strokeLinecap='round' strokeLinejoin='round' d='M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z' />
+                      </svg>
+                    </PopoverTrigger>
+                    <PopoverContent className='bg-gray-100 rounded-xl max-w-40 px-1 py-3 mb-3'>
+                      <div className='flex items-center'>
+                        <input
+                          type='radio'
+                          value={1}
+                          checked={formik.values.audience === 1}
+                          name='audience'
+                          className='bg-gray-100 rounded-xl mr-1'
+                          onChange={() => formik.setFieldValue('audience', 1)}
+                        />
+                        <label>Everyone</label>
+                      </div>
+                      <div className='flex items-center'>
+                        <input
+                          type='radio'
+                          value={0}
+                          checked={formik.values.audience === 0}
+                          name='audience'
+                          className='bg-gray-100 rounded-xl mr-1'
+                          onChange={() => formik.setFieldValue('audience', 0)}
+                        />
+                        <label>Tweet Circle</label>
                       </div>
                     </PopoverContent>
                   </Popover>
                 </div>
+
                 <button
                   type='submit'
-                  // onClick={() => handleUploadImages()}
                   className='bg-blue-600 text-white px-6 py-2 rounded-full 
                   hover:bg-blue-700 transition-colors duration-300 
                   focus:outline-none focus:ring-2 focus:ring-blue-400'
