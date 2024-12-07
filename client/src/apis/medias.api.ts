@@ -18,10 +18,11 @@ const mediasApi = {
     const formData = new FormData()
     formData.append('video', video)
 
-    return http.post<SuccessResponse<Media>>('/medias/upload-video-hls', formData, {
+    return http.post<SuccessResponse<Media[]>>('/medias/upload-video-hls', formData, {
       headers: {
         'Content-Type': 'multipart/form-data'
-      }
+      },
+      timeout: 0
     })
   }
 }

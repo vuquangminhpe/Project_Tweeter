@@ -27,6 +27,7 @@ import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } 
 import bookmarksApi from '@/apis/bookmarks.api'
 import { Bookmark } from '@/types/Bookmarks.type'
 import { Media } from '@/types/Medias.type'
+import VideoHLSPlayer from '@/components/Customs/VideoHLSPlayer'
 
 interface Props {
   profile: User | null
@@ -227,12 +228,20 @@ const TwitterCard = ({ profile, data, refetchAllDataTweet }: Props) => {
               <div className='cursor-pointer'>
                 <p className='text-gray-800 mb-3'>{data?.content}</p>
                 {data?.medias?.map((media: Media) => (
-                  <img
-                    key={media.url}
-                    className='w-full max-h-96 object-cover rounded-xl'
-                    src={media.url}
-                    alt='image-twitter'
-                  />
+                  <div key={media.url} className='w-full max-w-full'>
+                    {!media.url.endsWith('master.m3u8') && (
+                      <img
+                        className='w-full h-auto max-h-96 object-cover rounded-xl'
+                        src={media.url}
+                        alt='image-twitter'
+                      />
+                    )}
+                    {media.url.endsWith('master.m3u8') && (
+                      <div className='relative w-full'>
+                        <VideoHLSPlayer src={media.url} classNames='rounded-xl w-full h-full aspect-video' />
+                      </div>
+                    )}
+                  </div>
                 ))}
               </div>
 

@@ -3,9 +3,10 @@ import Hls from 'hls.js'
 
 interface VideoPlayerProps {
   src: string
+  classNames?: string
 }
 
-const VideoPlayer = ({ src }: VideoPlayerProps) => {
+const VideoPlayer = ({ src, classNames }: VideoPlayerProps) => {
   const videoRef = useRef<HTMLVideoElement>(null)
 
   useEffect(() => {
@@ -29,7 +30,7 @@ const VideoPlayer = ({ src }: VideoPlayerProps) => {
   }, [src])
 
   return (
-    <div>
+    <div className={classNames}>
       <video ref={videoRef} controls autoPlay style={{ width: '100%', height: 'auto' }} />
     </div>
   )

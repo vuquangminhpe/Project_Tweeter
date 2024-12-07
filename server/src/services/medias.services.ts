@@ -75,7 +75,7 @@ class Queue {
               contentType: mime.getType(filepath) as string
             })
 
-            if (filepath.endsWith('.m3u8')) {
+            if (filepath.endsWith('/master.m3u8')) {
               m3u8Url = (s3Upload as CompleteMultipartUploadCommandOutput).Location as string
             }
 

@@ -82,16 +82,12 @@ const HomeSection = () => {
   const allTweets = dataTweets?.data?.data
   useEffect(() => {
     const convertMentionsToIds = async () => {
-      console.log('formik.values.mentions:', formik.values.mentions)
-
       if (formik.values.mentions.length > 0) {
         try {
           const userIds = await Promise.all(
             formik.values.mentions.map(async (username) => {
               try {
                 const userData = await apiUser.getProfileByUserName(username)
-                console.log('userData:', userData)
-
                 if (!userData?.data?._id) {
                   setAllIdWithMentionName_Undefined((prev) => [...prev, username])
                 }
@@ -439,7 +435,6 @@ const HomeSection = () => {
                       <div className='mt-4 flex flex-wrap gap-2'>
                         {formik?.values?.mentions?.map((mention, index) => {
                           const isValid = allIdWithMentionName_Undefined.includes(mention)
-                          console.log('allIdWithMentionName_Undefined', allIdWithMentionName_Undefined)
 
                           return (
                             <span
