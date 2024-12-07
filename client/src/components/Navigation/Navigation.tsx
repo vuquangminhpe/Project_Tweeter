@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { FaEllipsisH } from 'react-icons/fa'
 import NavigationMenu from './NavigationMenu'
 import {
   DropdownMenu,
@@ -20,9 +19,15 @@ const Navigation = () => {
   }
 
   return (
-    <div className='pl-6 relative'>
+    <div
+      className={`
+      pl-1 relative 
+      ${showTitles ? 'lg:w-72 md:w-60 sm:w-48 w-16' : 'w-20'}
+      transition-all duration-300
+    `}
+    >
       <div className='h-screen sticky top-0'>
-        <div className='py-5 pl-3'>
+        <div className='py-5 flex items-center justify-center lg:pl-3'>
           <svg fill='white' height='28' width='28' viewBox='0 0 24 24' aria-hidden='true' className='block'>
             <g>
               <path d='M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z'></path>
@@ -36,32 +41,27 @@ const Navigation = () => {
               to={item.path}
               key={index}
               className={`
-                cursor-pointer 
-                flex 
-                items-center 
-                space-x-3 
-                hover:bg-gray-700 
-                hover:shadow-md 
-                hover:border 
-                transition-all 
-                duration-300 
-                px-3 
-                py-2 
-                rounded-full 
-                border 
-                border-transparent
-                ${showTitles ? 'w-full' : 'w-fit justify-center'}
-              `}
+              flex 
+              items-center 
+              space-x-3 
+              hover:bg-gray-700 
+              hover:shadow-md 
+              hover:border 
+              transition-all 
+              duration-300 
+              px-3 
+              py-2 
+              rounded-full 
+              border 
+              border-transparent
+              ${showTitles ? 'w-full' : 'w-14 justify-center'}
+            `}
             >
               <span className='text-2xl'>{item.icon}</span>
               <p
-                className={`
-                  text-base 
-                  transition-all 
-                  duration-300 
-                  ease-in-out
-                  ${showTitles ? 'opacity-100 max-w-full visible' : 'opacity-0 max-w-0 invisible absolute'}
-                `}
+                className={`text-base transition-all duration-300 ease-in-out ${
+                  showTitles ? 'opacity-100 max-w-full visible' : 'opacity-0 max-w-0 invisible absolute'
+                }`}
               >
                 {item.title}
               </p>
@@ -70,91 +70,54 @@ const Navigation = () => {
         </div>
 
         <div
-          className={`
-            py-6 
-            transition-all 
-            duration-300 
-            ease-in-out 
-            overflow-hidden
-            ${showTitles ? 'max-h-24 opacity-100' : 'max-h-0 opacity-0'}
-          `}
+          className={`py-6 transition-all duration-300 ease-in-out ${
+            showTitles ? 'max-h-24 opacity-100' : 'max-h-0 opacity-0'
+          }`}
         >
           <button
-            className={`
-              w-60 
-              rounded-[25px] 
-              py-3 
-              bg-[#1e88e5] 
-              text-white 
-              hover:bg-[#1565c0] 
-              text-base
-              transition-all 
-              duration-300
-              ${showTitles ? 'scale-100' : 'scale-0'}
-            `}
+            className={`w-full rounded-[25px] py-3 bg-[#1e88e5] text-white hover:bg-[#1565c0] text-sm ${
+              showTitles ? 'block' : 'hidden'
+            }`}
           >
             Post
           </button>
         </div>
 
         <div
-          className={`
-            flex 
-            items-center 
-            space-x-3 
-            px-3 
-            py-2 
-            rounded-full 
-            hover:bg-gray-700 
-            hover:shadow-md 
-            hover:border 
-            transition-all 
-            duration-300 
-            cursor-pointer 
-            border 
-            border-transparent
-            ${showTitles ? 'w-full' : 'w-fit justify-center'}
-          `}
+          className={`flex items-center space-x-3 px-3 py-2 rounded-full  transition-all duration-300 border border-transparent ${
+            showTitles ? 'w-full' : 'w-14 justify-center'
+          }`}
         >
-          <div className='w-12 h-12 rounded-full overflow-hidden'>
-            <Avatar>
-              <AvatarImage src={profile?.avatar} alt='@shadcn' />
-              <AvatarFallback className='bg-blue-100 text-blue-500'>
-                {profile?.username?.split('')[0].toUpperCase()}
-              </AvatarFallback>
-            </Avatar>
-          </div>
           <DropdownMenu>
             <DropdownMenuTrigger>
-              <div
-                className={`
-              transition-all 
-              duration-300 
-              ease-in-out 
-              overflow-hidden
-              ${showTitles ? 'opacity-100 max-w-full visible' : 'opacity-0 max-w-0 invisible absolute'}
-            `}
-              >
-                <span className='opacity-70 text-sm block'>{profile.username}</span>
-              </div>
-              <FaEllipsisH className='ml-2 text-gray-500 text-lg' />
+              <Avatar>
+                <AvatarImage src={profile?.avatar} alt={profile?.username || 'User'} />
+                <AvatarFallback className='bg-blue-100 text-blue-500'>
+                  {profile?.username?.[0]?.toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
             </DropdownMenuTrigger>
-            <DropdownMenuContent>
-              <DropdownMenuLabel className='cursor-pointer'>My Account</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem className='cursor-pointer'>Profile</DropdownMenuItem>
-              <DropdownMenuItem className='cursor-pointer'>Messages</DropdownMenuItem>
-
-              <DropdownMenuItem>Logout</DropdownMenuItem>
+            <DropdownMenuContent className='mt-2 translate-x-2 rounded-xl bg-gray-800 shadow-xl'>
+              <DropdownMenuLabel className='font-bold text-white'>My Account</DropdownMenuLabel>
+              <DropdownMenuSeparator className='border-gray-600' />
+              <DropdownMenuItem className='cursor-pointer hover:bg-gray-700 text-white px-3 py-2 rounded-md'>
+                Profile
+              </DropdownMenuItem>
+              <DropdownMenuItem className='cursor-pointer hover:bg-gray-700 text-white px-3 py-2 rounded-md'>
+                Messages
+              </DropdownMenuItem>
+              <DropdownMenuItem className='cursor-pointer hover:bg-red-600 text-white px-3 py-2 rounded-md'>
+                Logout
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
 
         <button
-          className='absolute bottom-24 left-6 bg-blue-500 text-white px-3 py-2 rounded-full'
+          className='absolute bottom-6 left-6  bg-blue-500 text-white px-3 py-2 rounded-full'
           onClick={toggleTitlesVisibility}
         >
-          {showTitles ? 'Hide Titles' : 'Show Titles'}
+          {showTitles ? 'Hide' : 'Show'}
         </button>
       </div>
     </div>
