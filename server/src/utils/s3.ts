@@ -14,7 +14,6 @@ const s3 = new S3({
     accessKeyId: envConfig.accessKeyId as string
   }
 })
-// s3.listBuckets({}).then((data) => console.log(data))
 export const uploadFileS3 = async ({
   filename,
   filePath,

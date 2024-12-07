@@ -50,9 +50,24 @@ const HomeSection = () => {
       setUploadingImage(false)
     }
   })
+  const uploadVideoMutation = useMutation({
+    mutationFn: mediasApi.uploadVideo,
+    onMutate: () => {
+      setUploadingImage(true)
+    },
+    onSuccess: (data) => {
+      console.log('Upload thành công:', data)
+    },
+    onError: (error) => {
+      console.error('Upload thất bại:', error)
+    },
+    onSettled: () => {
+      setUploadingImage(false)
+    }
+  })
   const [activeTab, setActiveTab] = useState<string>('forYou')
   const [uploadingImage, setUploadingImage] = useState<boolean>(false)
-  const [selectImages, setSelectImages] = useState<File[]>([])
+  const [selectItemInTweet, setSelectItemInTweet] = useState<File[]>([])
   const [imagePreviews, setImagePreviews] = useState<(string | ArrayBuffer)[]>([])
   const [allLinkCreatedTweet, setAllLinkCreatedTweet] = useState<string[]>([])
 
@@ -77,7 +92,7 @@ const HomeSection = () => {
     const files = event.target.files
     if (files) {
       const fileArray = Array.from(files)
-      setSelectImages(fileArray)
+      setSelectItemInTweet(fileArray)
       const previews = fileArray.map((file) => URL.createObjectURL(file))
       setImagePreviews(previews)
 
@@ -86,18 +101,26 @@ const HomeSection = () => {
   }
 
   const handleUploadImages = async () => {
-    if (selectImages.length > 0) {
+    if (selectItemInTweet.length > 0) {
       try {
-        const response = await uploadImagesMutation.mutateAsync(selectImages, {
-          onSuccess: (data) => {
-            console.log('Upload thành công:', data)
-            setAllLinkCreatedTweet(data.data.result.map((item: any) => item.url))
-          },
-          onError: (error) => {
-            console.error('error upload:', error)
-          }
-        })
-        return response
+        console.log('selectItemInTweet:', selectItemInTweet)
+
+        const uploadedFiles = await Promise.all(
+          selectItemInTweet.map(async (item) => {
+            if (item.type.startsWith('image/')) {
+              return await uploadImagesMutation.mutateAsync(item)
+            } else if (item.type.startsWith('video/')) {
+              return await uploadVideoMutation.mutateAsync(item)
+            } else {
+              console.warn(`Skipping file with unsupported type: ${item.type}`)
+              return null
+            }
+          })
+        )
+
+        const successfulUploads = uploadedFiles.filter(Boolean)
+
+        setAllLinkCreatedTweet(successfulUploads.map((item) => (item as any)?.data.result.map((i: any) => i.url)))
       } catch (error) {
         console.error('error:', error)
       }
@@ -187,11 +210,11 @@ const HomeSection = () => {
                         type='button'
                         onClick={() => {
                           const newPreviews = [...imagePreviews]
-                          const newImages = [...selectImages]
+                          const newImages = [...selectItemInTweet]
                           newPreviews.splice(index, 1)
                           newImages.splice(index, 1)
                           setImagePreviews(newPreviews)
-                          setSelectImages(newImages)
+                          setSelectItemInTweet(newImages)
                           formik.setFieldValue('images', newImages)
                         }}
                         className='absolute top-2 right-2 bg-black/50 text-white 
