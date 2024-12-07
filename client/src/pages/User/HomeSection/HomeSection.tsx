@@ -82,19 +82,30 @@ const HomeSection = () => {
   const allTweets = dataTweets?.data?.data
   useEffect(() => {
     const convertMentionsToIds = async () => {
+      console.log('formik.values.mentions:', formik.values.mentions)
+
       if (formik.values.mentions.length > 0) {
         try {
           const userIds = await Promise.all(
             formik.values.mentions.map(async (username) => {
-              const userData = await apiUser.getProfileByUserName(username)
-              return userData?.data?._id
+              try {
+                const userData = await apiUser.getProfileByUserName(username)
+                console.log('userData:', userData)
+
+                if (!userData?.data?._id) {
+                  setAllIdWithMentionName_Undefined((prev) => [...prev, username])
+                }
+                return userData?.data?._id
+              } catch (error) {
+                console.error(`Error fetching user for username: ${username}`, error)
+                setAllIdWithMentionName_Undefined((prev) => [...prev, username])
+                return undefined
+              }
             })
           )
 
           const validUserIds = userIds.filter((_id) => _id !== undefined) as unknown as string[]
-          const invalidUserIds = userIds.filter((_id) => _id === undefined) as unknown as string[]
           setAllIdWithMentionName(validUserIds)
-          setAllIdWithMentionName_Undefined(invalidUserIds)
         } catch (error) {
           console.error('Error converting mentions to user IDs:', error)
         }
@@ -426,27 +437,31 @@ const HomeSection = () => {
                         add mention
                       </div>
                       <div className='mt-4 flex flex-wrap gap-2'>
-                        {formik?.values?.mentions?.map((mention, index) => (
-                          <span
-                            key={index}
-                            className='bg-green-300 text-black px-2 py-1 rounded-full text-sm flex items-center'
-                          >
-                            {<div className='hidden'>{mention}</div>}
+                        {formik?.values?.mentions?.map((mention, index) => {
+                          const isValid = allIdWithMentionName_Undefined.includes(mention)
+                          console.log('allIdWithMentionName_Undefined', allIdWithMentionName_Undefined)
 
-                            <div className='text-blue-900'>@{allIdWithMentionName[index]}</div>
-
-                            <div className='text-gray-400'>@{mention}</div>
-                            <button
-                              onClick={() => {
-                                const newMentions = formik.values.mentions.filter((_, i) => i !== index)
-                                formik.setFieldValue('mentions', newMentions)
-                              }}
-                              className='ml-2 text-black hover:text-red-300'
+                          return (
+                            <span
+                              key={index}
+                              className={`px-2 py-1 rounded-full text-sm flex items-center ${
+                                !isValid ? 'bg-green-300 text-black' : 'bg-gray-300 text-gray-600'
+                              }`}
                             >
-                              ×
-                            </button>
-                          </span>
-                        ))}
+                              <div className='hidden'>{mention}</div>
+                              <div className={`text-${isValid ? 'black' : 'gray-400'}`}>@{mention}</div>
+                              <button
+                                onClick={() => {
+                                  const newMentions = formik.values.mentions.filter((_, i) => i !== index)
+                                  formik.setFieldValue('mentions', newMentions)
+                                }}
+                                className='ml-2 text-black hover:text-red-300'
+                              >
+                                ×
+                              </button>
+                            </span>
+                          )
+                        })}
                       </div>
                     </PopoverContent>
                   </Popover>
