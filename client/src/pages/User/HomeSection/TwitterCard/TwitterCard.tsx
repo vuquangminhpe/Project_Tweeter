@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useNavigate } from 'react-router-dom'
 import { GoVerified } from 'react-icons/go'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { FaEllipsisH } from 'react-icons/fa'
 import { BsChat } from 'react-icons/bs'
 import { MdFavorite, MdFavoriteBorder } from 'react-icons/md'
@@ -11,7 +11,7 @@ import { RiBarChartGroupedLine } from 'react-icons/ri'
 import { FaBookmark } from 'react-icons/fa'
 import { User } from '@/types/User.type'
 import { Tweets } from '@/types/Tweet.type'
-import { QueryObserverResult, RefetchOptions, useMutation, useQuery } from '@tanstack/react-query'
+import { keepPreviousData, QueryObserverResult, RefetchOptions, useMutation, useQuery } from '@tanstack/react-query'
 import likesApi from '@/apis/likes.api'
 import { Likes } from '@/types/Likes.type'
 import commentApi from '@/apis/comments.api'
@@ -38,21 +38,24 @@ interface Props {
 }
 // định nghĩa các hằng số
 // đọc các comment ở dưới để hiểu rõ hơn (cấm viết khác để debug code dễ hơn )
-const LIMIT = 10
+const LIMIT = 5
 const PAGE = 1
 const TwitterCard = ({ profile, data, refetchAllDataTweet }: Props) => {
   const navigate = useNavigate()
   const [commentModalOpen, setCommentModalOpen] = useState(false)
   const [comment, setComment] = useState('')
-
+  const [loadingComment, setLoadingComment] = useState(false)
+  const [loadingPage, setLoadingPage] = useState(PAGE)
+  const [allComments, setAllComments] = useState<CommentRequest[]>([])
   // khu vực data Query => chỉ viết data Query ở đây
   const { data: dataBookmark, refetch: refetchDataBookmark } = useQuery({
     queryKey: ['dataBookmark'],
     queryFn: () => bookmarksApi.getBookmarks()
   })
   const { data: dataTweetComments, refetch: refetchDataComment } = useQuery({
-    queryKey: ['dataTweetComments', data._id],
-    queryFn: () => commentApi.getTweetComments(data?._id as string, LIMIT, PAGE)
+    queryKey: ['dataTweetComments', data._id, loadingPage],
+    queryFn: () => commentApi.getTweetComments(data?._id as string, LIMIT, loadingPage),
+    placeholderData: keepPreviousData
   })
   const { data: dataLikes, refetch: refetchDataLikes } = useQuery({
     queryKey: ['dataLikes', data._id],
@@ -83,7 +86,21 @@ const TwitterCard = ({ profile, data, refetchAllDataTweet }: Props) => {
   const dataBookmarks = useMemo(() => dataBookmark?.data?.data, [dataBookmark])
   const dataLike = useMemo(() => dataLikes?.data.result, [dataLikes])
   const dataComments = useMemo(() => dataTweetComments?.data?.results, [dataTweetComments])
+  useEffect(() => {
+    if (loadingComment) {
+      setLoadingComment(false)
+    }
+  }, [loadingComment])
+  useEffect(() => {
+    if (dataComments) {
+      console.log(dataComments, allComments)
 
+      setAllComments((prev) => {
+        const newComments = (dataComments as unknown as Comment).comments
+        return [...prev, ...newComments]
+      })
+    }
+  }, [dataComments])
   // khu vực handle action => chỉ viết handle action ở đây
   const handleDeleteTweet = async (tweet_id: string) => {
     handleDeletedMutation.mutateAsync(tweet_id, {
@@ -316,7 +333,7 @@ const TwitterCard = ({ profile, data, refetchAllDataTweet }: Props) => {
 
               {commentModalOpen && (
                 <div className='mt-4 space-y-3'>
-                  {(dataComments as unknown as Comment)?.comments?.map((comment: CommentRequest) => (
+                  {(allComments as unknown as CommentRequest[])?.map((comment: CommentRequest) => (
                     <div key={comment?._id} className='flex items-start space-x-3 bg-gray-50 p-3 rounded-lg'>
                       <Avatar className='w-8 h-8 bg-gray-300'>
                         <AvatarImage src={comment.user_info.avatar} alt={comment.user_info.username} />
@@ -339,6 +356,27 @@ const TwitterCard = ({ profile, data, refetchAllDataTweet }: Props) => {
                       </div>
                     </div>
                   ))}
+                  {loadingPage <= (dataComments as any)?.total_pages ? (
+                    <div
+                      className='text-blue-500 font-semibold py-2 cursor-pointer'
+                      onClick={() => {
+                        setLoadingComment(true)
+                        console.log(loadingPage)
+                        console.log(dataComments)
+
+                        if (loadingPage <= (dataComments as any)?.total_pages) {
+                          console.log(loadingPage)
+
+                          return setLoadingPage((prev) => prev + 1)
+                        }
+                        refetchDataComment()
+                      }}
+                    >
+                      Load more comment....
+                    </div>
+                  ) : (
+                    <div className='text-gray-500 font-semibold py-2 cursor-pointer'>No load more comment....</div>
+                  )}
                   <div className='flex gap-4 items-center'>
                     <div className='w-full border-2 border-gray-400 focus:ring-2 rounded-2xl focus:ring-blue-200'>
                       <textarea

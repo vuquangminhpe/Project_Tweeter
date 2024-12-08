@@ -1,4 +1,3 @@
-import ModeToggle from '@/components/ModeToogle'
 import Navigation from '@/components/Navigation/Navigation'
 import React from 'react'
 interface Props {
@@ -8,7 +7,6 @@ export default function MainLayout({ children }: Props) {
   return (
     <div className='w-full bg-black flex'>
       <div className='hidden lg:block lg:w-2/12 w-full'>
-        <ModeToggle />
         <Navigation />
       </div>
       {children}
