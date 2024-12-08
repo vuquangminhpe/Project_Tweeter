@@ -11,6 +11,7 @@ const commentApi = {
         page
       }
     }),
-  createComment: (body: createCommentType) => http.post<SuccessResponse<Comment>>('/comments/', body)
+  createComment: (body: createCommentType) => http.post<SuccessResponse<Comment>>('/comments/', body),
+  deleteComment: (comment_id: string) => http.delete<SuccessResponse<Comment>>(`/comments/${comment_id}`)
 }
 export default commentApi

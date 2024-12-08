@@ -25,7 +25,7 @@ class CommentServices {
         {
           $project: {
             _id: 1,
-            tweet_id: 1,
+            comment_id: 1,
             user_id: 1,
             commentContent: 1,
             commentLink: 1,
@@ -62,34 +62,34 @@ class CommentServices {
 
     return comment
   }
-  async editComment(tweet_id: string, user_id: string, new_commentContent: string) {
+  async editComment(comment_id: string, user_id: string, new_commentContent: string) {
     if (!new_commentContent) {
       return { message: COMMENT_MESSAGES.NO_EDIT_COMMENT }
     }
     const comment = await databaseService.comments.findOne({
-      tweet_id: new ObjectId(tweet_id),
+      _id: new ObjectId(comment_id),
       user_id: new ObjectId(user_id)
     })
     if (comment?.commentContent === new_commentContent) {
       return { message: COMMENT_MESSAGES.NO_EDIT_COMMENT }
     }
     const result = await databaseService.comments.updateOne(
-      { tweet_id: new ObjectId(tweet_id), user_id: new ObjectId(user_id) },
+      { _id: new ObjectId(comment_id), user_id: new ObjectId(user_id) },
       { $set: { commentContent: new_commentContent }, $currentDate: { updatedAt: true } }
     )
     return result
   }
-  async deleteComment(tweet_id: string, user_id: string) {
+  async deleteComment(comment_id: string) {
     const commentTweet = await databaseService.comments.findOne({
-      tweet_id: new ObjectId(tweet_id),
-      user_id: new ObjectId(user_id)
+      _id: new ObjectId(comment_id)
     })
+    console.log(comment_id, commentTweet)
+
     if (!commentTweet) {
       return { message: COMMENT_MESSAGES.NO_COMMENT_TO_DELETE }
     }
     const result = await databaseService.comments.deleteOne({
-      tweet_id: new ObjectId(tweet_id),
-      user_id: new ObjectId(user_id)
+      _id: new ObjectId(comment_id)
     })
     return result
   }

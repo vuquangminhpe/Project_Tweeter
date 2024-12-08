@@ -55,14 +55,8 @@ commentsRouter.put('/', AccessTokenValidator, verifiedUserValidator, tweetIdVali
  * Description: delete comment tweet
  * Path: /
  * Method: DELETE
- * Body: {tweet_id: string}
+ * params: {tweet_id: string}
  * header: {Authorization:Bearer <access_token> }
  */
-commentsRouter.delete(
-  '/',
-  AccessTokenValidator,
-  verifiedUserValidator,
-  tweetIdValidator,
-  wrapAsync(deleteCommentController)
-)
+commentsRouter.delete('/:comment_id', AccessTokenValidator, verifiedUserValidator, wrapAsync(deleteCommentController))
 export default commentsRouter

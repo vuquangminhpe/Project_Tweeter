@@ -82,6 +82,9 @@ const TwitterCard = ({ profile, data, refetchAllDataTweet }: Props) => {
   const unBookmarksTweetMutation = useMutation({
     mutationFn: (tweet_id: string) => bookmarksApi.unBookmarkTweet(tweet_id)
   })
+  const deleteCommentMutation = useMutation({
+    mutationFn: (tweet_id: string) => commentApi.deleteComment(tweet_id)
+  })
   // khu vực data Query => chỉ viết data Query ở đây (mặc định dùng useMemo để ko bị tính toán lại data)
   const dataBookmarks = useMemo(() => dataBookmark?.data?.data, [dataBookmark])
   const dataLike = useMemo(() => dataLikes?.data.result, [dataLikes])
@@ -93,8 +96,6 @@ const TwitterCard = ({ profile, data, refetchAllDataTweet }: Props) => {
   }, [loadingComment])
   useEffect(() => {
     if (dataComments) {
-      console.log(dataComments, allComments)
-
       setAllComments((prev) => {
         const newComments = (dataComments as unknown as Comment).comments
         return [...prev, ...newComments]
@@ -172,7 +173,17 @@ const TwitterCard = ({ profile, data, refetchAllDataTweet }: Props) => {
       }
     })
   }
-
+  const handleDeleteComment = async (comment_id: string) => {
+    deleteCommentMutation.mutateAsync(comment_id, {
+      onSuccess: () => {
+        toast.success('Delete Comment Success')
+        refetchDataComment()
+      },
+      onError: () => {
+        toast.error('Delete Comment Fail')
+      }
+    })
+  }
   // khu vực custom data => chỉ viết custom data ở đây
   const userLike = dataLike?.filter((like) => like.user_info.username === profile?.username)
   const filterBookmark = dataBookmarks?.filter((bookmark) => bookmark.tweet_id === data._id)
@@ -341,16 +352,36 @@ const TwitterCard = ({ profile, data, refetchAllDataTweet }: Props) => {
                       </Avatar>
 
                       <div className='w-full'>
-                        <div className='flex items-center relative space-x-2'>
-                          <span className='font-semibold text-sm text-gray-800'>{comment.user_info.username}</span>
-                          <span className='text-xs text-gray-500'>{commentTime(comment.updatedAt)}</span>
-                          <span className='right-0 absolute'>
-                            {Number(new Date(comment.updatedAt).getTime()) -
-                              Number(new Date(comment.createdAt).getTime()) <=
-                            0
-                              ? ''
-                              : 'đã chỉnh sửa'}
-                          </span>
+                        <div className='flex justify-between'>
+                          <div className='flex items-center relative space-x-2'>
+                            <span className='font-semibold text-sm text-gray-800'>{comment.user_info.username}</span>
+                            <span className='text-xs text-gray-500'>{commentTime(comment.updatedAt)}</span>
+                            <span className='right-0 absolute'>
+                              {Number(new Date(comment.updatedAt).getTime()) -
+                                Number(new Date(comment.createdAt).getTime()) <=
+                              0
+                                ? ''
+                                : 'đã chỉnh sửa'}
+                            </span>
+                          </div>
+                          <Popover>
+                            <PopoverTrigger>
+                              {data?.user_id === profile?._id && (
+                                <FaEllipsisH className='text-gray-500 text-lg cursor-pointer hover:text-blue-500 transition' />
+                              )}
+                            </PopoverTrigger>
+                            <PopoverContent className='flex gap-5 justify-around max-w-44 bg-slate-100 rounded-xl shadow-xl'>
+                              <div className='cursor-pointer font-semibold hover:bg-gray-600 transition-all px-3 py-1 rounded-xl'>
+                                Edit
+                              </div>
+                              <div
+                                onClick={() => handleDeleteComment(comment?._id as string)}
+                                className='cursor-pointer font-semibold hover:bg-gray-600 px-3 py-1 rounded-xl'
+                              >
+                                Delete
+                              </div>
+                            </PopoverContent>
+                          </Popover>
                         </div>
                         <p className='text-sm text-gray-700 mt-1'>{comment?.commentContent}</p>
                       </div>
