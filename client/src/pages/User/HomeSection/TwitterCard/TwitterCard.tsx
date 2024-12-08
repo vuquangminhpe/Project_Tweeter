@@ -28,6 +28,7 @@ import bookmarksApi from '@/apis/bookmarks.api'
 import { Bookmark } from '@/types/Bookmarks.type'
 import { Media } from '@/types/Medias.type'
 import VideoHLSPlayer from '@/components/Customs/VideoHLSPlayer'
+import EditTweet from '../EditTweet'
 
 interface Props {
   profile: User | null
@@ -47,7 +48,7 @@ const TwitterCard = ({ profile, data, refetchAllDataTweet }: Props) => {
   const [loadingComment, setLoadingComment] = useState(false)
   const [loadingPage, setLoadingPage] = useState(PAGE)
   const [allComments, setAllComments] = useState<CommentRequest[]>([])
-
+  const [edit, setEdit] = useState(false)
   // khu vực data Query => chỉ viết data Query ở đây
   const { data: dataBookmark, refetch: refetchDataBookmark } = useQuery({
     queryKey: ['dataBookmark'],
@@ -245,7 +246,10 @@ const TwitterCard = ({ profile, data, refetchAllDataTweet }: Props) => {
                   )}
                 </PopoverTrigger>
                 <PopoverContent className='flex gap-5 justify-around max-w-44 bg-slate-100 rounded-xl shadow-xl'>
-                  <div className='cursor-pointer font-semibold hover:bg-gray-600 transition-all px-3 py-1 rounded-xl'>
+                  <div
+                    onClick={() => setEdit(true)}
+                    className='cursor-pointer font-semibold hover:bg-gray-600 transition-all px-3 py-1 rounded-xl'
+                  >
                     Edit
                   </div>
                   <div
@@ -258,180 +262,187 @@ const TwitterCard = ({ profile, data, refetchAllDataTweet }: Props) => {
               </Popover>
             </div>
 
-            <div className='mt-3'>
-              <div className='cursor-pointer'>
-                <p className='text-gray-800 mb-3'>{data?.content}</p>
-                {data?.medias?.map((media: Media) => (
-                  <div key={media.url} className='w-full max-w-full'>
-                    {!media.url.endsWith('master.m3u8') && (
-                      <img
-                        className='w-full h-auto max-h-96 object-cover rounded-xl'
-                        src={media.url}
-                        alt='image-twitter'
-                      />
-                    )}
-                    {media.url.endsWith('master.m3u8') && (
-                      <div className='relative w-full'>
-                        <VideoHLSPlayer src={media.url} classNames='rounded-xl w-full h-full aspect-video' />
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-
-              <div className='py-4 flex justify-between items-center text-gray-500'>
-                <div
-                  className='flex items-center space-x-2 hover:text-blue-500 transition group cursor-pointer'
-                  onClick={() => {
-                    setCommentModalOpen(!commentModalOpen)
-                  }}
-                >
-                  <BsChat className='group-hover:text-blue-500' />
-                  <p>{(dataComments as any)?.comments?.length}</p>
-                </div>
-                <ContextMenu>
-                  <ContextMenuTrigger>
-                    {' '}
-                    <div className='flex items-center space-x-2 hover:text-red-500 transition group cursor-pointer'>
-                      {Number(userLike?.length) > 0 ? (
-                        <MdFavorite
-                          className='text-red-500 group-hover:text-red-600'
-                          onClick={() => handleUnLikesTweet(data?._id as string)}
-                        />
-                      ) : (
-                        <MdFavoriteBorder
-                          className='group-hover:text-red-500'
-                          onClick={() => handleLikeTweet(data?._id as string)}
+            {edit ? (
+              <EditTweet profile={profile} data={data} refetchAllDataTweet={refetchAllDataTweet} />
+            ) : (
+              <div className='mt-3'>
+                <div className='cursor-pointer'>
+                  <p className='text-gray-800 mb-3'>{data?.content}</p>
+                  {data?.medias?.map((media: Media) => (
+                    <div key={media.url} className='w-full max-w-full'>
+                      {!media.url.endsWith('master.m3u8') && (
+                        <img
+                          className='w-full h-auto max-h-96 object-cover rounded-xl'
+                          src={media.url}
+                          alt='image-twitter'
                         />
                       )}
-                      <p>{(dataLike as unknown as Likes[])?.length}</p>
-                    </div>
-                  </ContextMenuTrigger>
-                  <ContextMenuContent className='max-w-44 translate-x-2 -translate-y-12 overflow-y-auto rounded-xl bg bg-slate-300 shadow-xl'>
-                    <ContextMenuItem>
-                      <ScrollArea>
-                        <h4 className='mb-4 text-sm font-semibold text-gray-700'>Likes</h4>
-                        {(dataLike as Likes[])?.map((like: Likes) => (
-                          <div key={like._id} className='mb-2 pb-2 border-b last:border-b-0'>
-                            <div className='flex items-center space-x-2'>
-                              <Avatar className='w-8 h-8 bg-gray-400'>
-                                <AvatarImage src={like.user_info.avatar} alt={like.user_info.username} />
-                                <AvatarFallback>{like.user_info.username.charAt(0).toUpperCase()}</AvatarFallback>
-                              </Avatar>
-                              <span className='text-sm text-gray-800'>{like.user_info.username}</span>
-                            </div>
-                          </div>
-                        ))}
-                      </ScrollArea>
-                    </ContextMenuItem>
-                  </ContextMenuContent>
-                </ContextMenu>
-
-                <div className='flex items-center space-x-2 hover:text-blue-500 transition group cursor-pointer'>
-                  <RiBarChartGroupedLine />
-                  <p>{Number(data?.guest_views) + Number(data?.user_views)}</p>
-                </div>
-
-                <div className='flex items-center space-x-4'>
-                  <FaBookmark
-                    className={`cursor-pointer hover:text-blue-500 transition ${
-                      (filterBookmark as Bookmark[])?.length > 0 ? 'text-blue-500' : 'text-gray-500'
-                    }`}
-                    onClick={() =>
-                      (filterBookmark as Bookmark[])?.length === 0
-                        ? handleBookmarksTweet(data?._id as string)
-                        : handleUnBookmarksTweet(data?._id as string)
-                    }
-                  />
-
-                  <RiShare2Fill className='cursor-pointer hover:text-blue-500 transition' onClick={handleShareTweet} />
-                </div>
-              </div>
-
-              {commentModalOpen && (
-                <div className='mt-4 space-y-3'>
-                  {(allComments as unknown as CommentRequest[])?.map((comment: CommentRequest) => (
-                    <div key={comment?._id} className='flex items-start space-x-3 bg-gray-50 p-3 rounded-lg'>
-                      <Avatar className='w-8 h-8 bg-gray-300'>
-                        <AvatarImage src={comment.user_info.avatar} alt={comment.user_info.username} />
-                        <AvatarFallback>{comment.user_info.username.charAt(0).toUpperCase()}</AvatarFallback>
-                      </Avatar>
-
-                      <div className='w-full'>
-                        <div className='flex justify-between'>
-                          <div className='flex items-center relative space-x-2'>
-                            <span className='font-semibold text-sm text-gray-800'>{comment.user_info.username}</span>
-                            <span className='text-xs text-gray-500'>{commentTime(comment.updatedAt)}</span>
-                            <span className='right-0 absolute'>
-                              {Number(new Date(comment.updatedAt).getTime()) -
-                                Number(new Date(comment.createdAt).getTime()) <=
-                              0
-                                ? ''
-                                : 'đã chỉnh sửa'}
-                            </span>
-                          </div>
-                          <Popover>
-                            <PopoverTrigger>
-                              {data?.user_id === profile?._id && (
-                                <FaEllipsisH className='text-gray-500 text-lg cursor-pointer hover:text-blue-500 transition' />
-                              )}
-                            </PopoverTrigger>
-                            <PopoverContent className='flex gap-5 justify-around max-w-44 bg-slate-100 rounded-xl shadow-xl'>
-                              <div className='cursor-pointer font-semibold hover:bg-gray-600 transition-all px-3 py-1 rounded-xl'>
-                                Edit
-                              </div>
-                              <div
-                                onClick={() => handleDeleteComment(comment?._id as string)}
-                                className='cursor-pointer font-semibold hover:bg-gray-600 px-3 py-1 rounded-xl'
-                              >
-                                Delete
-                              </div>
-                            </PopoverContent>
-                          </Popover>
+                      {media.url.endsWith('master.m3u8') && (
+                        <div className='relative w-full'>
+                          <VideoHLSPlayer src={media.url} classNames='rounded-xl w-full h-full aspect-video' />
                         </div>
-                        <p className='text-sm text-gray-700 mt-1'>{comment?.commentContent}</p>
-                      </div>
+                      )}
                     </div>
                   ))}
-                  {loadingPage < (dataComments as any)?.total_pages ? (
-                    <div
-                      className='text-blue-500 font-semibold py-2 cursor-pointer'
-                      onClick={() => {
-                        setLoadingComment(true)
-                        console.log(loadingPage)
-                        console.log(dataComments)
+                </div>
 
-                        if (loadingPage <= (dataComments as any)?.total_pages) {
-                          console.log(loadingPage)
+                <div className='py-4 flex justify-between items-center text-gray-500'>
+                  <div
+                    className='flex items-center space-x-2 hover:text-blue-500 transition group cursor-pointer'
+                    onClick={() => {
+                      setCommentModalOpen(!commentModalOpen)
+                    }}
+                  >
+                    <BsChat className='group-hover:text-blue-500' />
+                    <p>{(dataComments as any)?.comments?.length}</p>
+                  </div>
+                  <ContextMenu>
+                    <ContextMenuTrigger>
+                      {' '}
+                      <div className='flex items-center space-x-2 hover:text-red-500 transition group cursor-pointer'>
+                        {Number(userLike?.length) > 0 ? (
+                          <MdFavorite
+                            className='text-red-500 group-hover:text-red-600'
+                            onClick={() => handleUnLikesTweet(data?._id as string)}
+                          />
+                        ) : (
+                          <MdFavoriteBorder
+                            className='group-hover:text-red-500'
+                            onClick={() => handleLikeTweet(data?._id as string)}
+                          />
+                        )}
+                        <p>{(dataLike as unknown as Likes[])?.length}</p>
+                      </div>
+                    </ContextMenuTrigger>
+                    <ContextMenuContent className='max-w-44 translate-x-2 -translate-y-12 overflow-y-auto rounded-xl bg bg-slate-300 shadow-xl'>
+                      <ContextMenuItem>
+                        <ScrollArea>
+                          <h4 className='mb-4 text-sm font-semibold text-gray-700'>Likes</h4>
+                          {(dataLike as Likes[])?.map((like: Likes) => (
+                            <div key={like._id} className='mb-2 pb-2 border-b last:border-b-0'>
+                              <div className='flex items-center space-x-2'>
+                                <Avatar className='w-8 h-8 bg-gray-400'>
+                                  <AvatarImage src={like.user_info.avatar} alt={like.user_info.username} />
+                                  <AvatarFallback>{like.user_info.username.charAt(0).toUpperCase()}</AvatarFallback>
+                                </Avatar>
+                                <span className='text-sm text-gray-800'>{like.user_info.username}</span>
+                              </div>
+                            </div>
+                          ))}
+                        </ScrollArea>
+                      </ContextMenuItem>
+                    </ContextMenuContent>
+                  </ContextMenu>
 
-                          return setLoadingPage((prev) => prev + 1)
-                        }
-                        refetchDataComment()
-                      }}
-                    >
-                      Load more comment....
-                    </div>
-                  ) : (
-                    <div className='text-gray-500 font-semibold py-2 cursor-pointer'>No load more comment....</div>
-                  )}
-                  <div className='flex gap-4 items-center'>
-                    <div className='w-full border-2 border-gray-400 focus:ring-2 rounded-2xl focus:ring-blue-200'>
-                      <textarea
-                        className='items-center p-1 w-full rounded-xl focus:outline-none'
-                        placeholder='comment tweet .....'
-                        onChange={(e) => setComment(e.currentTarget.value)}
-                      />
-                    </div>
-                    <div
-                      onClick={() => handleCreateComment(data?._id as string)}
-                      className='bg-blue-950 p-4 items-center text-center text-white rounded-xl cursor-pointer font-semibold'
-                    >
-                      Send
-                    </div>
+                  <div className='flex items-center space-x-2 hover:text-blue-500 transition group cursor-pointer'>
+                    <RiBarChartGroupedLine />
+                    <p>{Number(data?.guest_views) + Number(data?.user_views)}</p>
+                  </div>
+
+                  <div className='flex items-center space-x-4'>
+                    <FaBookmark
+                      className={`cursor-pointer hover:text-blue-500 transition ${
+                        (filterBookmark as Bookmark[])?.length > 0 ? 'text-blue-500' : 'text-gray-500'
+                      }`}
+                      onClick={() =>
+                        (filterBookmark as Bookmark[])?.length === 0
+                          ? handleBookmarksTweet(data?._id as string)
+                          : handleUnBookmarksTweet(data?._id as string)
+                      }
+                    />
+
+                    <RiShare2Fill
+                      className='cursor-pointer hover:text-blue-500 transition'
+                      onClick={handleShareTweet}
+                    />
                   </div>
                 </div>
-              )}
-            </div>
+
+                {commentModalOpen && (
+                  <div className='mt-4 space-y-3'>
+                    {(allComments as unknown as CommentRequest[])?.map((comment: CommentRequest) => (
+                      <div key={comment?._id} className='flex items-start space-x-3 bg-gray-50 p-3 rounded-lg'>
+                        <Avatar className='w-8 h-8 bg-gray-300'>
+                          <AvatarImage src={comment.user_info.avatar} alt={comment.user_info.username} />
+                          <AvatarFallback>{comment.user_info.username.charAt(0).toUpperCase()}</AvatarFallback>
+                        </Avatar>
+
+                        <div className='w-full'>
+                          <div className='flex justify-between'>
+                            <div className='flex items-center relative space-x-2'>
+                              <span className='font-semibold text-sm text-gray-800'>{comment.user_info.username}</span>
+                              <span className='text-xs text-gray-500'>{commentTime(comment.updatedAt)}</span>
+                              <span className='right-0 absolute'>
+                                {Number(new Date(comment.updatedAt).getTime()) -
+                                  Number(new Date(comment.createdAt).getTime()) <=
+                                0
+                                  ? ''
+                                  : 'đã chỉnh sửa'}
+                              </span>
+                            </div>
+                            <Popover>
+                              <PopoverTrigger>
+                                {data?.user_id === profile?._id && (
+                                  <FaEllipsisH className='text-gray-500 text-lg cursor-pointer hover:text-blue-500 transition' />
+                                )}
+                              </PopoverTrigger>
+                              <PopoverContent className='flex gap-5 justify-around max-w-44 bg-slate-100 rounded-xl shadow-xl'>
+                                <div className='cursor-pointer font-semibold hover:bg-gray-600 transition-all px-3 py-1 rounded-xl'>
+                                  Edit
+                                </div>
+                                <div
+                                  onClick={() => handleDeleteComment(comment?._id as string)}
+                                  className='cursor-pointer font-semibold hover:bg-gray-600 px-3 py-1 rounded-xl'
+                                >
+                                  Delete
+                                </div>
+                              </PopoverContent>
+                            </Popover>
+                          </div>
+                          <p className='text-sm text-gray-700 mt-1'>{comment?.commentContent}</p>
+                        </div>
+                      </div>
+                    ))}
+                    {loadingPage < (dataComments as any)?.total_pages ? (
+                      <div
+                        className='text-blue-500 font-semibold py-2 cursor-pointer'
+                        onClick={() => {
+                          setLoadingComment(true)
+                          console.log(loadingPage)
+                          console.log(dataComments)
+
+                          if (loadingPage <= (dataComments as any)?.total_pages) {
+                            console.log(loadingPage)
+
+                            return setLoadingPage((prev) => prev + 1)
+                          }
+                          refetchDataComment()
+                        }}
+                      >
+                        Load more comment....
+                      </div>
+                    ) : (
+                      <div className='text-gray-500 font-semibold py-2 cursor-pointer'>No load more comment....</div>
+                    )}
+                    <div className='flex gap-4 items-center'>
+                      <div className='w-full border-2 border-gray-400 focus:ring-2 rounded-2xl focus:ring-blue-200'>
+                        <textarea
+                          className='items-center p-1 w-full rounded-xl focus:outline-none'
+                          placeholder='comment tweet .....'
+                          onChange={(e) => setComment(e.currentTarget.value)}
+                        />
+                      </div>
+                      <div
+                        onClick={() => handleCreateComment(data?._id as string)}
+                        className='bg-blue-950 p-4 items-center text-center text-white rounded-xl cursor-pointer font-semibold'
+                      >
+                        Send
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </div>
