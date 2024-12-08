@@ -47,6 +47,7 @@ const TwitterCard = ({ profile, data, refetchAllDataTweet }: Props) => {
   const [loadingComment, setLoadingComment] = useState(false)
   const [loadingPage, setLoadingPage] = useState(PAGE)
   const [allComments, setAllComments] = useState<CommentRequest[]>([])
+
   // khu vực data Query => chỉ viết data Query ở đây
   const { data: dataBookmark, refetch: refetchDataBookmark } = useQuery({
     queryKey: ['dataBookmark'],
@@ -96,12 +97,17 @@ const TwitterCard = ({ profile, data, refetchAllDataTweet }: Props) => {
   }, [loadingComment])
   useEffect(() => {
     if (dataComments) {
+      const newComments = (dataComments as unknown as Comment).comments
+
       setAllComments((prev) => {
-        const newComments = (dataComments as unknown as Comment).comments
+        if (loadingPage === null || loadingPage === (dataComments as unknown as Comment).total_pages) {
+          return [...newComments]
+        }
         return [...prev, ...newComments]
       })
+      setLoadingPage((dataComments as unknown as Comment).page)
     }
-  }, [dataComments])
+  }, [dataComments, loadingPage])
   // khu vực handle action => chỉ viết handle action ở đây
   const handleDeleteTweet = async (tweet_id: string) => {
     handleDeletedMutation.mutateAsync(tweet_id, {
@@ -387,7 +393,7 @@ const TwitterCard = ({ profile, data, refetchAllDataTweet }: Props) => {
                       </div>
                     </div>
                   ))}
-                  {loadingPage <= (dataComments as any)?.total_pages ? (
+                  {loadingPage < (dataComments as any)?.total_pages ? (
                     <div
                       className='text-blue-500 font-semibold py-2 cursor-pointer'
                       onClick={() => {

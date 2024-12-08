@@ -16,3 +16,15 @@ export interface Tweets {
   created_at?: Date
   updated_at?: Date
 }
+
+export interface TweetFormValues {
+  content: string
+  images: File[]
+  audience: TweetAudience
+  hashtags: string[]
+  medias: Media[]
+  mentions: string[]
+  currentHashtag: string
+  currentMention: string
+  type: TweetType
+}

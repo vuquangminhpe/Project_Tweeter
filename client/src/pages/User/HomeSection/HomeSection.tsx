@@ -11,25 +11,11 @@ import TwitterCard from './TwitterCard'
 import { AppContext } from '@/Contexts/app.context'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import tweetsApi from '@/apis/tweets.api'
-import VideoPlayer from '@/components/Customs/VideoHLSPlayer'
 import mediasApi from '@/apis/medias.api'
 import { Media } from '@/types/Medias.type'
 import { TweetAudience, TweetType } from '@/constants/enum'
 import apiUser from '@/apis/users.api'
-import { log } from 'console'
-import ModeToggle from '@/components/ModeToogle'
-
-interface TweetFormValues {
-  content: string
-  images: File[]
-  audience: TweetAudience
-  hashtags: string[]
-  medias: Media[]
-  mentions: string[]
-  currentHashtag: string
-  currentMention: string
-  type: TweetType
-}
+import { TweetFormValues } from '@/types/Tweet.type'
 
 const validationSchema = Yup.object().shape({
   content: Yup.string().required('Tweet text is required'),
