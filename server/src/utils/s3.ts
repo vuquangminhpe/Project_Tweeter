@@ -88,3 +88,28 @@ export const deleteFileFromS3 = async (s3Url: string): Promise<void> => {
     throw new Error('Không thể xóa file trên S3')
   }
 }
+
+export const deleteFolder = async (s3Url: string): Promise<void> => {
+  try {
+    const bucketName = envConfig.Bucket_Name as string
+    const urlPattern = `https://${bucketName}.s3.${envConfig.region}.amazonaws.com/`
+    const folderKey = s3Url.replace(urlPattern, '')
+
+    const objects = await s3.listObjects({
+      Bucket: bucketName,
+      Prefix: folderKey
+    })
+
+    await s3.deleteObjects({
+      Bucket: bucketName,
+      Delete: {
+        Objects: objects.Contents?.map((obj) => ({ Key: obj.Key })) || []
+      }
+    })
+
+    console.log(`Folder ${folderKey} đã được xóa khỏi S3`)
+  } catch (error) {
+    console.error('Lỗi khi xóa folder từ S3:', error)
+    throw new Error('Không thể xóa folder trên S3')
+  }
+}

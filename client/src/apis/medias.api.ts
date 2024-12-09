@@ -13,7 +13,7 @@ const mediasApi = {
       }
     })
   },
-  deleteS3: (filename: string) => http.delete<SuccessResponse<Media>>(`/medias/delete-s3`, { data: { filename } }),
+  deleteS3: (s3_link: string) => http.delete<SuccessResponse<Media>>(`/medias/delete-s3`, { params: { s3_link } }),
   uploadVideo: (video: File) => {
     const formData = new FormData()
     formData.append('video', video)

@@ -563,4 +563,18 @@ export const getConversationsValidator = validate(
   )
 )
 
-
+export const deleteS3Validator = validate(
+  checkSchema(
+    {
+      url: {
+        notEmpty: {
+          errorMessage: USERS_MESSAGES.S3_LINK_IS_REQUIRED
+        },
+        isString: {
+          errorMessage: USERS_MESSAGES.S3_LINK_MUST_BE_A_STRING
+        }
+      }
+    },
+    ['body']
+  )
+)
