@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { useState, ChangeEvent, useContext, useEffect, useCallback, useRef } from 'react'
-import { useFormik } from 'formik'
+import { FormikHelpers, useFormik } from 'formik'
 import * as Yup from 'yup'
 import { CiImageOn } from 'react-icons/ci'
 import { useMutation, useQuery } from '@tanstack/react-query'
@@ -31,12 +31,26 @@ const HomeSection = () => {
   const [allIdWithMentionName, setAllIdWithMentionName] = useState<string[]>([])
   const [allIdWithMentionName_Undefined, setAllIdWithMentionName_Undefined] = useState<string[]>([])
   const { profile } = useContext(AppContext)
-  const handleSubmit = async (values: TweetFormValues) => {
+  const handleSubmit = async (values: TweetFormValues, { resetForm }: FormikHelpers<TweetFormValues>) => {
     try {
       const uploadedLinks = await handleUploadItems()
       setAllLinkCreatedTweet(uploadedLinks)
 
       await handleCreatedTweet(values, uploadedLinks)
+      resetForm({
+        values: {
+          content: '',
+          images: [],
+          audience: TweetAudience.Everyone,
+          hashtags: [],
+          medias: allLinkCreatedTweet || [],
+          mentions: [],
+          currentHashtag: '',
+          currentMention: '',
+          type: TweetType.Tweet
+        }
+      })
+      setImagePreviews([])
     } catch (error) {
       console.error('error', error)
     }
