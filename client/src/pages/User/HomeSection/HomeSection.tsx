@@ -515,6 +515,7 @@ const HomeSection = () => {
               refetchAllDataTweet={refetchAllDataTweet}
               key={`${element._id}-${index}`}
               data={element}
+              data_length={data?.medias?.length}
               profile={profile}
             />
           ))

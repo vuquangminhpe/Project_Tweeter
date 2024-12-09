@@ -31,7 +31,7 @@ export const initFolderVideoHls = () => {
 export const handleUploadImage = async (req: Request) => {
   const form = formidable({
     uploadDir: UPLOAD_TEMP_DIR,
-    maxFiles: 4,
+    maxFiles: 10,
     keepExtensions: true,
     maxFileSize: 300 * 1024, // 300KB
     maxTotalFileSize: 300 * 1024 * 4, // 10MB

@@ -3,7 +3,10 @@ import databaseService from './database.services'
 import Tweet from '~/models/schemas/Tweet.schema'
 import { ObjectId, WithId } from 'mongodb'
 import Hashtag from '~/models/schemas/Hashtag.schema'
-import { TweetType } from '~/constants/enums'
+import { MediaType, TweetType } from '~/constants/enums'
+import { deletedS3Controller } from '~/controllers/medias.controllers'
+import { deleteFileFromS3, deleteS3Folder } from '~/utils/s3'
+import { convertS3Url } from '~/utils/utils'
 
 class TweetService {
   async checkAndCreateHashtag(hashtags: string[]) {
@@ -520,7 +523,11 @@ class TweetService {
   }
   async deleteTweet(user_id: string, tweet_id: string) {
     const [results] = await Promise.all([
-      databaseService.tweets.findOneAndDelete({
+      databaseService.tweets.findOne({
+        _id: new ObjectId(tweet_id),
+        user_id: new ObjectId(user_id)
+      }),
+      databaseService.tweets.deleteOne({
         _id: new ObjectId(tweet_id),
         user_id: new ObjectId(user_id)
       }),
@@ -534,7 +541,22 @@ class TweetService {
         tweet_id: new ObjectId(tweet_id)
       })
     ])
-    return results
+    if (results) {
+      await Promise.all(
+        results.medias.map(async (media) => {
+          if (media.type === MediaType.Image) {
+            console.log(media.url)
+
+            return await deleteFileFromS3(media.url)
+          } else if (media.type === MediaType.HLS) {
+            console.log(convertS3Url(media.url).split('/master.m3u8')[0])
+
+            return await deleteS3Folder(convertS3Url(media.url).split('/master.m3u8')[0])
+          }
+        })
+      )
+      return results
+    }
   }
 }
 const tweetsService = new TweetService()

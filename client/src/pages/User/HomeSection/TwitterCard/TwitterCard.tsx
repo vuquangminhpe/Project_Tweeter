@@ -43,6 +43,7 @@ import {
 
 interface Props {
   profile: User | null
+  data_length: number
   data: Tweets
   refetchAllDataTweet: (
     options?: RefetchOptions
@@ -52,7 +53,7 @@ interface Props {
 // đọc các comment ở dưới để hiểu rõ hơn (cấm viết khác để debug code dễ hơn )
 const LIMIT = 5
 const PAGE = 1
-const TwitterCard = ({ profile, data, refetchAllDataTweet }: Props) => {
+const TwitterCard = ({ profile, data, refetchAllDataTweet, data_length }: Props) => {
   const navigate = useNavigate()
   const [commentModalOpen, setCommentModalOpen] = useState(false)
   const [comment, setComment] = useState('')
@@ -202,6 +203,28 @@ const TwitterCard = ({ profile, data, refetchAllDataTweet }: Props) => {
       }
     })
   }
+  const dataCustomTweet = (a?: number, b?: number) => {
+    return (
+      <div className='cursor-pointer w-full grid grid-cols-2 max-lg:grid-cols-1'>
+        {data?.medias?.slice(a, b).map((media: Media) => (
+          <div key={media.url} className='w-full'>
+            {!media.url.endsWith('master.m3u8') && (
+              <img
+                className='w-[95%] mb-2 h-auto max-h-96 object-cover rounded-xl'
+                src={media.url}
+                alt='image-twitter'
+              />
+            )}
+            {media.url.endsWith('master.m3u8') && (
+              <div className='relative max-h-64 pr-3 pb-6 w-full'>
+                <VideoHLSPlayer src={media.url} classNames='w-full h-auto rounded-xl max-h-[500px] md:max-h-[500px]' />
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+    )
+  }
   // khu vực custom data => chỉ viết custom data ở đây
   const userLike = dataLike?.filter((like) => like.user_info.username === profile?.username)
   const filterBookmark = dataBookmarks?.filter((bookmark) => bookmark.tweet_id === data._id)
@@ -277,29 +300,32 @@ const TwitterCard = ({ profile, data, refetchAllDataTweet }: Props) => {
               <EditTweet profile={profile} data={data} refetchAllDataTweet={refetchAllDataTweet} />
             ) : (
               <div className='mt-3'>
-                <p className='text-gray-800 mb-3'>{data?.content}</p>
+                <p className='text-gray-800 mb-3 w-full'>{data?.content}</p>
 
-                <div className='cursor-pointer w-full grid grid-cols-2 max-lg:grid-cols-1'>
-                  {data?.medias?.map((media: Media) => (
-                    <div key={media.url} className='w-full'>
-                      {!media.url.endsWith('master.m3u8') && (
-                        <img
-                          className='w-[95%] mb-2 h-auto max-h-96 object-cover rounded-xl'
-                          src={media.url}
-                          alt='image-twitter'
-                        />
-                      )}
-                      {media.url.endsWith('master.m3u8') && (
-                        <div className='relative max-h-64 pr-3 pb-6 w-full'>
-                          <VideoHLSPlayer
-                            src={media.url}
-                            classNames='w-full h-auto rounded-xl max-h-[500px] md:max-h-[500px]'
-                          />
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
+                {data_length <= 4 ? (
+                  dataCustomTweet(0, 4)
+                ) : (
+                  <AlertDialog>
+                    <AlertDialogTrigger className='w-full'>
+                      {dataCustomTweet(0, 4)}
+
+                      {dataCustomTweet(4, 5)}
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          This action cannot be undone. This will permanently delete your account and remove your data
+                          from our servers.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction>Continue</AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                )}
 
                 <div className='py-4 flex justify-between items-center text-gray-500'>
                   <div
