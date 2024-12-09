@@ -100,16 +100,9 @@ function parseS3Url(s3Url: string): {
   bucket: string
   key: string
 } {
-  // Remove any protocol prefixes (s3://, https://)
   const cleanUrl = s3Url.replace(/^(s3:\/\/|https:\/\/|http:\/\/)/, '').replace(/^[^/]+\.s3\.[^/]+\//, '') // Remove s3 endpoint if present
-
-  // Split into bucket and key
   const parts = cleanUrl.split('/')
-
-  // First part is the bucket name
   const bucket = parts[0]
-
-  // Remaining parts form the key
   const key = parts.slice(1).join('/')
 
   return {
