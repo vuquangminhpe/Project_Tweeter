@@ -21,8 +21,11 @@ const validationSchema = Yup.object().shape({
   content: Yup.string().required('Tweet text is required'),
   images: Yup.array().max(4, 'You can upload maximum 4 files')
 })
-
-const HomeSection = () => {
+interface Props {
+  isPendingTweet: boolean
+  isTitleName: string
+}
+const HomeSection = ({ isPendingTweet = true, isTitleName = 'Post' }: Props) => {
   const [activeTab, setActiveTab] = useState<string>('forYou')
   const [uploadingImage, setUploadingImage] = useState<boolean>(false)
   const [selectItemInTweet, setSelectItemInTweet] = useState<File[]>([])
@@ -515,26 +518,28 @@ const HomeSection = () => {
                   hover:bg-blue-700 transition-colors duration-300 
                   focus:outline-none focus:ring-2 focus:ring-blue-400'
                 >
-                  Post
+                  {isTitleName}
                 </button>
               </div>
             </form>
           </div>
         </div>
       </div>
-      <div className='mt-6 space-y-4'>
-        {allTweets?.map((data) =>
-          Array(data).map((element, index) => (
-            <TwitterCard
-              refetchAllDataTweet={refetchAllDataTweet}
-              key={`${element._id}-${index}`}
-              data={element}
-              data_length={data?.medias?.length}
-              profile={profile}
-            />
-          ))
-        )}
-      </div>
+      {isPendingTweet && (
+        <div className='mt-6 space-y-4'>
+          {allTweets?.map((data) =>
+            Array(data).map((element, index) => (
+              <TwitterCard
+                refetchAllDataTweet={refetchAllDataTweet}
+                key={`${element._id}-${index}`}
+                data={element}
+                data_length={data?.medias?.length}
+                profile={profile}
+              />
+            ))
+          )}
+        </div>
+      )}
     </div>
   )
 }

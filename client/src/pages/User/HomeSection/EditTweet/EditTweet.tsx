@@ -18,7 +18,7 @@ interface Props {
   ) => Promise<QueryObserverResult<AxiosResponse<SuccessResponse<Tweets[]>, any>, Error>>
 }
 
-export default function EditTweet({ profile, data, refetchAllDataTweet }: Props) {
+export default function EditTweet({ data, refetchAllDataTweet }: Props) {
   const [editContentValue, SetEditContentValue] = useState<string>(data.content)
   const handleDeletedS3Mutation = useMutation({
     mutationFn: ({ url, link }: { url: string; link: string }) => mediasApi.deleteS3({ url, link })
