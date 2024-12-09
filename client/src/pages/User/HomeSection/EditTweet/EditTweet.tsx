@@ -5,6 +5,7 @@ import { MediaType } from '@/constants/enum'
 import { Tweets } from '@/types/Tweet.type'
 import { User } from '@/types/User.type'
 import { SuccessResponse } from '@/types/Utils.type'
+import { convertS3Url } from '@/utils/utils'
 import { Avatar, AvatarFallback, AvatarImage } from '@radix-ui/react-avatar'
 import { QueryObserverResult, RefetchOptions, useMutation } from '@tanstack/react-query'
 import { AxiosResponse } from 'axios'
@@ -24,7 +25,11 @@ export default function EditTweet({ profile, data, refetchAllDataTweet }: Props)
     mutationFn: (s3_link: string) => mediasApi.deleteS3(s3_link)
   })
   const handleDeletedItemInTweetMutation = async (s3_link: string) => {
-    await handleDeletedS3Mutation.mutateAsync(s3_link, {
+    const newUrl = convertS3Url(s3_link)
+    const addLinkDeleted = !s3_link.endsWith('/master.m3u8') ? s3_link : newUrl
+    console.log(addLinkDeleted)
+
+    await handleDeletedS3Mutation.mutateAsync(addLinkDeleted, {
       onSuccess: () => {
         console.log('deleted')
       },

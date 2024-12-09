@@ -92,6 +92,8 @@ export const serveSegmentController = (req: Request, res: Response, next: NextFu
 
 export const deletedS3Controller = async (req: Request, res: Response, next: NextFunction) => {
   const { url } = req.body
+  console.log(url)
+
   if (url.endsWith('.png') || url.endsWith('.jpg') || url.endsWith('.jpeg')) {
     await deleteFileFromS3(url)
   } else if (url.endsWith('/')) {
