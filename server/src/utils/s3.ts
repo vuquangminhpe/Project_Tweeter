@@ -1,12 +1,19 @@
-import { S3 } from '@aws-sdk/client-s3'
+import { ListObjectVersionsCommand, S3 } from '@aws-sdk/client-s3'
 import { config } from 'dotenv'
 import { Upload } from '@aws-sdk/lib-storage'
 import fs from 'fs'
 import { Response } from 'express'
 import HTTP_STATUS from '~/constants/httpStatus'
 import { envConfig } from '~/constants/config'
-
+import { S3Client, ListObjectsV2Command, DeleteObjectsCommand } from '@aws-sdk/client-s3'
 config()
+const s3s = new S3Client({
+  region: envConfig.region,
+  credentials: {
+    secretAccessKey: envConfig.secretAccessKey as string,
+    accessKeyId: envConfig.accessKeyId as string
+  }
+})
 const s3 = new S3({
   region: envConfig.region,
   credentials: {
@@ -89,27 +96,85 @@ export const deleteFileFromS3 = async (s3Url: string): Promise<void> => {
   }
 }
 
-export const deleteFolder = async (s3Url: string): Promise<void> => {
+function parseS3Url(s3Url: string): {
+  bucket: string
+  key: string
+} {
+  // Remove any protocol prefixes (s3://, https://)
+  const cleanUrl = s3Url.replace(/^(s3:\/\/|https:\/\/|http:\/\/)/, '').replace(/^[^/]+\.s3\.[^/]+\//, '') // Remove s3 endpoint if present
+
+  // Split into bucket and key
+  const parts = cleanUrl.split('/')
+
+  // First part is the bucket name
+  const bucket = parts[0]
+
+  // Remaining parts form the key
+  const key = parts.slice(1).join('/')
+
+  return {
+    bucket,
+    key: decodeURIComponent(key)
+  }
+}
+
+export const deleteS3Folder = async (folderPath: string): Promise<void> => {
   try {
-    const bucketName = envConfig.Bucket_Name as string
-    const urlPattern = `https://${bucketName}.s3.${envConfig.region}.amazonaws.com/`
-    const folderKey = s3Url.replace(urlPattern, '')
+    const { bucket, key } = parseS3Url(folderPath)
 
-    const objects = await s3.listObjects({
-      Bucket: bucketName,
-      Prefix: folderKey
+    const prefix = key.endsWith('/') ? key : key + '/'
+
+    const listVersionsCommand = new ListObjectVersionsCommand({
+      Bucket: bucket,
+      Prefix: prefix
     })
 
-    await s3.deleteObjects({
-      Bucket: bucketName,
-      Delete: {
-        Objects: objects.Contents?.map((obj) => ({ Key: obj.Key })) || []
+    const listResponse = await s3.send(listVersionsCommand)
+
+    const objectsToDelete: { Key: string; VersionId?: string }[] = []
+
+    if (listResponse.Versions) {
+      objectsToDelete.push(
+        ...listResponse.Versions.map((version) => ({
+          Key: version.Key!,
+          VersionId: version.VersionId
+        }))
+      )
+    }
+
+    if (listResponse.DeleteMarkers) {
+      objectsToDelete.push(
+        ...listResponse.DeleteMarkers.map((marker) => ({
+          Key: marker.Key!,
+          VersionId: marker.VersionId
+        }))
+      )
+    }
+
+    if (objectsToDelete.length > 0) {
+      const batchSize = 1000
+      for (let i = 0; i < objectsToDelete.length; i += batchSize) {
+        const batch = objectsToDelete.slice(i, i + batchSize)
+
+        const deleteCommand = new DeleteObjectsCommand({
+          Bucket: bucket,
+          Delete: {
+            Objects: batch,
+            Quiet: false
+          }
+        })
+
+        const deleteResponse = await s3.send(deleteCommand)
+
+        console.log(`Đã xóa ${deleteResponse.Deleted?.length || 0} đối tượng`)
       }
-    })
 
-    console.log(`Folder ${folderKey} đã được xóa khỏi S3`)
+      console.log(`Đã xóa toàn bộ nội dung của thư mục ${prefix}`)
+    } else {
+      console.log('Không tìm thấy các đối tượng để xóa')
+    }
   } catch (error) {
-    console.error('Lỗi khi xóa folder từ S3:', error)
-    throw new Error('Không thể xóa folder trên S3')
+    console.error('Lỗi khi xóa thư mục S3:', error)
+    throw new Error(`Không thể xóa thư mục: ${(error as any).message}`)
   }
 }

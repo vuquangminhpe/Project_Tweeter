@@ -5,7 +5,7 @@ import path from 'path'
 import mime from 'mime'
 import fs from 'fs'
 import { UPLOAD_IMAGES_DIR, UPLOAD_VIDEO_DIR } from '~/constants/dir'
-import { deleteFileFromS3, deleteFolder, sendFileFromS3 } from '~/utils/s3'
+import { deleteFileFromS3, deleteS3Folder, sendFileFromS3 } from '~/utils/s3'
 export const uploadImageController = async (req: Request, res: Response, next: NextFunction) => {
   const url = await mediaService.uploadImage(req)
   res.json({ message: USERS_MESSAGES.UPLOAD_SUCCESS, result: url })
@@ -95,7 +95,7 @@ export const deletedS3Controller = async (req: Request, res: Response, next: Nex
   if (url.endsWith('.png') || url.endsWith('.jpg') || url.endsWith('.jpeg')) {
     await deleteFileFromS3(url)
   } else if (url.endsWith('/')) {
-    await deleteFolder(url)
+    await deleteS3Folder(url)
   }
   res.json({ message: USERS_MESSAGES.DELETE_SUCCESS })
 }
