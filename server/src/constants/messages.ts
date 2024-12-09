@@ -72,7 +72,9 @@ export const USERS_MESSAGES = {
   GET_FOLLOWERS_SUCCESSFULLY: 'Get followers successfully',
   DELETE_SUCCESS: 'Delete success',
   S3_LINK_IS_REQUIRED: 'S3 link is required',
-  S3_LINK_MUST_BE_A_STRING: 'S3 link must be a string'
+  S3_LINK_MUST_BE_A_STRING: 'S3 link must be a string',
+  LINK_IS_REQUIRED: 'Link is required',
+  LINK_MUST_BE_A_STRING: 'Link must be a string'
 } as const
 
 export const TWEET_MESSAGE = {

@@ -30,8 +30,6 @@ export const uploadFileS3 = async ({
   filePath: string
   contentType: string
 }) => {
-  console.log(filePath, '////', filename, '//////', contentType)
-
   const parallelUploads3 = await new Upload({
     client: s3,
     params: {
@@ -65,8 +63,6 @@ export const uploadFileS3 = async ({
 
 export const sendFileFromS3 = async (res: Response, filepath: string) => {
   try {
-    console.log('filepath', filepath)
-
     const data = await s3.getObject({
       Bucket: envConfig.Bucket_Name as string,
       Key: filepath

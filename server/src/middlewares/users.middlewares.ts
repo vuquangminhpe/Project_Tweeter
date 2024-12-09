@@ -573,6 +573,14 @@ export const deleteS3Validator = validate(
         isString: {
           errorMessage: USERS_MESSAGES.S3_LINK_MUST_BE_A_STRING
         }
+      },
+      link: {
+        notEmpty: {
+          errorMessage: USERS_MESSAGES.LINK_IS_REQUIRED
+        },
+        isString: {
+          errorMessage: USERS_MESSAGES.LINK_MUST_BE_A_STRING
+        }
       }
     },
     ['body']

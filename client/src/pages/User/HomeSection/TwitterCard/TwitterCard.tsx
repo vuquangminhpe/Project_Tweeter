@@ -29,6 +29,17 @@ import { Bookmark } from '@/types/Bookmarks.type'
 import { Media } from '@/types/Medias.type'
 import VideoHLSPlayer from '@/components/Customs/VideoHLSPlayer'
 import EditTweet from '../EditTweet'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger
+} from '@/components/ui/alert-dialog'
 
 interface Props {
   profile: User | null
@@ -266,20 +277,24 @@ const TwitterCard = ({ profile, data, refetchAllDataTweet }: Props) => {
               <EditTweet profile={profile} data={data} refetchAllDataTweet={refetchAllDataTweet} />
             ) : (
               <div className='mt-3'>
-                <div className='cursor-pointer'>
-                  <p className='text-gray-800 mb-3'>{data?.content}</p>
+                <p className='text-gray-800 mb-3'>{data?.content}</p>
+
+                <div className='cursor-pointer w-full grid grid-cols-2 max-lg:grid-cols-1'>
                   {data?.medias?.map((media: Media) => (
-                    <div key={media.url} className='w-full max-w-full'>
+                    <div key={media.url} className='w-full'>
                       {!media.url.endsWith('master.m3u8') && (
                         <img
-                          className='w-full h-auto max-h-96 object-cover rounded-xl'
+                          className='w-[95%] mb-2 h-auto max-h-96 object-cover rounded-xl'
                           src={media.url}
                           alt='image-twitter'
                         />
                       )}
                       {media.url.endsWith('master.m3u8') && (
-                        <div className='relative w-full'>
-                          <VideoHLSPlayer src={media.url} classNames='rounded-xl w-full h-full aspect-video' />
+                        <div className='relative max-h-64 pr-3 pb-6 w-full'>
+                          <VideoHLSPlayer
+                            src={media.url}
+                            classNames='w-full h-auto rounded-xl max-h-[500px] md:max-h-[500px]'
+                          />
                         </div>
                       )}
                     </div>

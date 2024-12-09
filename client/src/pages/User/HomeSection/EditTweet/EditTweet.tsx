@@ -6,7 +6,6 @@ import { Tweets } from '@/types/Tweet.type'
 import { User } from '@/types/User.type'
 import { SuccessResponse } from '@/types/Utils.type'
 import { convertS3Url } from '@/utils/utils'
-import { Avatar, AvatarFallback, AvatarImage } from '@radix-ui/react-avatar'
 import { QueryObserverResult, RefetchOptions, useMutation } from '@tanstack/react-query'
 import { AxiosResponse } from 'axios'
 import { useState } from 'react'
@@ -22,21 +21,28 @@ interface Props {
 export default function EditTweet({ profile, data, refetchAllDataTweet }: Props) {
   const [editContentValue, SetEditContentValue] = useState<string>(data.content)
   const handleDeletedS3Mutation = useMutation({
-    mutationFn: (s3_link: string) => mediasApi.deleteS3(s3_link)
+    mutationFn: ({ url, link }: { url: string; link: string }) => mediasApi.deleteS3({ url, link })
   })
-  const handleDeletedItemInTweetMutation = async (s3_link: string) => {
-    const newUrl = convertS3Url(s3_link)
-    const addLinkDeleted = !s3_link.endsWith('/master.m3u8') ? s3_link : newUrl
-    console.log(addLinkDeleted)
+  const handleDeletedItemInTweetMutation = async (url: string) => {
+    const newUrl = convertS3Url(url)
+    const addLinkDeletedFromS3 = !url.endsWith('/master.m3u8') ? url : newUrl + '/'
 
-    await handleDeletedS3Mutation.mutateAsync(addLinkDeleted, {
-      onSuccess: () => {
-        console.log('deleted')
-      },
-      onError: (error) => {
-        console.log(error)
-      }
-    })
+    try {
+      await handleDeletedS3Mutation.mutateAsync(
+        { url: addLinkDeletedFromS3, link: url },
+        {
+          onSuccess: () => {
+            refetchAllDataTweet()
+            console.log('deleted')
+          },
+          onError: (error) => {
+            console.log(error)
+          }
+        }
+      )
+    } catch (error) {
+      console.log(error)
+    }
   }
   return (
     <div className='bg-gray-50 rounded-xl p-4 shadow-inner'>
@@ -49,10 +55,10 @@ export default function EditTweet({ profile, data, refetchAllDataTweet }: Props)
                 <div key={media.url} className='relative w-full'>
                   {media.type === MediaType.Image ? (
                     <div className='grid grid-cols-3 max-lg:grid-cols-2 max-md:grid-cols-2 max-sm:grid-cols-1'>
-                      <img src={media.url} alt='media' className='w-40 h-40 object-cover rounded-lg' />
+                      <img src={media.url} alt='media' className=' w-40 h-40 object-cover rounded-lg' />
                     </div>
                   ) : (
-                    <VideoHLSPlayer src={media.url} />
+                    <VideoHLSPlayer classNames='my-3' src={media.url} />
                   )}
                   <button
                     onClick={() => handleDeletedItemInTweetMutation(media.url)}

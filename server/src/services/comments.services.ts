@@ -83,7 +83,6 @@ class CommentServices {
     const commentTweet = await databaseService.comments.findOne({
       _id: new ObjectId(comment_id)
     })
-    console.log(comment_id, commentTweet)
 
     if (!commentTweet) {
       return { message: COMMENT_MESSAGES.NO_COMMENT_TO_DELETE }

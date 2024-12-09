@@ -164,9 +164,11 @@ const HomeSection = () => {
       try {
         const uploadedFiles = await Promise.all(
           selectItemInTweet.map(async (item) => {
+            console.log('item:', item)
+
             if (item.type.startsWith('image/')) {
               return await uploadImagesMutation.mutateAsync(item)
-            } else if (item.type.startsWith('video/')) {
+            } else if (item.type.startsWith('video/') || item.type.startsWith('application/x-mpegurl')) {
               return await uploadVideoMutation.mutateAsync(item)
             } else {
               console.warn(`Skipping file with unsupported type: ${item.type}`)

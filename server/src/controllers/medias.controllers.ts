@@ -91,13 +91,13 @@ export const serveSegmentController = (req: Request, res: Response, next: NextFu
 }
 
 export const deletedS3Controller = async (req: Request, res: Response, next: NextFunction) => {
-  const { url } = req.body
-  console.log(url)
+  const { url, link } = req.body
 
+  const result = await mediaService.deleteLinkInTweet(link)
   if (url.endsWith('.png') || url.endsWith('.jpg') || url.endsWith('.jpeg')) {
     await deleteFileFromS3(url)
   } else if (url.endsWith('/')) {
     await deleteS3Folder(url)
   }
-  res.json({ message: USERS_MESSAGES.DELETE_SUCCESS })
+  res.json({ message: USERS_MESSAGES.DELETE_SUCCESS, result })
 }

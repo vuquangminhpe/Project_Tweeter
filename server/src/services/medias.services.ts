@@ -78,8 +78,6 @@ class Queue {
             if (filepath.endsWith('/master.m3u8')) {
               m3u8Url = (s3Upload as CompleteMultipartUploadCommandOutput).Location as string
             }
-
-            console.log((s3Upload as CompleteMultipartUploadCommandOutput).Location)
             return s3Upload
           })
         )
@@ -131,8 +129,6 @@ class Queue {
 const queue = new Queue()
 class MediaService {
   async uploadImage(req: Request) {
-    console.log(req)
-
     const files = await handleUploadImage(req)
     const result = await Promise.all(
       files.map(async (file) => {
@@ -206,6 +202,27 @@ class MediaService {
   async getVideoStatus(idStatus: string) {
     const result = await databaseService.videoStatus.findOne({ name: idStatus })
     return result
+  }
+  async deleteLinkInTweet(link: string) {
+    const result = await databaseService.tweets.findOne({
+      medias: {
+        $elemMatch: {
+          url: link
+        }
+      }
+    })
+    if (result) {
+      await databaseService.tweets.updateOne(
+        { _id: result._id },
+        {
+          $pull: {
+            medias: {
+              url: link
+            }
+          }
+        }
+      )
+    }
   }
 }
 

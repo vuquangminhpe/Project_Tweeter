@@ -43,7 +43,6 @@ const initSocket = (httpServer: ServerHttp) => {
   io.on('connection', (socket: Socket) => {
     console.log(`user ${socket.id} connected`)
     const user_id = socket.handshake.auth._id
-    console.log(user_id)
 
     users[user_id] = {
       socket_id: socket.id
