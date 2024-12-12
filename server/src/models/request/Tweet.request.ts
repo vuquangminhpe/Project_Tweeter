@@ -29,4 +29,5 @@ export interface EditTweetRequestBody {
   hashtags: string[]
   mentions: string[]
   medias: Media[]
+  audience: TweetAudience
 }

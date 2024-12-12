@@ -509,7 +509,10 @@ class TweetService {
       {
         $set: {
           content: body.content,
-          medias: body.medias
+          medias: body.medias,
+          hashtags: body.hashtags.map((hashtag) => new ObjectId(hashtag)),
+          mentions: body.mentions.map((mention) => new ObjectId(mention)),
+          audience: body.audience
         },
         $currentDate: {
           updated_at: true
@@ -519,6 +522,23 @@ class TweetService {
         returnDocument: 'after'
       }
     )
+    results?.hashtags.map(
+      async (hashtag) =>
+        await databaseService.hashtags.updateOne(
+          {
+            _id: (hashtag as any)._id
+          },
+          {
+            $set: {
+              name: (hashtag as any).name
+            },
+            $currentDate: {
+              created_at: true
+            }
+          }
+        )
+    )
+
     return results
   }
   async deleteTweet(user_id: string, tweet_id: string) {

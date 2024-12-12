@@ -15,7 +15,7 @@ import mediasApi from '@/apis/medias.api'
 import { Media } from '@/types/Medias.type'
 import { TweetAudience, TweetType } from '@/constants/enum'
 import apiUser from '@/apis/users.api'
-import { TweetFormValues } from '@/types/Tweet.type'
+import { TweetFormValues, Tweets } from '@/types/Tweet.type'
 
 const validationSchema = Yup.object().shape({
   content: Yup.string().required('Tweet text is required'),
@@ -24,8 +24,9 @@ const validationSchema = Yup.object().shape({
 interface Props {
   isPendingTweet: boolean
   isTitleName: string
+  customMutation?: any
 }
-const HomeSection = ({ isPendingTweet = true, isTitleName = 'Post' }: Props) => {
+const HomeSection = ({ isPendingTweet = true, isTitleName = 'Post', customMutation }: Props) => {
   const [activeTab, setActiveTab] = useState<string>('forYou')
   const [uploadingImage, setUploadingImage] = useState<boolean>(false)
   const [selectItemInTweet, setSelectItemInTweet] = useState<File[]>([])
@@ -117,7 +118,7 @@ const HomeSection = ({ isPendingTweet = true, isTitleName = 'Post' }: Props) => 
     convertMentionsToIds()
   }, [formik.values.mentions])
   const createdTweetMutation = useMutation({
-    mutationFn: tweetsApi.createTweet,
+    mutationFn: customMutation ? tweetsApi.createTweet : tweetsApi.updateTweets,
     onMutate: () => {
       setUploadingImage(true)
     },
