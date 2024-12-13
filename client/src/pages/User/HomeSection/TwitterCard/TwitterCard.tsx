@@ -205,19 +205,24 @@ const TwitterCard = ({ profile, data, refetchAllDataTweet, data_length }: Props)
   }
   const dataCustomTweet = (a?: number, b?: number) => {
     return (
-      <div className='cursor-pointer w-full grid grid-cols-2 max-lg:grid-cols-1'>
+      <div className='cursor-pointer w-full grid grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-2 gap-4 max-w-full'>
         {data?.medias?.slice(a, b).map((media: Media) => (
-          <div key={media.url} className='w-full'>
+          <div key={media.url} className='w-full flex justify-center'>
             {!media.url.endsWith('master.m3u8') && (
               <img
-                className='w-[95%] mb-2 h-auto max-h-96 object-cover rounded-xl'
+                className='w-full max-w-full mb-2 h-auto max-h-56 object-cover rounded-xl 
+                  transition-transform duration-300 hover:scale-105'
                 src={media.url}
                 alt='image-twitter'
               />
             )}
             {media.url.endsWith('master.m3u8') && (
-              <div className='relative max-h-64 pr-3 pb-6 w-full'>
-                <VideoHLSPlayer src={media.url} classNames='w-full h-auto rounded-xl max-h-[500px] md:max-h-[500px]' />
+              <div className='relative w-full max-h-64'>
+                <VideoHLSPlayer
+                  src={media.url}
+                  classNames='w-full h-full rounded-xl object-cover 
+                    transition-transform duration-300 hover:scale-105'
+                />
               </div>
             )}
           </div>
@@ -306,24 +311,26 @@ const TwitterCard = ({ profile, data, refetchAllDataTweet, data_length }: Props)
                   dataCustomTweet(0, 4)
                 ) : (
                   <AlertDialog>
-                    <AlertDialogTrigger className='w-full'>
-                      {dataCustomTweet(0, 4)}
-
+                    {dataCustomTweet(0, 4)}
+                    <div className='relative'>
                       {dataCustomTweet(4, 5)}
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                        <AlertDialogDescription>
-                          This action cannot be undone. This will permanently delete your account and remove your data
-                          from our servers.
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction>Continue</AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
+
+                      <div className='absolute inset-0 flex items-center justify-center'>
+                        <AlertDialogTrigger className='absolute inset-0 z-10 flex items-center justify-center bg-black/50 cursor-pointer hover:bg-black/60 transition-all duration-300'>
+                          <span className='text-white text-2xl font-bold'>+{data.medias.length - 4}</span>
+                        </AlertDialogTrigger>
+                      </div>
+
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Media Gallery</AlertDialogTitle>
+                          <div className='w-full  h-auto'>{dataCustomTweet()}</div>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Close</AlertDialogCancel>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </div>
                   </AlertDialog>
                 )}
 
@@ -449,12 +456,8 @@ const TwitterCard = ({ profile, data, refetchAllDataTweet, data_length }: Props)
                         className='text-blue-500 font-semibold py-2 cursor-pointer'
                         onClick={() => {
                           setLoadingComment(true)
-                          console.log(loadingPage)
-                          console.log(dataComments)
 
                           if (loadingPage <= (dataComments as any)?.total_pages) {
-                            console.log(loadingPage)
-
                             return setLoadingPage((prev) => prev + 1)
                           }
                           refetchDataComment()

@@ -42,8 +42,6 @@ const HomeSection = ({ isPendingTweet = true, isTitleName = 'Post', customClassN
   const { profile } = useContext(AppContext)
   const handleSubmit = async (values: TweetFormValues, { resetForm }: FormikHelpers<TweetFormValues>) => {
     try {
-      console.log(values)
-
       const uploadedLinks = await handleUploadItems()
       setAllLinkCreatedTweet(uploadedLinks)
 
