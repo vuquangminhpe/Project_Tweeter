@@ -15,7 +15,7 @@ import mediasApi from '@/apis/medias.api'
 import { Media } from '@/types/Medias.type'
 import { TweetAudience, TweetType } from '@/constants/enum'
 import apiUser from '@/apis/users.api'
-import { TweetFormValues, Tweets } from '@/types/Tweet.type'
+import { createdTweet, TweetFormValues, Tweets } from '@/types/Tweet.type'
 
 const validationSchema = Yup.object().shape({
   content: Yup.string().required('Tweet text is required'),
@@ -24,9 +24,21 @@ const validationSchema = Yup.object().shape({
 interface Props {
   isPendingTweet: boolean
   isTitleName: string
-  customMutation?: any
+  tweet_ID_From_Edit: string
+  customClassName?: string
+  dataEdit: createdTweet
 }
-const HomeSection = ({ isPendingTweet = true, isTitleName = 'Post', customMutation }: Props) => {
+const tabs = [
+  { id: 'forYou', label: 'For You' },
+  { id: 'following', label: 'Following' }
+]
+const HomeSection = ({
+  isPendingTweet = true,
+  isTitleName = 'Post',
+  tweet_ID_From_Edit,
+  customClassName,
+  dataEdit
+}: Props) => {
   const [activeTab, setActiveTab] = useState<string>('forYou')
   const [uploadingImage, setUploadingImage] = useState<boolean>(false)
   const [selectItemInTweet, setSelectItemInTweet] = useState<File[]>([])
@@ -40,7 +52,11 @@ const HomeSection = ({ isPendingTweet = true, isTitleName = 'Post', customMutati
       const uploadedLinks = await handleUploadItems()
       setAllLinkCreatedTweet(uploadedLinks)
 
-      await handleCreatedTweet(values, uploadedLinks)
+      if (isPendingTweet) {
+        await handleCreatedTweet(values, uploadedLinks)
+      } else {
+        await handleEditTweet(values, uploadedLinks)
+      }
       resetForm({
         values: {
           content: '',
@@ -62,12 +78,12 @@ const HomeSection = ({ isPendingTweet = true, isTitleName = 'Post', customMutati
 
   const formik = useFormik<TweetFormValues>({
     initialValues: {
-      content: '',
+      content: !isPendingTweet ? dataEdit.content : '',
       images: [],
-      audience: TweetAudience.Everyone,
-      hashtags: [],
-      medias: allLinkCreatedTweet || [],
-      mentions: [],
+      audience: !isPendingTweet ? dataEdit.audience : TweetAudience.Everyone,
+      hashtags: !isPendingTweet ? dataEdit.hashtags : [],
+      medias: !isPendingTweet ? dataEdit.medias : allLinkCreatedTweet || [],
+      mentions: !isPendingTweet ? dataEdit.mentions : [],
       currentHashtag: '',
       currentMention: '',
       type: TweetType.Tweet
@@ -118,7 +134,7 @@ const HomeSection = ({ isPendingTweet = true, isTitleName = 'Post', customMutati
     convertMentionsToIds()
   }, [formik.values.mentions])
   const createdTweetMutation = useMutation({
-    mutationFn: customMutation ? tweetsApi.createTweet : tweetsApi.updateTweets,
+    mutationFn: tweetsApi.createTweet,
     onMutate: () => {
       setUploadingImage(true)
     },
@@ -133,7 +149,22 @@ const HomeSection = ({ isPendingTweet = true, isTitleName = 'Post', customMutati
       setUploadingImage(false)
     }
   })
-
+  const editTweetMutation = useMutation({
+    mutationFn: (body: createdTweet) => tweetsApi.updateTweets({ tweet_id: tweet_ID_From_Edit, body }),
+    onMutate: () => {
+      setUploadingImage(true)
+    },
+    onSuccess: (data) => {
+      console.log('edit tweet thành công:', data)
+      refetchAllDataTweet()
+    },
+    onError: (error) => {
+      console.error('edit tweet thất bại:', error)
+    },
+    onSettled: () => {
+      setUploadingImage(false)
+    }
+  })
   const uploadImagesMutation = useMutation({
     mutationFn: mediasApi.uploadImages,
     onMutate: () => {
@@ -214,10 +245,6 @@ const HomeSection = ({ isPendingTweet = true, isTitleName = 'Post', customMutati
     }
   }
 
-  const tabs = [
-    { id: 'forYou', label: 'For You' },
-    { id: 'following', label: 'Following' }
-  ]
   const addHashtag = () => {
     const newHashtag = formik.values.currentHashtag.trim()
     if (newHashtag && !formik.values.hashtags.includes(newHashtag)) {
@@ -234,7 +261,6 @@ const HomeSection = ({ isPendingTweet = true, isTitleName = 'Post', customMutati
   }
   const handleCreatedTweet = useCallback(
     async (data: TweetFormValues, uploadedLinks: Media[]) => {
-      console.log('Uploaded links:', uploadedLinks)
       await createdTweetMutation.mutateAsync({
         content: data.content,
         medias: uploadedLinks,
@@ -246,6 +272,20 @@ const HomeSection = ({ isPendingTweet = true, isTitleName = 'Post', customMutati
       })
     },
     [allIdWithMentionName, createdTweetMutation, formik.values.type]
+  )
+  const handleEditTweet = useCallback(
+    async (data: TweetFormValues, uploadedLinks: Media[]) => {
+      await editTweetMutation.mutateAsync({
+        content: data.content,
+        medias: uploadedLinks,
+        type: formik.values.type,
+        parent_id: null,
+        hashtags: data.hashtags,
+        mentions: allIdWithMentionName,
+        audience: data.audience
+      })
+    },
+    [allIdWithMentionName, editTweetMutation, formik.values.type]
   )
   if (isLoadingAllDataTweet) {
     return (
@@ -272,28 +312,30 @@ const HomeSection = ({ isPendingTweet = true, isTitleName = 'Post', customMutati
   }
 
   return (
-    <div className='container mx-auto px-4 py-6 bg-white shadow-sm rounded-xl'>
-      <div className='mb-6'>
-        <div className='flex justify-center bg-gray-50 rounded-lg p-1'>
-          {tabs.map((tab) => (
-            <button
-              key={tab.id}
-              className={`flex-1 py-3 text-sm md:text-base font-semibold transition-all duration-300 
+    <div className={`${isPendingTweet ? 'container' : 'w-full'} mx-auto px-4 py-6 bg-white shadow-sm rounded-xl`}>
+      {isPendingTweet && (
+        <div className={`mb-6 ${customClassName}`}>
+          <div className='flex justify-center bg-gray-50 rounded-lg p-1'>
+            {tabs.map((tab) => (
+              <button
+                key={tab.id}
+                className={`flex-1 py-3 text-sm md:text-base font-semibold transition-all duration-300 
               ${
                 activeTab === tab.id
                   ? 'bg-blue-600 text-white rounded-md shadow-md'
                   : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
               }`}
-              onClick={() => setActiveTab(tab.id)}
-            >
-              {tab.label}
-              {activeTab === tab.id && <div className='w-full h-1 bg-blue-400 mt-2 rounded-b-full'></div>}
-            </button>
-          ))}
+                onClick={() => setActiveTab(tab.id)}
+              >
+                {tab.label}
+                {activeTab === tab.id && <div className='w-full h-1 bg-blue-400 mt-2 rounded-b-full'></div>}
+              </button>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
-      <div className='bg-gray-50 rounded-xl p-4 shadow-inner'>
+      <div className={`bg-gray-50 rounded-xl p-4 shadow-inner ${isPendingTweet ? 'mb-6' : 'w-full'}`}>
         <div className='flex items-start space-x-4'>
           <Avatar className='w-12 h-12 border-2 border-blue-100'>
             <AvatarImage src={profile?.avatar} alt={profile?.name} className='object-cover rounded-full' />

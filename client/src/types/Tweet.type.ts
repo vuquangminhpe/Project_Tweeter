@@ -28,3 +28,5 @@ export interface TweetFormValues {
   currentMention: string
   type: TweetType
 }
+
+export type createdTweet = Omit<Tweets, '_id' | 'user_id' | 'created_at' | 'updated_at' | 'guest_views' | 'user_views'>

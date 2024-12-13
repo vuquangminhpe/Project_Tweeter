@@ -501,6 +501,7 @@ class TweetService {
     return { tweets, total: total[0].total }
   }
   async editTweet(user_id: string, body: EditTweetRequestBody) {
+    const hashtags = await this.checkAndCreateHashtag(body.hashtags)
     const results = await databaseService.tweets.findOneAndUpdate(
       {
         _id: new ObjectId(body.tweet_id as string),
@@ -510,7 +511,7 @@ class TweetService {
         $set: {
           content: body.content,
           medias: body.medias,
-          hashtags: body.hashtags.map((hashtag) => new ObjectId(hashtag)),
+          hashtags: hashtags,
           mentions: body.mentions.map((mention) => new ObjectId(mention)),
           audience: body.audience
         },

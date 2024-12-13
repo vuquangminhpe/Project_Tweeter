@@ -9,6 +9,7 @@ import { convertS3Url } from '@/utils/utils'
 import { QueryObserverResult, RefetchOptions, useMutation } from '@tanstack/react-query'
 import { AxiosResponse } from 'axios'
 import { useState } from 'react'
+import HomeSection from '../HomeSection'
 
 interface Props {
   profile: User | null
@@ -51,6 +52,7 @@ export default function EditTweet({ data, refetchAllDataTweet }: Props) {
         <div key={data._id}>
           <div className='mt-5 flex flex-col w-full'>
             <div className='w-full'>
+              <div>Old Medias</div>
               {data?.medias?.map((media) => (
                 <div key={media.url} className='relative w-full'>
                   {media.type === MediaType.Image ? (
@@ -70,6 +72,13 @@ export default function EditTweet({ data, refetchAllDataTweet }: Props) {
                   </button>
                 </div>
               ))}
+              <HomeSection
+                customClassName={'w-full'}
+                isPendingTweet={false}
+                isTitleName='Save'
+                tweet_ID_From_Edit={data?._id as string}
+                dataEdit={data}
+              />
             </div>
           </div>
         </div>
