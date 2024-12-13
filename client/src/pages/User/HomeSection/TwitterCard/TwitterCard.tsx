@@ -31,15 +31,14 @@ import VideoHLSPlayer from '@/components/Customs/VideoHLSPlayer'
 import EditTweet from '../EditTweet'
 import {
   AlertDialog,
-  AlertDialogAction,
   AlertDialogCancel,
   AlertDialogContent,
-  AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger
 } from '@/components/ui/alert-dialog'
+import ImageViewerTweet from '../ImageViewer'
 
 interface Props {
   profile: User | null
@@ -321,10 +320,12 @@ const TwitterCard = ({ profile, data, refetchAllDataTweet, data_length }: Props)
                         </AlertDialogTrigger>
                       </div>
 
-                      <AlertDialogContent>
+                      <AlertDialogContent className='container rounded-lg shadow-xl'>
                         <AlertDialogHeader>
                           <AlertDialogTitle>Media Gallery</AlertDialogTitle>
-                          <div className='w-full  h-auto'>{dataCustomTweet()}</div>
+                          <div className='w-full p-4'>
+                            <ImageViewerTweet data={data} />
+                          </div>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
                           <AlertDialogCancel>Close</AlertDialogCancel>

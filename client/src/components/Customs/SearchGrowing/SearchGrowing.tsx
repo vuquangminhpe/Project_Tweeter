@@ -7,7 +7,7 @@ import { toast } from 'sonner'
 export default function GrowingSearchVariant1() {
   return (
     <div className='flex flex-col items-center'>
-      <p className='mb-8 text-neutral-500/70 tracking-tighter'>Press enter to see all the effects</p>
+      <p className='mb-8 text-neutral-500/70 tracking-tighter translate-y-8'>Enter the Search all tweet,...</p>
       <SearchBar />
     </div>
   )
