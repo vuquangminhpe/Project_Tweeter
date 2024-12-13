@@ -72,13 +72,7 @@ export default function EditTweet({ data, refetchAllDataTweet }: Props) {
                   </button>
                 </div>
               ))}
-              <HomeSection
-                customClassName={'w-full'}
-                isPendingTweet={false}
-                isTitleName='Save'
-                tweet_ID_From_Edit={data?._id as string}
-                dataEdit={data}
-              />
+              <HomeSection customClassName={'w-full'} isPendingTweet={false} isTitleName='Save' dataEdit={data} />
             </div>
           </div>
         </div>

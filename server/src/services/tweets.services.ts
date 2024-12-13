@@ -504,7 +504,7 @@ class TweetService {
     const hashtags = await this.checkAndCreateHashtag(body.hashtags)
     const results = await databaseService.tweets.findOneAndUpdate(
       {
-        _id: new ObjectId(body.tweet_id as string),
+        _id: new ObjectId(body._id as string),
         user_id: new ObjectId(user_id)
       },
       {

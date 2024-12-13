@@ -99,7 +99,8 @@ export const TWEET_MESSAGE = {
   NEW_CONTENT_MUST_BE_A_NON_EMPTY_STRING: 'New content must be a non empty string',
 
   EDIT_TWEET_SUCCESS: 'Edit tweet success',
-  DELETE_TWEET_SUCCESS: 'Delete tweet success'
+  DELETE_TWEET_SUCCESS: 'Delete tweet success',
+  INVALID_CONTENT: 'Invalid content'
 } as const
 
 export const BOOKMARKS_MESSAGE = {

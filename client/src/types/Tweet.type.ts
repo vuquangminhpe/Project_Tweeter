@@ -18,6 +18,7 @@ export interface Tweets {
 }
 
 export interface TweetFormValues {
+  _id?: string
   content: string
   images: File[]
   audience: TweetAudience
@@ -29,4 +30,4 @@ export interface TweetFormValues {
   type: TweetType
 }
 
-export type createdTweet = Omit<Tweets, '_id' | 'user_id' | 'created_at' | 'updated_at' | 'guest_views' | 'user_views'>
+export type createdTweet = Omit<Tweets, 'user_id' | 'created_at' | 'updated_at' | 'guest_views' | 'user_views'>

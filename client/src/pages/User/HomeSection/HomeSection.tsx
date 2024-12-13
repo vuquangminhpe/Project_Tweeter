@@ -24,7 +24,6 @@ const validationSchema = Yup.object().shape({
 interface Props {
   isPendingTweet: boolean
   isTitleName: string
-  tweet_ID_From_Edit: string
   customClassName?: string
   dataEdit: createdTweet
 }
@@ -32,13 +31,7 @@ const tabs = [
   { id: 'forYou', label: 'For You' },
   { id: 'following', label: 'Following' }
 ]
-const HomeSection = ({
-  isPendingTweet = true,
-  isTitleName = 'Post',
-  tweet_ID_From_Edit,
-  customClassName,
-  dataEdit
-}: Props) => {
+const HomeSection = ({ isPendingTweet = true, isTitleName = 'Post', customClassName, dataEdit }: Props) => {
   const [activeTab, setActiveTab] = useState<string>('forYou')
   const [uploadingImage, setUploadingImage] = useState<boolean>(false)
   const [selectItemInTweet, setSelectItemInTweet] = useState<File[]>([])
@@ -49,21 +42,24 @@ const HomeSection = ({
   const { profile } = useContext(AppContext)
   const handleSubmit = async (values: TweetFormValues, { resetForm }: FormikHelpers<TweetFormValues>) => {
     try {
+      console.log(values)
+
       const uploadedLinks = await handleUploadItems()
       setAllLinkCreatedTweet(uploadedLinks)
 
       if (isPendingTweet) {
         await handleCreatedTweet(values, uploadedLinks)
       } else {
-        await handleEditTweet(values, uploadedLinks)
+        await handleEditTweet(values, [...dataEdit.medias, ...uploadedLinks])
       }
       resetForm({
         values: {
+          _id: '',
           content: '',
           images: [],
           audience: TweetAudience.Everyone,
           hashtags: [],
-          medias: allLinkCreatedTweet || [],
+          medias: [],
           mentions: [],
           currentHashtag: '',
           currentMention: '',
@@ -78,11 +74,12 @@ const HomeSection = ({
 
   const formik = useFormik<TweetFormValues>({
     initialValues: {
+      _id: !isPendingTweet ? dataEdit._id : '',
       content: !isPendingTweet ? dataEdit.content : '',
       images: [],
       audience: !isPendingTweet ? dataEdit.audience : TweetAudience.Everyone,
       hashtags: !isPendingTweet ? dataEdit.hashtags : [],
-      medias: !isPendingTweet ? dataEdit.medias : allLinkCreatedTweet || [],
+      medias: !isPendingTweet ? [] : allLinkCreatedTweet,
       mentions: !isPendingTweet ? dataEdit.mentions : [],
       currentHashtag: '',
       currentMention: '',
@@ -150,7 +147,7 @@ const HomeSection = ({
     }
   })
   const editTweetMutation = useMutation({
-    mutationFn: (body: createdTweet) => tweetsApi.updateTweets({ tweet_id: tweet_ID_From_Edit, body }),
+    mutationFn: (body: createdTweet) => tweetsApi.updateTweets(body),
     onMutate: () => {
       setUploadingImage(true)
     },
@@ -276,6 +273,7 @@ const HomeSection = ({
   const handleEditTweet = useCallback(
     async (data: TweetFormValues, uploadedLinks: Media[]) => {
       await editTweetMutation.mutateAsync({
+        _id: dataEdit._id,
         content: data.content,
         medias: uploadedLinks,
         type: formik.values.type,

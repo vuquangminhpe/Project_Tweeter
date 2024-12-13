@@ -24,7 +24,7 @@ export interface Pagination {
 }
 
 export interface EditTweetRequestBody {
-  tweet_id: string
+  _id: string
   content: string
   hashtags: string[]
   mentions: string[]
