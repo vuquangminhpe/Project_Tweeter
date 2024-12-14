@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { useState, ChangeEvent, useContext, useEffect, useCallback, useRef } from 'react'
+import { useState, ChangeEvent, useContext, useEffect, useCallback, useRef, useMemo } from 'react'
 import { FormikHelpers, useFormik } from 'formik'
 import * as Yup from 'yup'
 import { CiImageOn } from 'react-icons/ci'
-import { useMutation, useQuery } from '@tanstack/react-query'
+import { useMutation, useQueries, useQuery } from '@tanstack/react-query'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 
 import TwitterCard from './TwitterCard'
@@ -69,6 +69,15 @@ const HomeSection = ({ isPendingTweet = true, isTitleName = 'Post', customClassN
       console.error('error', error)
     }
   }
+  const userQueries = useQueries({
+    queries: (dataEdit?.mentions ?? []).map((mentionId) => ({
+      queryKey: ['mention', mentionId],
+      queryFn: () => apiUser.getProfileById(mentionId),
+      enabled: !isPendingTweet && !!mentionId
+    }))
+  })
+  const mentions = userQueries?.map((query, index) => query.data?.data?.username || dataEdit.mentions[index])
+  console.log(mentions)
 
   const formik = useFormik<TweetFormValues>({
     initialValues: {
@@ -78,7 +87,7 @@ const HomeSection = ({ isPendingTweet = true, isTitleName = 'Post', customClassN
       audience: !isPendingTweet ? dataEdit.audience : TweetAudience.Everyone,
       hashtags: !isPendingTweet ? dataEdit.hashtags : [],
       medias: !isPendingTweet ? [] : allLinkCreatedTweet,
-      mentions: !isPendingTweet ? dataEdit.mentions : [],
+      mentions: !isPendingTweet ? (mentions as string[]) : [],
       currentHashtag: '',
       currentMention: '',
       type: TweetType.Tweet
@@ -107,7 +116,7 @@ const HomeSection = ({ isPendingTweet = true, isTitleName = 'Post', customClassN
                 if (!userData?.data?._id) {
                   setAllIdWithMentionName_Undefined((prev) => [...prev, username])
                 }
-                return userData?.data?._id
+                return [userData?.data?._id, userData?.data?.username]
               } catch (error) {
                 console.error(`Error fetching user for username: ${username}`, error)
                 setAllIdWithMentionName_Undefined((prev) => [...prev, username])
@@ -116,7 +125,7 @@ const HomeSection = ({ isPendingTweet = true, isTitleName = 'Post', customClassN
             })
           )
 
-          const validUserIds = userIds.filter((_id) => _id !== undefined) as unknown as string[]
+          const validUserIds = userIds.filter((element) => (element as any)?._id !== undefined) as unknown as string[]
           setAllIdWithMentionName(validUserIds)
         } catch (error) {
           console.error('Error converting mentions to user IDs:', error)
@@ -281,7 +290,7 @@ const HomeSection = ({ isPendingTweet = true, isTitleName = 'Post', customClassN
         audience: data.audience
       })
     },
-    [allIdWithMentionName, editTweetMutation, formik.values.type]
+    [allIdWithMentionName, editTweetMutation, formik.values.type, dataEdit?._id]
   )
   if (isLoadingAllDataTweet) {
     return (
@@ -479,6 +488,8 @@ const HomeSection = ({ isPendingTweet = true, isTitleName = 'Post', customClassN
                       </div>
                       <div className='mt-4 flex flex-wrap gap-2'>
                         {formik?.values?.mentions?.map((mention, index) => {
+                          console.log('mention:', mention)
+
                           const isValid = allIdWithMentionName_Undefined.includes(mention)
 
                           return (
@@ -493,6 +504,7 @@ const HomeSection = ({ isPendingTweet = true, isTitleName = 'Post', customClassN
                               <button
                                 onClick={() => {
                                   const newMentions = formik.values.mentions.filter((_, i) => i !== index)
+
                                   formik.setFieldValue('mentions', newMentions)
                                 }}
                                 className='ml-2 text-black hover:text-red-300'

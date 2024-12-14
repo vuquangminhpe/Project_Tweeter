@@ -344,9 +344,31 @@ class UserService {
     )
     return user
   }
-  async getProfile(username: string) {
+  async getProfileByUserName(username: string) {
     const user = await databaseService.users.findOne(
       { username },
+      {
+        projection: {
+          password: 0,
+          email_verify_token: 0,
+          forgot_password_token: 0,
+          verify: 0,
+          created_at: 0,
+          updated_at: 0
+        }
+      }
+    )
+    if (user === null) {
+      throw new ErrorWithStatus({
+        message: USERS_MESSAGES.USER_NOT_FOUND,
+        status: HTTP_STATUS.NOT_FOUND
+      })
+    }
+    return user
+  }
+  async getProfileByUserId(user_id: string) {
+    const user = await databaseService.users.findOne(
+      { _id: new ObjectId(user_id) },
       {
         projection: {
           password: 0,

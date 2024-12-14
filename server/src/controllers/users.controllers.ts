@@ -188,13 +188,25 @@ export const updateMeController = async (req: Request<ParamsDictionary, any, Upd
   })
 }
 
-export const getProfileController = async (req: Request<ParamsDictionary, any, UserProfileReqBody>, res: Response) => {
+export const getProfileByUserNameController = async (
+  req: Request<ParamsDictionary, any, UserProfileReqBody>,
+  res: Response
+) => {
   const { username } = req.params
 
-  const result = await usersService.getProfile(username)
+  const result = await usersService.getProfileByUserName(username)
   res.json(result)
 }
+export const getProfileByIdController = async (
+  req: Request<ParamsDictionary, any, UserProfileReqBody>,
+  res: Response
+) => {
+  const { user_id } = req.params
+  console.log('user_id', user_id)
 
+  const result = await usersService.getProfileByUserId(user_id)
+  res.json(result)
+}
 export const followController = async (req: Request<ParamsDictionary, any, FollowReqBody>, res: Response) => {
   const { user_id } = req.decode_authorization as TokenPayload
   const { followed_user_id } = req.body

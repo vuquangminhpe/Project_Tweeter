@@ -7,7 +7,8 @@ import {
   getFollowersController,
   getFollowingController,
   getMeController,
-  getProfileController,
+  getProfileByIdController,
+  getProfileByUserNameController,
   loginController,
   logoutController,
   oauthController,
@@ -80,11 +81,18 @@ usersRouter.get('/me', AccessTokenValidator, verifiedUserValidator, wrapAsync(ge
 usersRouter.patch('/me', AccessTokenValidator, verifiedUserValidator, updateMeValidator, wrapAsync(updateMeController))
 
 /**
- * Description: get user profile
+ * Description: get user profile by username
  * Path: /:username
  * method: GET
  */
-usersRouter.get('/:username', wrapAsync(getProfileController))
+usersRouter.get('/:username', wrapAsync(getProfileByUserNameController))
+
+/**
+ * Description: get user profile by _id
+ * Path: /:username
+ * method: GET
+ */
+usersRouter.get('/profile/:user_id', wrapAsync(getProfileByIdController))
 
 /**
  * Description:get following
