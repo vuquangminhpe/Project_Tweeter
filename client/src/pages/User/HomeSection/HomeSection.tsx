@@ -25,7 +25,7 @@ interface Props {
   isPendingTweet: boolean
   isTitleName: string
   customClassName?: string
-  dataEdit: createdTweet
+  dataEdit: Tweets
 }
 const tabs = [
   { id: 'forYou', label: 'For You' },
@@ -69,15 +69,6 @@ const HomeSection = ({ isPendingTweet = true, isTitleName = 'Post', customClassN
       console.error('error', error)
     }
   }
-  const userQueries = useQueries({
-    queries: (dataEdit?.mentions ?? []).map((mentionId) => ({
-      queryKey: ['mention', mentionId],
-      queryFn: () => apiUser.getProfileById(mentionId),
-      enabled: !isPendingTweet && !!mentionId
-    }))
-  })
-  const mentions = userQueries?.map((query, index) => query.data?.data?.username || dataEdit.mentions[index])
-  console.log(mentions)
 
   const formik = useFormik<TweetFormValues>({
     initialValues: {
@@ -85,9 +76,9 @@ const HomeSection = ({ isPendingTweet = true, isTitleName = 'Post', customClassN
       content: !isPendingTweet ? dataEdit.content : '',
       images: [],
       audience: !isPendingTweet ? dataEdit.audience : TweetAudience.Everyone,
-      hashtags: !isPendingTweet ? dataEdit.hashtags : [],
+      hashtags: !isPendingTweet ? (dataEdit.hashtag_info as any[]) : [],
       medias: !isPendingTweet ? [] : allLinkCreatedTweet,
-      mentions: !isPendingTweet ? (mentions as string[]) : [],
+      mentions: !isPendingTweet ? (dataEdit?.mention_info as unknown as string[]) : [],
       currentHashtag: '',
       currentMention: '',
       type: TweetType.Tweet
@@ -95,6 +86,7 @@ const HomeSection = ({ isPendingTweet = true, isTitleName = 'Post', customClassN
     onSubmit: handleSubmit,
     validationSchema
   })
+  console.log('fsad', dataEdit)
 
   const {
     data: dataTweets,
@@ -116,7 +108,9 @@ const HomeSection = ({ isPendingTweet = true, isTitleName = 'Post', customClassN
                 if (!userData?.data?._id) {
                   setAllIdWithMentionName_Undefined((prev) => [...prev, username])
                 }
-                return [userData?.data?._id, userData?.data?.username]
+                console.log('userData:', userData?.data?._id)
+
+                return userData?.data?._id
               } catch (error) {
                 console.error(`Error fetching user for username: ${username}`, error)
                 setAllIdWithMentionName_Undefined((prev) => [...prev, username])
@@ -125,7 +119,7 @@ const HomeSection = ({ isPendingTweet = true, isTitleName = 'Post', customClassN
             })
           )
 
-          const validUserIds = userIds.filter((element) => (element as any)?._id !== undefined) as unknown as string[]
+          const validUserIds = userIds.filter((_id) => _id !== undefined) as unknown as string[]
           setAllIdWithMentionName(validUserIds)
         } catch (error) {
           console.error('Error converting mentions to user IDs:', error)
@@ -439,7 +433,7 @@ const HomeSection = ({ isPendingTweet = true, isTitleName = 'Post', customClassN
                             key={index}
                             className='bg-blue-500 text-white px-2 py-1 rounded-full text-sm flex items-center'
                           >
-                            #{hashtag}
+                            #{(hashtag as any).name}
                             <button
                               onClick={() => {
                                 const newHashtags = formik.values.hashtags.filter((_, i) => i !== index)
@@ -499,8 +493,10 @@ const HomeSection = ({ isPendingTweet = true, isTitleName = 'Post', customClassN
                                 !isValid ? 'bg-green-300 text-black' : 'bg-gray-300 text-gray-600'
                               }`}
                             >
-                              <div className='hidden'>{mention}</div>
-                              <div className={`text-${isValid ? 'black' : 'gray-400'}`}>@{mention}</div>
+                              <div className='hidden'>{(mention as any)?.username}</div>
+                              <div className={`text-${isValid ? 'black' : 'gray-400'}`}>
+                                @{(mention as any).username}
+                              </div>
                               <button
                                 onClick={() => {
                                   const newMentions = formik.values.mentions.filter((_, i) => i !== index)

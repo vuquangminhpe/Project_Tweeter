@@ -191,6 +191,7 @@ const TwitterCard = ({ profile, data, refetchAllDataTweet, data_length }: Props)
       }
     })
   }
+
   const handleDeleteComment = async (comment_id: string) => {
     deleteCommentMutation.mutateAsync(comment_id, {
       onSuccess: () => {
@@ -305,6 +306,13 @@ const TwitterCard = ({ profile, data, refetchAllDataTweet, data_length }: Props)
             ) : (
               <div className='mt-3'>
                 <p className='text-gray-800 mb-3 w-full'>{data?.content}</p>
+                <p className='text-gray-800 mb-3 w-full'>
+                  {data?.hashtag_info?.map((nameHashtag: any, index: number) => (
+                    <div className='text-blue-500 cursor-pointer' key={index}>
+                      {'#' + nameHashtag.name + ' '}
+                    </div>
+                  ))}
+                </p>
 
                 {data_length <= 4 ? (
                   dataCustomTweet(0, 4)

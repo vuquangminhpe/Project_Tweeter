@@ -15,8 +15,15 @@ export interface Tweets {
   user_views?: number
   created_at?: Date
   updated_at?: Date
+  mention_info?: mention_info[]
+  hashtag_info?: hashtag_info[]
 }
-
+interface mention_info {
+  user_name: string
+}
+interface hashtag_info {
+  name: string
+}
 export interface TweetFormValues {
   _id?: string
   content: string

@@ -44,10 +44,45 @@ class TweetService {
   }
   async getTweet(user_id: string) {
     const allTweet = await databaseService.tweets
-      .find({
-        user_id: new ObjectId(user_id)
-      })
+      .aggregate([
+        {
+          $match: { user_id: new ObjectId(user_id) }
+        },
+        {
+          $lookup: {
+            from: 'users',
+            localField: 'mentions',
+            foreignField: '_id',
+            as: 'mention_info'
+          }
+        },
+        {
+          $lookup: {
+            from: 'hashtags',
+            localField: 'hashtags',
+            foreignField: '_id',
+            as: 'hashtag_info'
+          }
+        },
+        {
+          $project: {
+            _id: 1,
+            user_id: 1,
+            content: 1,
+            medias: 1,
+            mentions: 1,
+            hashtags: 1,
+            created_at: 1,
+            updated_at: 1,
+            guest_views: 1,
+            user_views: 1,
+            'mention_info.username': 1,
+            'hashtag_info.name': 1
+          }
+        }
+      ])
       .toArray()
+
     return allTweet
   }
   async increaseView(tweet_id: string, user_id?: string) {
