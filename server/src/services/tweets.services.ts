@@ -76,6 +76,7 @@ class TweetService {
             updated_at: 1,
             guest_views: 1,
             user_views: 1,
+            audience: 1,
             'mention_info.username': 1,
             'hashtag_info.name': 1
           }

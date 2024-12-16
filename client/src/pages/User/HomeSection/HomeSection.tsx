@@ -86,7 +86,6 @@ const HomeSection = ({ isPendingTweet = true, isTitleName = 'Post', customClassN
     onSubmit: handleSubmit,
     validationSchema
   })
-  console.log('fsad', dataEdit)
 
   const {
     data: dataTweets,
@@ -428,23 +427,27 @@ const HomeSection = ({ isPendingTweet = true, isTitleName = 'Post', customClassN
                         add hash tag
                       </div>
                       <div className='mt-4 flex flex-wrap gap-2'>
-                        {formik?.values?.hashtags?.map((hashtag, index) => (
-                          <span
-                            key={index}
-                            className='bg-blue-500 text-white px-2 py-1 rounded-full text-sm flex items-center'
-                          >
-                            #{(hashtag as any).name}
-                            <button
-                              onClick={() => {
-                                const newHashtags = formik.values.hashtags.filter((_, i) => i !== index)
-                                formik.setFieldValue('hashtags', newHashtags)
-                              }}
-                              className='ml-2 text-black hover:text-red-300'
+                        {formik?.values?.hashtags?.map((hashtag, index) => {
+                          console.log('hashtag:', hashtag)
+
+                          return (
+                            <span
+                              key={index}
+                              className='bg-blue-500 text-white px-2 py-1 rounded-full text-sm flex items-center'
                             >
-                              ×
-                            </button>
-                          </span>
-                        ))}
+                              #{!isPendingTweet ? (hashtag as any).name : hashtag}
+                              <button
+                                onClick={() => {
+                                  const newHashtags = formik.values.hashtags.filter((_, i) => i !== index)
+                                  formik.setFieldValue('hashtags', newHashtags)
+                                }}
+                                className='ml-2 text-black hover:text-red-300'
+                              >
+                                ×
+                              </button>
+                            </span>
+                          )
+                        })}
                       </div>
                     </PopoverContent>
                   </Popover>
@@ -495,7 +498,7 @@ const HomeSection = ({ isPendingTweet = true, isTitleName = 'Post', customClassN
                             >
                               <div className='hidden'>{(mention as any)?.username}</div>
                               <div className={`text-${isValid ? 'black' : 'gray-400'}`}>
-                                @{(mention as any).username}
+                                @{!isPendingTweet ? (mention as any).username : mention}
                               </div>
                               <button
                                 onClick={() => {
