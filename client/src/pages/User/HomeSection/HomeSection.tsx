@@ -26,12 +26,13 @@ interface Props {
   isTitleName: string
   customClassName?: string
   dataEdit: Tweets
+  setEdit: React.Dispatch<React.SetStateAction<boolean>>
 }
 const tabs = [
   { id: 'forYou', label: 'For You' },
   { id: 'following', label: 'Following' }
 ]
-const HomeSection = ({ isPendingTweet = true, isTitleName = 'Post', customClassName, dataEdit }: Props) => {
+const HomeSection = ({ setEdit, isPendingTweet = true, isTitleName = 'Post', customClassName, dataEdit }: Props) => {
   const [activeTab, setActiveTab] = useState<string>('forYou')
   const [uploadingImage, setUploadingImage] = useState<boolean>(false)
   const [selectItemInTweet, setSelectItemInTweet] = useState<File[]>([])
@@ -48,6 +49,7 @@ const HomeSection = ({ isPendingTweet = true, isTitleName = 'Post', customClassN
       if (isPendingTweet) {
         await handleCreatedTweet(values, uploadedLinks)
       } else {
+        setEdit(false)
         await handleEditTweet(values, [...dataEdit.medias, ...uploadedLinks])
       }
       resetForm({
@@ -77,7 +79,7 @@ const HomeSection = ({ isPendingTweet = true, isTitleName = 'Post', customClassN
       images: [],
       audience: !isPendingTweet ? dataEdit.audience : TweetAudience.Everyone,
       hashtags: !isPendingTweet ? (dataEdit.hashtag_info as any[]) : [],
-      medias: !isPendingTweet ? [] : allLinkCreatedTweet,
+      medias: !isPendingTweet ? allLinkCreatedTweet : [],
       mentions: !isPendingTweet ? (dataEdit?.mention_info as unknown as string[]) : [],
       currentHashtag: '',
       currentMention: '',
@@ -86,6 +88,7 @@ const HomeSection = ({ isPendingTweet = true, isTitleName = 'Post', customClassN
     onSubmit: handleSubmit,
     validationSchema
   })
+  console.log(formik.values.hashtags)
 
   const {
     data: dataTweets,
@@ -107,7 +110,6 @@ const HomeSection = ({ isPendingTweet = true, isTitleName = 'Post', customClassN
                 if (!userData?.data?._id) {
                   setAllIdWithMentionName_Undefined((prev) => [...prev, username])
                 }
-                console.log('userData:', userData?.data?._id)
 
                 return userData?.data?._id
               } catch (error) {
@@ -210,8 +212,6 @@ const HomeSection = ({ isPendingTweet = true, isTitleName = 'Post', customClassN
       try {
         const uploadedFiles = await Promise.all(
           selectItemInTweet.map(async (item) => {
-            console.log('item:', item)
-
             if (item.type.startsWith('image/')) {
               return await uploadImagesMutation.mutateAsync(item)
             } else if (item.type.startsWith('video/') || item.type.startsWith('application/x-mpegurl')) {
@@ -428,8 +428,6 @@ const HomeSection = ({ isPendingTweet = true, isTitleName = 'Post', customClassN
                       </div>
                       <div className='mt-4 flex flex-wrap gap-2'>
                         {formik?.values?.hashtags?.map((hashtag, index) => {
-                          console.log('hashtag:', hashtag)
-
                           return (
                             <span
                               key={index}
@@ -485,8 +483,6 @@ const HomeSection = ({ isPendingTweet = true, isTitleName = 'Post', customClassN
                       </div>
                       <div className='mt-4 flex flex-wrap gap-2'>
                         {formik?.values?.mentions?.map((mention, index) => {
-                          console.log('mention:', mention)
-
                           const isValid = allIdWithMentionName_Undefined.includes(mention)
 
                           return (

@@ -10,8 +10,16 @@ import { convertS3Url } from '~/utils/utils'
 
 class TweetService {
   async checkAndCreateHashtag(hashtags: string[]) {
+    console.log('hashtags', hashtags)
+
     const hashtagDocuments = await Promise.all(
-      hashtags.map((hashtag) => {
+      hashtags.map(async (hashtag) => {
+        const checkContainHashtag = await databaseService.hashtags.findOne({ name: hashtag })
+        if (checkContainHashtag) {
+          return checkContainHashtag
+        }
+        console.log('checkContainHashtag', checkContainHashtag)
+
         return databaseService.hashtags.findOneAndUpdate(
           { name: hashtag },
           {

@@ -13,12 +13,13 @@ import HomeSection from '../HomeSection'
 interface Props {
   profile: User | null
   data: Tweets
+  setEdit: React.Dispatch<React.SetStateAction<boolean>>
   refetchAllDataTweet: (
     options?: RefetchOptions
   ) => Promise<QueryObserverResult<AxiosResponse<SuccessResponse<Tweets[]>, any>, Error>>
 }
 
-export default function EditTweet({ data, refetchAllDataTweet }: Props) {
+export default function EditTweet({ data, refetchAllDataTweet, setEdit }: Props) {
   const handleDeletedS3Mutation = useMutation({
     mutationFn: ({ url, link }: { url: string; link: string }) => mediasApi.deleteS3({ url, link })
   })
@@ -75,7 +76,13 @@ export default function EditTweet({ data, refetchAllDataTweet }: Props) {
                   </div>
                 ))}
               </div>
-              <HomeSection customClassName={'w-full mt-6'} isPendingTweet={false} isTitleName='Save' dataEdit={data} />
+              <HomeSection
+                setEdit={setEdit}
+                customClassName={'w-full mt-6'}
+                isPendingTweet={false}
+                isTitleName='Save'
+                dataEdit={data}
+              />
             </div>
           </div>
         </div>
