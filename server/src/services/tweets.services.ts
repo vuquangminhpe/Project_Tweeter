@@ -14,12 +14,6 @@ class TweetService {
 
     const hashtagDocuments = await Promise.all(
       hashtags.map(async (hashtag) => {
-        const checkContainHashtag = await databaseService.hashtags.findOne({ name: hashtag })
-        if (checkContainHashtag) {
-          return checkContainHashtag
-        }
-        console.log('checkContainHashtag', checkContainHashtag)
-
         return databaseService.hashtags.findOneAndUpdate(
           { name: hashtag },
           {

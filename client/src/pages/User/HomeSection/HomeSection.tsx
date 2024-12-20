@@ -4,7 +4,7 @@ import { useState, ChangeEvent, useContext, useEffect, useCallback, useRef, useM
 import { FormikHelpers, useFormik } from 'formik'
 import * as Yup from 'yup'
 import { CiImageOn } from 'react-icons/ci'
-import { useMutation, useQueries, useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery } from '@tanstack/react-query'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 
 import TwitterCard from './TwitterCard'
@@ -78,7 +78,7 @@ const HomeSection = ({ setEdit, isPendingTweet = true, isTitleName = 'Post', cus
       content: !isPendingTweet ? dataEdit.content : '',
       images: [],
       audience: !isPendingTweet ? dataEdit.audience : TweetAudience.Everyone,
-      hashtags: !isPendingTweet ? (dataEdit.hashtag_info as any[]) : [],
+      hashtags: !isPendingTweet ? (dataEdit?.hashtag_info as any[]) : [],
       medias: !isPendingTweet ? allLinkCreatedTweet : [],
       mentions: !isPendingTweet ? (dataEdit?.mention_info as unknown as string[]) : [],
       currentHashtag: '',
@@ -278,7 +278,7 @@ const HomeSection = ({ setEdit, isPendingTweet = true, isTitleName = 'Post', cus
         medias: uploadedLinks,
         type: formik.values.type,
         parent_id: null,
-        hashtags: data.hashtags,
+        hashtags: data.hashtags.map((hashtag) => (hashtag as any).name || hashtag),
         mentions: allIdWithMentionName,
         audience: data.audience
       })
@@ -395,6 +395,7 @@ const HomeSection = ({ setEdit, isPendingTweet = true, isTitleName = 'Post', cus
                       onChange={handleImageSelect}
                     />
                   </label>
+
                   <Popover>
                     <PopoverTrigger>
                       <svg
