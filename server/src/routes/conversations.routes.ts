@@ -1,5 +1,8 @@
 import { Router } from 'express'
-import { getConversationsByReceiverIdController } from '~/controllers/conversations.controllers'
+import {
+  getAllConverSationsController,
+  getConversationsByReceiverIdController
+} from '~/controllers/conversations.controllers'
 import { paginationValidator } from '~/middlewares/tweets.middlewares'
 import { AccessTokenValidator, getConversationsValidator, verifiedUserValidator } from '~/middlewares/users.middlewares'
 import { wrapAsync } from '~/utils/handler'
@@ -22,4 +25,24 @@ conversationsRouter.get(
   wrapAsync(getConversationsByReceiverIdController)
 )
 
+/**
+ * Description: edit conversation
+ * Path: /all_conversation
+ * Method: GET
+ * header: {Authorization:Bearer <access_token> }
+ */
+conversationsRouter.get(
+  '/all_conversation',
+  AccessTokenValidator,
+  verifiedUserValidator,
+  wrapAsync(getAllConverSationsController)
+)
+
+/**
+ * Description: edit conversation
+ * Path: /conversation/:messages_id
+ * Method: PUT
+ * header: {Authorization:Bearer <access_token> }
+ */
+conversationsRouter.put('/conversation/:messages_id', AccessTokenValidator, verifiedUserValidator)
 export default conversationsRouter

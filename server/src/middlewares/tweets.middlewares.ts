@@ -111,6 +111,7 @@ export const createTweetValidator = validate(
     }
   })
 )
+//sql join => mongodb aggregate
 export const tweetIdValidator = validate(
   checkSchema(
     {

@@ -1,7 +1,9 @@
 import { Request, Response } from 'express'
 import { CONVERSATIONS_MESSAGE } from '~/constants/messages'
-import { GetConversationsParams } from '~/models/request/Conversations.requests'
+import { ParamsDictionary } from 'express-serve-static-core'
+import { GetAllConversationsParams, GetConversationsParams } from '~/models/request/Conversations.requests'
 import conversationServices from '~/services/conversations.services'
+import { TokenPayload } from '~/models/request/User.request'
 export const getConversationsByReceiverIdController = async (req: Request<GetConversationsParams>, res: Response) => {
   const { receiver_id } = req.params
   const { limit, page } = req.query
@@ -20,5 +22,17 @@ export const getConversationsByReceiverIdController = async (req: Request<GetCon
       page: page,
       total_pages: Math.ceil(total / Number(limit))
     }
+  })
+}
+
+export const getAllConverSationsController = async (
+  req: Request<ParamsDictionary, any, GetAllConversationsParams>,
+  res: Response
+) => {
+  const { user_id } = req.decode_authorization as TokenPayload
+  const conversations = await conversationServices.getAllConversations(user_id)
+  res.json({
+    message: CONVERSATIONS_MESSAGE.GET_CONVERSATION_SUCCESSFULLY,
+    result: conversations
   })
 }
