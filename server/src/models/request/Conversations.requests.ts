@@ -6,4 +6,6 @@ export interface GetConversationsParams extends ParamsDictionary {
 
 export interface GetAllConversationsParams extends ParamsDictionary {
   user_id: string
+  limit: string
+  page: string
 }

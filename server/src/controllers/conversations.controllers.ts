@@ -30,9 +30,17 @@ export const getAllConverSationsController = async (
   res: Response
 ) => {
   const { user_id } = req.decode_authorization as TokenPayload
-  const conversations = await conversationServices.getAllConversations(user_id)
+  const { limit, page } = req.query
+  const { allConversations, total } = await conversationServices.getAllConversations({
+    user_id,
+    limit: Number(limit),
+    page: Number(page)
+  })
   res.json({
     message: CONVERSATIONS_MESSAGE.GET_CONVERSATION_SUCCESSFULLY,
-    result: conversations
+    result: allConversations,
+    limit: Number(limit),
+    page: Number(page),
+    total_pages: Math.ceil(total / Number(limit))
   })
 }

@@ -17,8 +17,8 @@ interface UserType {
   forgot_password_token?: string
   verify?: UserVerifyStatus
   twitter_circle?: ObjectId[] //danh sách id của những người mà user này add vào circle
-  bio?: string // optional
-  location?: string // optional
+  bio?: string
+  location?: string
   website?: string
   username?: string
   avatar?: string
@@ -36,8 +36,8 @@ export default class User {
   forgot_password_token: string
   verify: UserVerifyStatus
   twitter_circle: ObjectId[]
-  bio: string // optional
-  location: string // optional
+  bio: string
+  location: string
   website: string
   username: string
   avatar: string

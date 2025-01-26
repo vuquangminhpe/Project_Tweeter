@@ -100,7 +100,8 @@ export const TWEET_MESSAGE = {
 
   EDIT_TWEET_SUCCESS: 'Edit tweet success',
   DELETE_TWEET_SUCCESS: 'Delete tweet success',
-  INVALID_CONTENT: 'Invalid content'
+  INVALID_CONTENT: 'Invalid content',
+  GET_NEW_TWEET_SUCCESS: 'Get New Feeds Success'
 } as const
 
 export const BOOKMARKS_MESSAGE = {
