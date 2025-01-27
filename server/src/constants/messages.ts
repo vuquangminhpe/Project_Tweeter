@@ -101,7 +101,11 @@ export const TWEET_MESSAGE = {
   EDIT_TWEET_SUCCESS: 'Edit tweet success',
   DELETE_TWEET_SUCCESS: 'Delete tweet success',
   INVALID_CONTENT: 'Invalid content',
-  GET_NEW_TWEET_SUCCESS: 'Get New Feeds Success'
+  GET_NEW_TWEET_SUCCESS: 'Get New Feeds Success',
+  PREMIUM_USER_REQUIRED: 'Premium user required',
+  PLATINUM_USER_REQUIRED: 'Platinum user required',
+  GENERATE_TWEET_GEMINI_SUCCESS: 'Generate tweet gemini success',
+  CHAT_WITH_GEMINI_SUCCESS: 'Chat with gemini success'
 } as const
 
 export const BOOKMARKS_MESSAGE = {

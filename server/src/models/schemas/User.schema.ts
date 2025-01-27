@@ -1,4 +1,5 @@
 import { ObjectId } from 'mongodb'
+import { AccountStatus } from '~/constants/enums'
 
 enum UserVerifyStatus {
   Unverified, // chưa xác thực
@@ -13,10 +14,12 @@ interface UserType {
   password: string
   created_at?: Date
   updated_at?: Date
-  email_verify_token?: string //
+  email_verify_token?: string
   forgot_password_token?: string
   verify?: UserVerifyStatus
   twitter_circle?: ObjectId[] //danh sách id của những người mà user này add vào circle
+  typeAccount: AccountStatus
+  count_type_account: number
   bio?: string
   location?: string
   website?: string
@@ -36,6 +39,8 @@ export default class User {
   forgot_password_token: string
   verify: UserVerifyStatus
   twitter_circle: ObjectId[]
+  typeAccount: AccountStatus
+  count_type_account: number
   bio: string
   location: string
   website: string
@@ -56,6 +61,8 @@ export default class User {
     this.forgot_password_token = user.forgot_password_token || ''
     this.verify = user.verify || UserVerifyStatus.Unverified
     this.twitter_circle = user.twitter_circle || []
+    this.typeAccount = user.typeAccount || AccountStatus.FREE
+    this.count_type_account = user.count_type_account || 0
     this.bio = user.bio || ''
     this.location = user.location || ''
     this.website = user.website || ''

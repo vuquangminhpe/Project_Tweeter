@@ -1,5 +1,5 @@
 import RefreshToken from '~/models/schemas/RefreshToken.schema'
-import { TokenType, UserVerifyStatus } from '../constants/enums'
+import { AccountStatus, TokenType, UserVerifyStatus } from '../constants/enums'
 import { RegisterReqBody, UpdateMeReqBody } from '../models/request/User.request'
 import User from '../models/schemas/User.schema'
 import { hashPassword } from '../utils/crypto'
@@ -85,6 +85,8 @@ class UserService {
       new User({
         ...payload,
         _id: user_id,
+        typeAccount: AccountStatus.FREE,
+        count_type_account: 0,
         email_verify_token: email_verify_token,
         password: hashPassword(payload.password),
         date_of_birth: new Date(payload.date_of_birth)

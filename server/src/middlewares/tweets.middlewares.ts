@@ -2,7 +2,7 @@ import { NextFunction, Response, Request } from 'express'
 import { checkSchema } from 'express-validator'
 import { isEmpty, isLength, isNumber } from 'lodash'
 import { ObjectId } from 'mongodb'
-import { MediaType, TweetAudience, TweetType, UserVerifyStatus } from '~/constants/enums'
+import { AccountStatus, MediaType, TweetAudience, TweetType, UserVerifyStatus } from '~/constants/enums'
 import HTTP_STATUS from '~/constants/httpStatus'
 import { COMMENT_MESSAGES, TWEET_MESSAGE, USERS_MESSAGES } from '~/constants/messages'
 import { ErrorWithStatus } from '~/models/Errors'
@@ -458,3 +458,36 @@ export const deleteTweetValidator = validate(
     }
   })
 )
+
+export const premiumUserValidator = validate(
+  checkSchema(
+    {
+      user_id: {
+        custom: {
+          options: async (value, { req }) => {
+            const user_id = req.decode_authorization.user_id
+            const user = await databaseService.users.findOne({
+              _id: new ObjectId(user_id as string)
+            })
+
+            if (user?.typeAccount === AccountStatus.FREE && user.count_type_account > 5) {
+              throw new ErrorWithStatus({
+                message: TWEET_MESSAGE.PREMIUM_USER_REQUIRED,
+                status: HTTP_STATUS.FORBIDDEN
+              })
+            }
+            if (user?.typeAccount === AccountStatus.PREMIUM && user.count_type_account > 40) {
+              throw new ErrorWithStatus({
+                message: TWEET_MESSAGE.PLATINUM_USER_REQUIRED,
+                status: HTTP_STATUS.FORBIDDEN
+              })
+            }
+          }
+        }
+      }
+    },
+    ['headers']
+  )
+)
+
+export const messageUploadValidator = validate(checkSchema({ message: { isString: true } }, ['body']))

@@ -37,3 +37,9 @@ export enum TweetAudience {
   Everyone,
   TwitterCircle
 }
+
+export enum AccountStatus {
+  FREE = 0,
+  PREMIUM = 1,
+  PLATINUM = 2
+}

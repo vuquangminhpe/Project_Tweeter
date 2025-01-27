@@ -31,3 +31,6 @@ export interface EditTweetRequestBody {
   medias: Media[]
   audience: TweetAudience
 }
+export interface GenerateTweetRequestBody {
+  message: string
+}

@@ -3,11 +3,24 @@ import databaseService from './database.services'
 import Tweet from '~/models/schemas/Tweet.schema'
 import { ObjectId, WithId } from 'mongodb'
 import Hashtag from '~/models/schemas/Hashtag.schema'
-import { MediaType, TweetType } from '~/constants/enums'
-import { deletedS3Controller } from '~/controllers/medias.controllers'
+import { AccountStatus, MediaType, TweetType } from '~/constants/enums'
 import { deleteFileFromS3, deleteS3Folder } from '~/utils/s3'
-import { convertS3Url } from '~/utils/utils'
+import { convertS3Url, extractGeminiData } from '~/utils/utils'
+import { GoogleGenerativeAI } from '@google/generative-ai'
 
+import fs from 'fs'
+import { pipeline } from 'stream/promises'
+import * as nodeFetch from 'node-fetch'
+import { config } from 'dotenv'
+import { PROMPT_CHAT, PROMPT_TWEET_FREE, PROMPT_TWEET_PREMIUM } from '~/constants/prompt'
+import User from '~/models/schemas/User.schema'
+config()
+if (!globalThis.fetch) {
+  ;(globalThis as any).fetch = nodeFetch.default
+  ;(globalThis as any).Headers = nodeFetch.Headers
+  ;(globalThis as any).Request = nodeFetch.Request
+  ;(globalThis as any).Response = nodeFetch.Response
+}
 class TweetService {
   async checkAndCreateHashtag(hashtags: string[]) {
     console.log('hashtags', hashtags)
@@ -615,6 +628,94 @@ class TweetService {
         })
       )
       return results
+    }
+  }
+  async generateTweetWithTextGemini(user_id: string, message: string) {
+    const apiKey = process.env.GERMINI_API_KEY
+    const genAI = new GoogleGenerativeAI(apiKey as string)
+    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' })
+    const user = await databaseService.users.findOne({ _id: new ObjectId(user_id) })
+
+    if (user?.typeAccount === AccountStatus.FREE && user.count_type_account < 5) {
+      const result =
+        user.count_type_account < 2
+          ? await model.generateContent([PROMPT_TWEET_PREMIUM, message])
+          : await model.generateContent([PROMPT_TWEET_FREE, message])
+      const response = await result.response
+      const aiResponseText = response.text()
+
+      const parsedResponse = extractGeminiData(aiResponseText)
+      await databaseService.users.updateOne(
+        {
+          _id: new ObjectId(user_id)
+        },
+        {
+          $inc: {
+            count_type_account: 1
+          }
+        }
+      )
+
+      return parsedResponse
+    } else if (user?.typeAccount === AccountStatus.PREMIUM && user.count_type_account < 20) {
+      const result =
+        user.count_type_account < 15
+          ? await model.generateContent([PROMPT_TWEET_PREMIUM, message])
+          : await model.generateContent([PROMPT_TWEET_FREE, message])
+      const response = await result.response
+      const aiResponseText = response.text()
+
+      const parsedResponse = extractGeminiData(aiResponseText)
+      await databaseService.users.updateOne(
+        {
+          _id: new ObjectId(user_id)
+        },
+        {
+          $inc: {
+            count_type_account: 1
+          }
+        }
+      )
+
+      return parsedResponse
+    } else if (user?.typeAccount === AccountStatus.PLATINUM) {
+      const result = await model.generateContent([PROMPT_TWEET_PREMIUM, message])
+      const response = await result.response
+      const aiResponseText = response.text()
+
+      const parsedResponse = extractGeminiData(aiResponseText)
+      await databaseService.users.updateOne(
+        {
+          _id: new ObjectId(user_id)
+        },
+        {
+          $inc: {
+            count_type_account: 1
+          }
+        }
+      )
+
+      return parsedResponse
+    }
+  }
+  async chatWithGemini(user_id: string, message: string) {
+    const _id = new ObjectId()
+    const sender_id_gemini = new ObjectId('60f3b3b3b3b3b3b3b3b3b3b3')
+
+    const apiKey = process.env.GERMINI_API_KEY
+    const genAI = new GoogleGenerativeAI(apiKey as string)
+    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' })
+    const result = await model.generateContent([PROMPT_CHAT, message])
+    const response = await result.response
+    const aiResponseText = response.text()
+    await databaseService.conversations.insertOne({
+      _id,
+      sender_id: sender_id_gemini,
+      receive_id: new ObjectId(user_id),
+      content: aiResponseText
+    })
+    return {
+      result: aiResponseText
     }
   }
 }

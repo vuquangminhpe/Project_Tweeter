@@ -1,6 +1,6 @@
 import { faker } from '@faker-js/faker'
 import { ObjectId } from 'mongodb'
-import { TweetAudience, TweetType, UserVerifyStatus } from '~/constants/enums'
+import { AccountStatus, TweetAudience, TweetType, UserVerifyStatus } from '~/constants/enums'
 import { TweetRequestBody } from '~/models/request/Tweet.request'
 import { RegisterReqBody } from '~/models/request/User.request'
 import User from '~/models/schemas/User.schema'
@@ -55,6 +55,8 @@ const insertMultipleUsers = async (users: RegisterReqBody[]) => {
         new User({
           ...user,
           username: `user${user_id.toString()}`,
+          typeAccount: AccountStatus.FREE,
+          count_type_account: 0,
           password: hashPassword(user.password),
           date_of_birth: new Date(user.date_of_birth),
           verify: UserVerifyStatus.Verified

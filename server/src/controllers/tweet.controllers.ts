@@ -1,9 +1,8 @@
-import { ObjectId } from 'mongodb'
-
 import { Request, Response } from 'express'
 import { ParamsDictionary } from 'express-serve-static-core'
 import {
   EditTweetRequestBody,
+  GenerateTweetRequestBody,
   Pagination,
   TweetParam,
   TweetQuery,
@@ -100,6 +99,30 @@ export const deleteTweetController = async (req: Request<ParamsDictionary, any, 
   const result = await tweetsService.deleteTweet(user_id, tweet_id as string)
   res.json({
     message: TWEET_MESSAGE.DELETE_TWEET_SUCCESS,
+    data: result
+  })
+}
+
+export const generateTweetTextGeminiController = async (
+  req: Request<ParamsDictionary, any, GenerateTweetRequestBody>,
+  res: Response
+) => {
+  const { user_id } = req.decode_authorization as TokenPayload
+  const { message } = req.body
+  const result = await tweetsService.generateTweetWithTextGemini(user_id, message)
+  res.json({
+    message: TWEET_MESSAGE.GENERATE_TWEET_GEMINI_SUCCESS,
+    data: result
+  })
+}
+export const chatWithGeminiController = async (req: Request<ParamsDictionary, any, any, any>, res: Response) => {
+  const { user_id } = req.decode_authorization as TokenPayload
+  const { message } = req.body
+  console.log('message', message)
+
+  const result = await tweetsService.chatWithGemini(user_id, message)
+  res.json({
+    message: TWEET_MESSAGE.CHAT_WITH_GEMINI_SUCCESS,
     data: result
   })
 }
