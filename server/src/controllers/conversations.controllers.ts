@@ -1,7 +1,11 @@
 import { Request, Response } from 'express'
 import { CONVERSATIONS_MESSAGE } from '~/constants/messages'
 import { ParamsDictionary } from 'express-serve-static-core'
-import { GetAllConversationsParams, GetConversationsParams } from '~/models/request/Conversations.requests'
+import {
+  editTweetResBody,
+  GetAllConversationsParams,
+  GetConversationsParams
+} from '~/models/request/Conversations.requests'
 import conversationServices from '~/services/conversations.services'
 import { TokenPayload } from '~/models/request/User.request'
 export const getConversationsByReceiverIdController = async (req: Request<GetConversationsParams>, res: Response) => {
@@ -43,4 +47,14 @@ export const getAllConverSationsController = async (
     page: Number(page),
     total_pages: Math.ceil(total / Number(limit))
   })
+}
+
+export const editConversationController = async (
+  req: Request<ParamsDictionary, any, editTweetResBody>,
+  res: Response
+) => {
+  const { user_id } = req.decode_authorization as TokenPayload
+  const { content, message_id } = req.body
+  const result = await conversationServices.editConversation({ message_id, user_id, content })
+  res.json({ message: CONVERSATIONS_MESSAGE.EDIT_CONVERSATION_SUCCESSFULLY, result })
 }

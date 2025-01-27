@@ -78,7 +78,7 @@ export const PROMPT_CHAT = `
 Nếu vi phạm BẤT KỲ tiêu chí nào trên, DỪNG XỬ LÝ NGAY và trả về:
 {
     "status": "VIOLATION",
-    "message": "Hãy sửa lại ngôn từ, nếu có lần thứ 2 account sẽ bị band vĩnh viễn và không thể khôi phục"
+    "message": "Hãy sửa lại ngôn từ, nếu có lần thứ 2 tài khoản sẽ bị xóa vĩnh viễn và không thể khôi phục"
 }
 
 // Step 2: Tweet Generation (CHỈ thực hiện nếu nội dung hợp lệ)

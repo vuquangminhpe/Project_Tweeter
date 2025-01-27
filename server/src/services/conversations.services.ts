@@ -129,6 +129,21 @@ class ConversationService {
     ])
     return { allConversations, total: total.length }
   }
+  async editConversation({ message_id, user_id, content }: { message_id: string; user_id: string; content: string }) {
+    const result = await databaseService.conversations.findOneAndUpdate(
+      {
+        _id: new ObjectId(message_id),
+        sender_id: new ObjectId(user_id)
+      },
+      {
+        $set: {
+          content
+        }
+      },
+      { returnDocument: 'after' }
+    )
+    return ''
+  }
 }
 const conversationServices = new ConversationService()
 export default conversationServices

@@ -9,3 +9,8 @@ export interface GetAllConversationsParams extends ParamsDictionary {
   limit: string
   page: string
 }
+
+export interface editTweetResBody {
+  content: string
+  message_id: string
+}
