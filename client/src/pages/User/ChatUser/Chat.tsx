@@ -1,11 +1,13 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useState, useCallback, useMemo, useRef, WheelEvent, Fragment } from 'react'
 import axios from 'axios'
-import { useInfiniteQuery } from '@tanstack/react-query'
+import { useInfiniteQuery, useQuery } from '@tanstack/react-query'
 import socket from '@/utils/socket'
 import { Conversation, ConversationResponse } from '@/types/Conversation.type'
 import { Profile } from '@/types/User.type'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Badge } from '@/components/ui/badge'
+import conversationsApi from '@/apis/conversation.api'
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel'
 
 interface UserStatus {
   user_id: string
@@ -26,9 +28,12 @@ function Chat() {
   const [initialScrollSet, setInitialScrollSet] = useState<boolean>(false)
   const [onlineUsers, setOnlineUsers] = useState<{ [key: string]: UserStatus }>({})
   console.log('onlineUsers', onlineUsers)
-  const previousScrollHeightRef = useRef<number>(0)
   const isLoadingRef = useRef<boolean>(false)
-  const usernames = [{ value: 'minh9972' }, { value: 'minh7792' }]
+  const { data: dataFollowers } = useQuery({
+    queryKey: ['followers'],
+    queryFn: () => conversationsApi.getAllConversationsWithFollower(10, 1)
+  })
+  const allData = dataFollowers?.data?.result
 
   useEffect(() => {
     if (profile._id) {
@@ -244,31 +249,57 @@ function Chat() {
 
   return (
     <div className='container mx-auto max-w-4xl px-4 py-8'>
-      <div className='text-center bg-gradient-to-r from-blue-500 to-purple-600 text-white p-4 rounded-t-xl shadow-md'>
-        <div className='text-xl font-medium'>Welcome</div>
-        <h1 className='text-3xl font-bold tracking-wider'>{profile.username}</h1>
-      </div>
+      <div className='w-full px-4 sm:px-6 lg:px-8'>
+        <Carousel className='relative'>
+          <CarouselContent className='flex'>
+            {allData?.map((data) =>
+              Array(data.users_follower_info).map((user: any) => (
+                <CarouselItem key={user.username} className='w-full basis-1/9 sm:w-1/2 md:w-1/3 lg:w-1/4 xl:w-1/5 p-2'>
+                  <button
+                    onClick={() => getProfile(user.username)}
+                    className='w-full h-full flex flex-col bg bg-blue-900 items-center justify-center p-4 hover:bg-blue-600 '
+                  >
+                    <div className='flex items-center space-x-2'>
+                      <Avatar className='mr-3'>
+                        <AvatarImage src={user.avatar || user.cover_photo} />
+                        <AvatarFallback className='text-black bg-white rounded-full'>
+                          {user.name.charAt(0)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span className='text-sm sm:text-base font-medium truncate text-white'>
+                        {user.name.slice(0, 5)}
+                      </span>
+                    </div>
 
-      <div className='flex justify-center space-x-4 my-6'>
-        {usernames.map((username) => (
-          <button
-            key={username.value}
-            onClick={() => getProfile(username.value)}
-            className='px-6 py-2 bg-blue-500 text-white rounded-full transition duration-300 
-                       hover:bg-blue-600 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-300'
-          >
-            <div className='flex items-center space-x-2'>
-              <span>{username.value}</span>
-              {receiver && onlineUsers[receiver] && (
-                <Badge variant={onlineUsers[receiver].is_online ? 'success' : 'secondary'} className='ml-2'>
-                  {onlineUsers[receiver].is_online
-                    ? 'Online'
-                    : `Last seen ${formatLastActive(onlineUsers[receiver].last_active)}`}
-                </Badge>
-              )}
-            </div>
-          </button>
-        ))}
+                    {receiver && onlineUsers[receiver] && (
+                      <div className='mt-2 text-xs sm:text-sm'>
+                        {onlineUsers[receiver].is_online ? (
+                          <div className='flex items-center space-x-1'>
+                            <span className='relative flex h-2 w-2'>
+                              <span className='absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75 animate-ping'></span>
+                              <span className='relative inline-flex h-2 w-2 rounded-full bg-green-500'></span>
+                            </span>
+                          </div>
+                        ) : (
+                          <span className='text-gray-200 text-[11px]'>
+                            {`Last seen ${formatLastActive(onlineUsers[receiver].last_active)}`}
+                          </span>
+                        )}
+                      </div>
+                    )}
+                  </button>
+                </CarouselItem>
+              ))
+            )}
+          </CarouselContent>
+
+          <div className='absolute -left-4 top-1/2 -translate-y-1/2'>
+            <CarouselPrevious className='hidden sm:flex h-8 w-8 sm:h-10 sm:w-10' />
+          </div>
+          <div className='absolute -right-4 top-1/2 -translate-y-1/2'>
+            <CarouselNext className='hidden sm:flex h-8 w-8 sm:h-10 sm:w-10' />
+          </div>
+        </Carousel>
       </div>
 
       <div ref={loadPreviousRef} className='w-full py-4 text-center'>
@@ -279,7 +310,7 @@ function Chat() {
         ) : hasPreviousPage ? (
           <div className='text-gray-500 italic'>Scroll up for previous messages...</div>
         ) : (
-          <div className='text-gray-400'>No more messages to load</div>
+          receiver.length > 0 && <div className='text-gray-400'>No more messages to load</div>
         )}
       </div>
 

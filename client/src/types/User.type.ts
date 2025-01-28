@@ -37,3 +37,7 @@ export interface RegisterType {
   name?: string
   date_of_birth: string
 }
+
+export interface getFollowersResponse {
+  users_follower_info: Pick<User, 'name' | 'username' | 'avatar' | 'cover_photo'>[]
+}
