@@ -23,11 +23,10 @@ function Chat() {
   const [value, setValue] = useState<string>('')
   const [conversation, setConversation] = useState<Conversation[]>([])
   const [totalPages, setTotalPages] = useState<number | undefined>()
-  const [receiver, setReceiver] = useState<string>('')
+  const [receiver, setReceiver] = useState<string>(profile._id)
   const chatContainerRef = useRef<HTMLDivElement>(null)
   const [initialScrollSet, setInitialScrollSet] = useState<boolean>(false)
   const [onlineUsers, setOnlineUsers] = useState<{ [key: string]: UserStatus }>({})
-  console.log('onlineUsers', onlineUsers)
   const isLoadingRef = useRef<boolean>(false)
   const { data: dataFollowers } = useQuery({
     queryKey: ['followers'],
@@ -43,6 +42,7 @@ function Chat() {
       }
     }
     socket.connect()
+    socket.emit('get_all_online_users')
 
     socket.on('receive_conversation', (data: { payload: Conversation }) => {
       const { payload } = data
@@ -59,7 +59,6 @@ function Chat() {
       }))
     })
 
-    socket.emit('get_all_online_users')
     socket.on('all_online_users_response', (users: { [key: string]: UserStatus }) => {
       setOnlineUsers(users)
     })
@@ -119,6 +118,7 @@ function Chat() {
         setReceiver(res.data._id)
       })
   }
+  console.log('online', onlineUsers)
 
   const formatLastActive = (date: Date) => {
     const lastActive = new Date(date)
@@ -257,7 +257,7 @@ function Chat() {
                 <CarouselItem key={user.username} className='w-full basis-1/9 sm:w-1/2 md:w-1/3 lg:w-1/4 xl:w-1/5 p-2'>
                   <button
                     onClick={() => getProfile(user.username)}
-                    className='w-full h-full flex flex-col bg bg-blue-900 items-center justify-center p-4 hover:bg-blue-600 '
+                    className='w-full h-full flex flex-col bg bg-blue-900 items-center justify-center p-4 hover:bg-blue-600'
                   >
                     <div className='flex items-center space-x-2'>
                       <Avatar className='mr-3'>
@@ -271,9 +271,9 @@ function Chat() {
                       </span>
                     </div>
 
-                    {receiver && onlineUsers[receiver] && (
+                    {onlineUsers[user._id] && (
                       <div className='mt-2 text-xs sm:text-sm'>
-                        {onlineUsers[receiver].is_online ? (
+                        {onlineUsers[user._id].is_online ? (
                           <div className='flex items-center space-x-1'>
                             <span className='relative flex h-2 w-2'>
                               <span className='absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75 animate-ping'></span>
@@ -282,7 +282,7 @@ function Chat() {
                           </div>
                         ) : (
                           <span className='text-gray-200 text-[11px]'>
-                            {`Last seen ${formatLastActive(onlineUsers[receiver].last_active)}`}
+                            {`Last seen ${formatLastActive(onlineUsers[user._id].last_active)}`}
                           </span>
                         )}
                       </div>
@@ -292,7 +292,6 @@ function Chat() {
               ))
             )}
           </CarouselContent>
-
           <div className='absolute -left-4 top-1/2 -translate-y-1/2'>
             <CarouselPrevious className='hidden sm:flex h-8 w-8 sm:h-10 sm:w-10' />
           </div>
