@@ -21,6 +21,8 @@ export interface User {
   username?: string
   avatar?: string
   cover_photo?: string
+  is_online: boolean
+  last_active: Date
 }
 
 export interface Profile {

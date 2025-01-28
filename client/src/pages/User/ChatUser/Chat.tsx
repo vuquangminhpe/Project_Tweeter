@@ -5,6 +5,13 @@ import socket from '@/utils/socket'
 import { Conversation, ConversationResponse } from '@/types/Conversation.type'
 import { Profile } from '@/types/User.type'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Badge } from '@/components/ui/badge'
+
+interface UserStatus {
+  user_id: string
+  is_online: boolean
+  last_active: Date
+}
 
 function Chat() {
   const observerRef = useRef<IntersectionObserver | null>(null)
@@ -17,7 +24,10 @@ function Chat() {
   const [receiver, setReceiver] = useState<string>('')
   const chatContainerRef = useRef<HTMLDivElement>(null)
   const [initialScrollSet, setInitialScrollSet] = useState<boolean>(false)
-
+  const [onlineUsers, setOnlineUsers] = useState<{ [key: string]: UserStatus }>({})
+  console.log('onlineUsers', onlineUsers)
+  const previousScrollHeightRef = useRef<number>(0)
+  const isLoadingRef = useRef<boolean>(false)
   const usernames = [{ value: 'minh9972' }, { value: 'minh7792' }]
 
   useEffect(() => {
@@ -26,6 +36,7 @@ function Chat() {
       _id: profile._id
     }
     socket.connect()
+
     socket.on('receive_conversation', (data: { payload: Conversation }) => {
       const { payload } = data
       setConversation((conversations) => [...conversations, payload])
@@ -34,10 +45,34 @@ function Chat() {
       }
     })
 
+    socket.on('user_status_change', (data: UserStatus) => {
+      setOnlineUsers((prev) => ({
+        ...prev,
+        [data.user_id]: data
+      }))
+    })
+
+    socket.emit('get_all_online_users')
+    socket.on('all_online_users_response', (users: { [key: string]: UserStatus }) => {
+      setOnlineUsers(users)
+    })
+
     return () => {
       socket.disconnect()
     }
   }, [profile._id])
+
+  useEffect(() => {
+    if (receiver) {
+      socket.emit('get_user_status', receiver)
+      socket.on('user_status_response', (status: UserStatus) => {
+        setOnlineUsers((prev) => ({
+          ...prev,
+          [status.user_id]: status
+        }))
+      })
+    }
+  }, [receiver])
 
   useEffect(() => {
     const controller = new AbortController()
@@ -73,6 +108,18 @@ function Chat() {
       .then((res) => {
         setReceiver(res.data._id)
       })
+  }
+
+  const formatLastActive = (date: Date) => {
+    const lastActive = new Date(date)
+    const now = new Date()
+    const diffInMilliseconds = Math.abs(now.getTime() - lastActive.getTime()) // Xử lý chênh lệch âm
+    const diffInMinutes = Math.floor(diffInMilliseconds / (1000 * 60))
+
+    if (diffInMinutes < 1) return 'just now'
+    if (diffInMinutes < 60) return `${diffInMinutes}m ago`
+    if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes / 60)}h ago`
+    return `${Math.floor(diffInMinutes / 1440)}d ago`
   }
 
   const {
@@ -134,7 +181,8 @@ function Chat() {
     const element = loadPreviousRef.current
     if (element) {
       observerRef.current = new IntersectionObserver(handleObserver, {
-        threshold: 0.8
+        threshold: 0.5,
+        rootMargin: '50px'
       })
       observerRef.current.observe(element)
     }
@@ -148,15 +196,18 @@ function Chat() {
   const allMessages = useMemo(() => chatData?.pages?.flatMap((page) => page.result.conversations) ?? [], [chatData])
 
   useEffect(() => {
-    setConversation(allMessages)
+    if (!isLoadingRef.current) {
+      setConversation(allMessages)
 
-    if (!initialScrollSet && chatContainerRef.current && allMessages.length > 0) {
-      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight
-      setInitialScrollSet(true)
+      if (!initialScrollSet && chatContainerRef.current && allMessages.length > 0) {
+        chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight
+        setInitialScrollSet(true)
+      }
     }
   }, [allMessages, initialScrollSet])
-
   const send = () => {
+    if (!value.trim()) return
+
     setValue('')
     const conversation: Conversation = {
       content: value,
@@ -179,7 +230,12 @@ function Chat() {
     }
   }, [])
 
-  console.log(conversation)
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault()
+      send()
+    }
+  }
 
   return (
     <div className='container mx-auto max-w-4xl px-4 py-8'>
@@ -196,7 +252,16 @@ function Chat() {
             className='px-6 py-2 bg-blue-500 text-white rounded-full transition duration-300 
                        hover:bg-blue-600 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-300'
           >
-            {username.value}
+            <div className='flex items-center space-x-2'>
+              <span>{username.value}</span>
+              {receiver && onlineUsers[receiver] && (
+                <Badge variant={onlineUsers[receiver].is_online ? 'success' : 'secondary'} className='ml-2'>
+                  {onlineUsers[receiver].is_online
+                    ? 'Online'
+                    : `Last seen ${formatLastActive(onlineUsers[receiver].last_active)}`}
+                </Badge>
+              )}
+            </div>
           </button>
         ))}
       </div>
@@ -231,13 +296,17 @@ function Chat() {
           >
             {conversation.sender_id !== profile._id ? (
               <Fragment>
-                <Avatar className='mr-3'>
-                  <AvatarImage src='https://github.com/shadcn.png' />
-                  <AvatarFallback>CN</AvatarFallback>
-                </Avatar>
-
+                <div className='relative'>
+                  <Avatar className='mr-3'>
+                    <AvatarImage src='https://github.com/shadcn.png' />
+                    <AvatarFallback>CN</AvatarFallback>
+                  </Avatar>
+                  {onlineUsers[conversation.sender_id]?.is_online && (
+                    <span className='absolute bottom-0 left-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white'></span>
+                  )}
+                </div>
                 <div
-                  className={` max-w-[70%] px-4 py-2 rounded-2xl ${
+                  className={`max-w-[70%] px-4 py-2 rounded-2xl ${
                     conversation.sender_id === profile._id
                       ? 'bg-blue-500 text-white rounded-br-none'
                       : 'bg-gray-200 text-black rounded-bl-none'
@@ -249,7 +318,7 @@ function Chat() {
             ) : (
               <Fragment>
                 <div
-                  className={` max-w-[70%] px-4 py-2 rounded-2xl ${
+                  className={`max-w-[70%] px-4 py-2 rounded-2xl ${
                     conversation.sender_id === profile._id
                       ? 'bg-blue-500 text-white rounded-br-none'
                       : 'bg-gray-200 text-black rounded-bl-none'
@@ -257,10 +326,15 @@ function Chat() {
                 >
                   {conversation.content}
                 </div>
-                <Avatar className='ml-3'>
-                  <AvatarImage src='https://github.com/shadcn.png' />
-                  <AvatarFallback>CN</AvatarFallback>
-                </Avatar>
+                <div className='relative'>
+                  <Avatar className='ml-3'>
+                    <AvatarImage src='https://github.com/shadcn.png' />
+                    <AvatarFallback>CN</AvatarFallback>
+                  </Avatar>
+                  {onlineUsers[conversation.sender_id]?.is_online && (
+                    <span className='absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white'></span>
+                  )}
+                </div>
               </Fragment>
             )}
           </div>
@@ -272,6 +346,7 @@ function Chat() {
           type='text'
           onChange={(e) => setValue(e.target.value)}
           value={value}
+          onKeyPress={handleKeyPress}
           placeholder='Type a message...'
           className='flex-grow p-3 border-2 border-r-0 border-gray-300 rounded-xl mr-2
                      focus:outline-none focus:border-blue-500 transition duration-300'
@@ -279,9 +354,10 @@ function Chat() {
         <button
           type='submit'
           onClick={send}
-          className='px-6 py-3 bg-blue-500 text-white
+          disabled={!value.trim()}
+          className='px-6 py-3 bg-blue-500 text-white rounded-xl
                      hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300 
-                     transition duration-300 ease-in-out'
+                     transition duration-300 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed'
         >
           Send
         </button>

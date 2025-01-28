@@ -2,10 +2,11 @@ import { ObjectId } from 'mongodb'
 import { AccountStatus } from '~/constants/enums'
 
 enum UserVerifyStatus {
-  Unverified, // chưa xác thực
-  Verified, // đã xác thực email
-  Banned // bị khóa
+  Unverified,
+  Verified,
+  Banned
 }
+
 interface UserType {
   _id?: ObjectId
   name?: string
@@ -17,7 +18,7 @@ interface UserType {
   email_verify_token?: string
   forgot_password_token?: string
   verify?: UserVerifyStatus
-  twitter_circle?: ObjectId[] //danh sách id của những người mà user này add vào circle
+  twitter_circle?: ObjectId[]
   typeAccount: AccountStatus
   count_type_account: number
   bio?: string
@@ -26,7 +27,10 @@ interface UserType {
   username?: string
   avatar?: string
   cover_photo?: string
+  is_online?: boolean // Thêm trường mới
+  last_active?: Date // Thêm trường mới
 }
+
 export default class User {
   _id?: ObjectId
   name: string
@@ -47,6 +51,8 @@ export default class User {
   username: string
   avatar: string
   cover_photo: string
+  is_online: boolean
+  last_active: Date
 
   constructor(user: UserType) {
     const date = new Date()
@@ -69,5 +75,7 @@ export default class User {
     this.username = user.username || ''
     this.avatar = user.avatar || ''
     this.cover_photo = user.cover_photo || ''
+    this.is_online = user.is_online || false
+    this.last_active = user.last_active || date
   }
 }

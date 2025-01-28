@@ -9,48 +9,62 @@ import Conversations from '~/models/schemas/conversations.schema'
 import { ObjectId } from 'mongodb'
 import databaseService from '~/services/database.services'
 import { Server as ServerHttp } from 'http'
+
+interface UserStatus {
+  socket_id: string
+  is_online: boolean
+  last_active: Date
+  timeoutId?: NodeJS.Timeout
+}
+
 const initSocket = (httpServer: ServerHttp) => {
   const io = new Server(httpServer, {
     cors: {
       origin: 'http://localhost:3002'
     }
   })
-  const users: {
-    [key: string]: {
-      socket_id: string
-    }
-  } = {}
-  // io.use(async (socket, next) => {
-  //   const { Authorization } = socket.handshake.auth
-  //   const access_token = Authorization?.split(' ')[1]
-  //   if (access_token) {
-  //     console.log('no access token')
-  //   }
-  //   try {
-  //     const decoded_authorization = await verifyAccessToken(access_token)
-  //     const { verify } = decoded_authorization as TokenPayload
-  //     if (verify !== UserVerifyStatus.Verified) {
-  //       throw new ErrorWithStatus({
-  //         message: USERS_MESSAGES.USER_NOT_VERIFIED,
-  //         status: HTTP_STATUS.FORBIDDEN
-  //       })
-  //     }
-  //     next()
-  //   } catch (error) {
-  //     next(error as ExtendedError)
-  //   }
-  // })
-  io.on('connection', (socket: Socket) => {
-    console.log(`user ${socket.id} connected`)
-    const user_id = socket.handshake.auth._id
 
+  const users: {
+    [key: string]: UserStatus
+  } = {}
+
+  io.on('connection', async (socket: Socket) => {
+    const user_id = socket.handshake.auth._id
+    console.log(`User ${user_id} connected with socket ${socket.id}`)
+    if (users[user_id]?.timeoutId) {
+      clearTimeout(users[user_id].timeoutId)
+    }
     users[user_id] = {
-      socket_id: socket.id
+      socket_id: socket.id,
+      is_online: true,
+      last_active: new Date(),
+      timeoutId: undefined
+    }
+
+    try {
+      if (user_id) {
+        await databaseService.users.updateOne(
+          { _id: new ObjectId(user_id as string) },
+          {
+            $set: {
+              is_online: true,
+              last_active: new Date()
+            }
+          }
+        )
+      }
+
+      socket.broadcast.emit('user_status_change', {
+        user_id,
+        is_online: true,
+        last_active: new Date()
+      })
+    } catch (error) {
+      console.error('Error updating user status:', error)
     }
 
     socket.on('send_conversation', async (data) => {
       const { sender_id, receive_id, content } = data.payload
-
       const receiver_socket_id = users[receive_id]?.socket_id
 
       const conversations = new Conversations({
@@ -65,9 +79,63 @@ const initSocket = (httpServer: ServerHttp) => {
         payload: conversations
       })
     })
-    socket.on('disconnect', () => {
-      delete users[user_id]
-      console.log(`user ${socket.id} disconnected`)
+
+    socket.on('get_user_status', async (target_user_id: string) => {
+      const user_status = users[target_user_id] || { is_online: false, last_active: null }
+      console.log(`User ${user_id} requested status of user ${user_status}`)
+
+      socket.emit('user_status_response', {
+        user_id: target_user_id,
+        ...user_status
+      })
+    })
+
+    socket.on('get_all_online_users', () => {
+      const online_users = Object.entries(users).reduce(
+        (acc, [id, status]) => {
+          if (status.is_online) {
+            acc[id] = status
+          }
+          return acc
+        },
+        {} as typeof users
+      )
+
+      socket.emit('all_online_users_response', online_users)
+    })
+
+    socket.on('disconnect', async () => {
+      console.log(`User ${user_id} disconnected`)
+
+      if (users[user_id]) {
+        users[user_id].is_online = false
+        users[user_id].last_active = new Date()
+
+        try {
+          await databaseService.users.updateOne(
+            { _id: new ObjectId(user_id as string) },
+            {
+              $set: {
+                is_online: false,
+                last_active: new Date()
+              }
+            }
+          )
+
+          socket.broadcast.emit('user_status_change', {
+            user_id,
+            is_online: false,
+            last_active: new Date()
+          })
+        } catch (error) {
+          console.error('Error updating user status:', error)
+        }
+
+        const timeoutId = setTimeout(() => {
+          delete users[user_id]
+        }, 3600000)
+        users[user_id].timeoutId = timeoutId
+      }
     })
   })
 }
