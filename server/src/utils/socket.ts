@@ -81,12 +81,22 @@ const initSocket = (httpServer: ServerHttp) => {
     })
 
     socket.on('get_user_status', async (target_user_id: string) => {
-      const user_status = users[target_user_id] || { is_online: false, last_active: null }
-      console.log(`User ${user_id} requested status of user ${user_status}`)
+      if (!target_user_id) return
+
+      const user_status = users[target_user_id] || {
+        is_online: false,
+        last_active: null
+      }
+
+      console.log(`User ${user_id} requested status of user ${target_user_id}`, {
+        is_online: user_status.is_online,
+        last_active: user_status.last_active
+      })
 
       socket.emit('user_status_response', {
         user_id: target_user_id,
-        ...user_status
+        is_online: user_status.is_online,
+        last_active: user_status.last_active?.toISOString() || null
       })
     })
 

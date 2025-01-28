@@ -31,9 +31,11 @@ function Chat() {
   const usernames = [{ value: 'minh9972' }, { value: 'minh7792' }]
 
   useEffect(() => {
-    socket.auth = {
-      Authorization: `Bearer ${localStorage.getItem('access_token')}`,
-      _id: profile._id
+    if (profile._id) {
+      socket.auth = {
+        Authorization: `Bearer ${localStorage.getItem('access_token')}`,
+        _id: profile._id
+      }
     }
     socket.connect()
 
@@ -58,6 +60,9 @@ function Chat() {
     })
 
     return () => {
+      socket.off('receive_conversation')
+      socket.off('user_status_change')
+      socket.off('all_online_users_response')
       socket.disconnect()
     }
   }, [profile._id])
@@ -269,7 +274,7 @@ function Chat() {
       <div ref={loadPreviousRef} className='w-full py-4 text-center'>
         {isFetchingPreviousPage ? (
           <div className='flex justify-center'>
-            <div className='animate-spin rounded-full h-10 w-10 border-t-4 border-b-4 border-blue-500'></div>
+            <div className='animate-spin rounded-full h-3 w-3 border-t-4 border-b-4 border-blue-500'></div>
           </div>
         ) : hasPreviousPage ? (
           <div className='text-gray-500 italic'>Scroll up for previous messages...</div>
