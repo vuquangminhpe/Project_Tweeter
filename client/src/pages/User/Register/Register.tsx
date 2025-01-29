@@ -57,7 +57,6 @@ export default function Register() {
       }
     })
   }
-  console.log(date)
 
   return (
     <div className='min-h-screen w-full flex-col bg-gradient-to-br from-black to-black-400 flex items-center justify-center p-4'>

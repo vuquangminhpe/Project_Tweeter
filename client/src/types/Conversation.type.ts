@@ -1,6 +1,8 @@
 export interface Conversation {
   _id: string | number
   content: string
+  created_at: Date
+  update_at: Date
   sender_id: string
   receive_id: string
 }

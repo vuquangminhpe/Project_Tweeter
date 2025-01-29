@@ -1,13 +1,12 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useState, useCallback, useMemo, useRef, WheelEvent, Fragment } from 'react'
 import axios from 'axios'
-import { useInfiniteQuery, useQuery } from '@tanstack/react-query'
+import { useInfiniteQuery } from '@tanstack/react-query'
 import socket from '@/utils/socket'
 import { Conversation, ConversationResponse } from '@/types/Conversation.type'
 import { Profile } from '@/types/User.type'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import conversationsApi from '@/apis/conversation.api'
-import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel'
+import StatusWithChat from './StatusWithChat/StatusWithChat'
+import EventWithMessage from './EventWithMessage'
 
 interface UserStatus {
   user_id: string
@@ -23,7 +22,7 @@ function Chat() {
   const [value, setValue] = useState<string>('')
   const [conversation, setConversation] = useState<Conversation[]>([])
   const [totalPages, setTotalPages] = useState<number | undefined>()
-  const [receiver, setReceiver] = useState<string>(profile._id)
+  const [receiver, setReceiver] = useState<string>('')
   const chatContainerRef = useRef<HTMLDivElement>(null)
   const [initialScrollSet, setInitialScrollSet] = useState<boolean>(false)
   const [onlineUsers, setOnlineUsers] = useState<{ [key: string]: UserStatus }>({
@@ -33,22 +32,13 @@ function Chat() {
       last_active: new Date()
     }
   })
+
   const isLoadingRef = useRef<boolean>(false)
-  const { data: dataFollowers } = useQuery({
-    queryKey: ['followers'],
-    queryFn: () => conversationsApi.getAllConversationsWithFollower(10, 1)
-  })
-  const allData = dataFollowers?.data?.result
 
   useEffect(() => {
     if (profile._id) {
-      socket.auth = {
-        Authorization: `Bearer ${localStorage.getItem('access_token')}`,
-        _id: profile._id
-      }
+      setReceiver(profile._id)
     }
-    socket.connect()
-    socket.emit('get_all_online_users')
 
     socket.on('receive_conversation', (data: { payload: Conversation }) => {
       const { payload } = data
@@ -58,22 +48,8 @@ function Chat() {
       }
     })
 
-    socket.on('user_status_change', (data: UserStatus) => {
-      setOnlineUsers((prev) => ({
-        ...prev,
-        [data.user_id]: data
-      }))
-    })
-
-    socket.on('all_online_users_response', (users: { [key: string]: UserStatus }) => {
-      setOnlineUsers(users)
-    })
-
     return () => {
       socket.off('receive_conversation')
-      socket.off('user_status_change')
-      socket.off('all_online_users_response')
-      socket.disconnect()
     }
   }, [profile._id])
 
@@ -111,32 +87,11 @@ function Chat() {
         })
         .catch((error) => console.log(error))
     }
+
+    return () => {
+      controller.abort()
+    }
   }, [receiver, totalPages])
-
-  const getProfile = (username: string) => {
-    const controller = new AbortController()
-    axios
-      .get<{ _id: string }>(`/users/${username}`, {
-        baseURL: import.meta.env.VITE_API_URL,
-        signal: controller.signal
-      })
-      .then((res) => {
-        setReceiver(res.data._id)
-      })
-  }
-
-  const formatLastActive = (date: Date) => {
-    const lastActive = new Date(date)
-    const now = new Date()
-    const diffInMilliseconds = Math.abs(now.getTime() - lastActive.getTime())
-    const diffInMinutes = Math.floor(diffInMilliseconds / (1000 * 60))
-
-    if (diffInMinutes < 1) return 'just now'
-    if (diffInMinutes < 60) return `${diffInMinutes}m ago`
-    if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes / 60)}h ago`
-    return `${Math.floor(diffInMinutes / 1440)}d ago`
-  }
-  console.log(allData)
 
   const {
     data: chatData,
@@ -221,6 +176,7 @@ function Chat() {
       }
     }
   }, [allMessages, initialScrollSet])
+
   const send = () => {
     if (!value.trim()) return
 
@@ -229,7 +185,9 @@ function Chat() {
       content: value,
       sender_id: profile._id,
       receive_id: receiver,
-      _id: new Date().getTime()
+      _id: new Date().getTime(),
+      created_at: new Date(),
+      update_at: new Date()
     }
     socket.emit('send_conversation', {
       payload: conversation
@@ -252,65 +210,10 @@ function Chat() {
       send()
     }
   }
+
   return (
     <div className='container mx-auto max-w-4xl px-4 py-8'>
-      <div className='w-full px-4 sm:px-6 lg:px-8'>
-        <Carousel className='relative'>
-          <CarouselContent className='flex'>
-            {allData?.map((data) =>
-              Array(data.users_follower_info).map((user: any) => (
-                <CarouselItem key={user.username} className='w-full basis-1/9 sm:w-1/2 md:w-1/3 lg:w-1/4 xl:w-1/5 p-2'>
-                  <button
-                    onClick={() => getProfile(user.username)}
-                    className='w-full h-full flex flex-col bg bg-blue-900 items-center justify-center p-4 hover:bg-blue-600'
-                  >
-                    <div className='flex items-center space-x-2'>
-                      <Avatar className='mr-3'>
-                        <AvatarImage src={user.avatar || user.cover_photo} />
-                        <AvatarFallback className='text-black bg-white rounded-full'>
-                          {user.name.charAt(0)}
-                        </AvatarFallback>
-                      </Avatar>
-                      <span className='text-sm sm:text-base font-medium truncate text-white'>
-                        {user.name.slice(0, 5)}
-                      </span>
-                    </div>
-
-                    {onlineUsers[user._id] ? (
-                      <div className='mt-2 text-xs sm:text-sm'>
-                        {onlineUsers[user._id].is_online ? (
-                          <div className='flex items-center space-x-1'>
-                            <span className='relative flex h-2 w-2'>
-                              <span className='absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75 animate-ping'></span>
-                              <span className='relative inline-flex h-2 w-2 rounded-full bg-green-500'></span>
-                            </span>
-                          </div>
-                        ) : (
-                          <span className='text-gray-200 text-[11px]'>
-                            {`Last seen ${formatLastActive(onlineUsers[user._id].last_active)}`}
-                          </span>
-                        )}
-                      </div>
-                    ) : (
-                      <div className='mt-2 text-xs sm:text-sm'>
-                        <span className='text-gray-200 text-[11px]'>
-                          {`Last seen ${formatLastActive(user.last_active !== null ? new Date(user.last_active) : new Date())}`}
-                        </span>
-                      </div>
-                    )}
-                  </button>
-                </CarouselItem>
-              ))
-            )}
-          </CarouselContent>
-          <div className='absolute -left-4 top-1/2 -translate-y-1/2'>
-            <CarouselPrevious className='hidden sm:flex h-8 w-8 sm:h-10 sm:w-10' />
-          </div>
-          <div className='absolute -right-4 top-1/2 -translate-y-1/2'>
-            <CarouselNext className='hidden sm:flex h-8 w-8 sm:h-10 sm:w-10' />
-          </div>
-        </Carousel>
-      </div>
+      <StatusWithChat onReceiverChange={setReceiver} onlineUsers={onlineUsers} setOnlineUsers={setOnlineUsers} />
 
       <div ref={loadPreviousRef} className='w-full py-4 text-center'>
         {isFetchingPreviousPage ? (
@@ -352,7 +255,7 @@ function Chat() {
                   )}
                 </div>
                 <div
-                  className={`max-w-[70%] px-4 py-2 rounded-2xl ${
+                  className={`max-w-[70%] items-center px-4 py-2 rounded-2xl ${
                     conversation.sender_id === profile._id
                       ? 'bg-blue-500 text-white rounded-br-none'
                       : 'bg-gray-200 text-black rounded-bl-none'
@@ -360,6 +263,7 @@ function Chat() {
                 >
                   {conversation.content}
                 </div>
+                <EventWithMessage />
               </Fragment>
             ) : (
               <Fragment>

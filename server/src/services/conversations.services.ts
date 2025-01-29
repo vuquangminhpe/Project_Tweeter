@@ -179,10 +179,17 @@ class ConversationService {
       {
         $set: {
           content
-        }
+        },
+        $currentDate: { update_at: true }
       },
       { returnDocument: 'after' }
     )
+    return result
+  }
+  async deleteMessageInConversation({ messages_id }: { messages_id: string }) {
+    const result = await databaseService.conversations.deleteOne({
+      _id: new ObjectId(messages_id)
+    })
     return result
   }
 }

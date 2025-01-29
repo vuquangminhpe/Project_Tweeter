@@ -82,10 +82,10 @@ const initSocket = (httpServer: ServerHttp) => {
 
     socket.on('get_user_status', async (target_user_id: string) => {
       if (!target_user_id) return
-
+      const result = await databaseService.users.findOne({ _id: new ObjectId(target_user_id) })
       const user_status = users[target_user_id] || {
         is_online: false,
-        last_active: null
+        last_active: result?.last_active
       }
 
       console.log(`User ${user_id} requested status of user ${target_user_id}`, {

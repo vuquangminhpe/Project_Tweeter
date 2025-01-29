@@ -10,7 +10,10 @@ export interface GetAllConversationsParams extends ParamsDictionary {
   page: string
 }
 
-export interface editTweetResBody {
+export interface editMessageInConversationResBody {
   content: string
+  message_id: string
+}
+export interface deleteMessageInConversationResBody {
   message_id: string
 }

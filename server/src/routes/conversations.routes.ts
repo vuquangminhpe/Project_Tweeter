@@ -1,6 +1,7 @@
 import { Router } from 'express'
 import {
-  editConversationController,
+  deleteMessageInConversationController,
+  editMessageInConversationController,
   getAllConverSationsController,
   getConversationsByReceiverIdController
 } from '~/controllers/conversations.controllers'
@@ -55,7 +56,7 @@ conversationsRouter.put(
   AccessTokenValidator,
   verifiedUserValidator,
   editMessageValidator,
-  wrapAsync(editConversationController)
+  wrapAsync(editMessageInConversationController)
 )
 
 /**
@@ -64,11 +65,11 @@ conversationsRouter.put(
  * Method: DELETE
  * header: {Authorization:Bearer <access_token> }
  */
-conversationsRouter.put(
+conversationsRouter.delete(
   '/conversation/message/:messages_id',
   AccessTokenValidator,
   verifiedUserValidator,
   deleteMessageValidator,
-  wrapAsync(editConversationController)
+  wrapAsync(deleteMessageInConversationController)
 )
 export default conversationsRouter

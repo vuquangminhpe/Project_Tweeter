@@ -2,7 +2,8 @@ import { Request, Response } from 'express'
 import { CONVERSATIONS_MESSAGE } from '~/constants/messages'
 import { ParamsDictionary } from 'express-serve-static-core'
 import {
-  editTweetResBody,
+  deleteMessageInConversationResBody,
+  editMessageInConversationResBody,
   GetAllConversationsParams,
   GetConversationsParams
 } from '~/models/request/Conversations.requests'
@@ -49,12 +50,20 @@ export const getAllConverSationsController = async (
   })
 }
 
-export const editConversationController = async (
-  req: Request<ParamsDictionary, any, editTweetResBody>,
+export const editMessageInConversationController = async (
+  req: Request<ParamsDictionary, any, editMessageInConversationResBody>,
   res: Response
 ) => {
   const { user_id } = req.decode_authorization as TokenPayload
   const { content, message_id } = req.body
   const result = await conversationServices.editConversation({ message_id, user_id, content })
   res.json({ message: CONVERSATIONS_MESSAGE.EDIT_CONVERSATION_SUCCESSFULLY, result })
+}
+export const deleteMessageInConversationController = async (
+  req: Request<ParamsDictionary, any, deleteMessageInConversationResBody>,
+  res: Response
+) => {
+  const { messages_id } = req.params
+  const result = await conversationServices.deleteMessageInConversation({ messages_id })
+  res.json({ message: CONVERSATIONS_MESSAGE.DELETE_MESSAGE_IN_CONVERSATION_SUCCESSFULLY, result })
 }
