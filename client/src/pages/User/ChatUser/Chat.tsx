@@ -26,7 +26,13 @@ function Chat() {
   const [receiver, setReceiver] = useState<string>(profile._id)
   const chatContainerRef = useRef<HTMLDivElement>(null)
   const [initialScrollSet, setInitialScrollSet] = useState<boolean>(false)
-  const [onlineUsers, setOnlineUsers] = useState<{ [key: string]: UserStatus }>({})
+  const [onlineUsers, setOnlineUsers] = useState<{ [key: string]: UserStatus }>({
+    [profile._id]: {
+      user_id: profile._id,
+      is_online: true,
+      last_active: new Date()
+    }
+  })
   const isLoadingRef = useRef<boolean>(false)
   const { data: dataFollowers } = useQuery({
     queryKey: ['followers'],
@@ -118,12 +124,11 @@ function Chat() {
         setReceiver(res.data._id)
       })
   }
-  console.log('online', onlineUsers)
 
   const formatLastActive = (date: Date) => {
     const lastActive = new Date(date)
     const now = new Date()
-    const diffInMilliseconds = Math.abs(now.getTime() - lastActive.getTime()) // Xử lý chênh lệch âm
+    const diffInMilliseconds = Math.abs(now.getTime() - lastActive.getTime())
     const diffInMinutes = Math.floor(diffInMilliseconds / (1000 * 60))
 
     if (diffInMinutes < 1) return 'just now'
@@ -131,6 +136,7 @@ function Chat() {
     if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes / 60)}h ago`
     return `${Math.floor(diffInMinutes / 1440)}d ago`
   }
+  console.log(allData)
 
   const {
     data: chatData,
@@ -246,7 +252,6 @@ function Chat() {
       send()
     }
   }
-
   return (
     <div className='container mx-auto max-w-4xl px-4 py-8'>
       <div className='w-full px-4 sm:px-6 lg:px-8'>
@@ -271,7 +276,7 @@ function Chat() {
                       </span>
                     </div>
 
-                    {onlineUsers[user._id] && (
+                    {onlineUsers[user._id] ? (
                       <div className='mt-2 text-xs sm:text-sm'>
                         {onlineUsers[user._id].is_online ? (
                           <div className='flex items-center space-x-1'>
@@ -285,6 +290,12 @@ function Chat() {
                             {`Last seen ${formatLastActive(onlineUsers[user._id].last_active)}`}
                           </span>
                         )}
+                      </div>
+                    ) : (
+                      <div className='mt-2 text-xs sm:text-sm'>
+                        <span className='text-gray-200 text-[11px]'>
+                          {`Last seen ${formatLastActive(user.last_active !== null ? new Date(user.last_active) : new Date())}`}
+                        </span>
                       </div>
                     )}
                   </button>

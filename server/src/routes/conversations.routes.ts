@@ -4,7 +4,12 @@ import {
   getAllConverSationsController,
   getConversationsByReceiverIdController
 } from '~/controllers/conversations.controllers'
-import { paginationValidator, premiumUserValidator } from '~/middlewares/tweets.middlewares'
+import {
+  deleteMessageValidator,
+  editMessageValidator,
+  paginationValidator,
+  premiumUserValidator
+} from '~/middlewares/tweets.middlewares'
 import { AccessTokenValidator, getConversationsValidator, verifiedUserValidator } from '~/middlewares/users.middlewares'
 import { wrapAsync } from '~/utils/handler'
 
@@ -40,15 +45,30 @@ conversationsRouter.get(
 )
 
 /**
- * Description: edit conversation
- * Path: /conversation/:messages_id
+ * Description: edit message in conversation
+ * Path: /conversation/message/:messages_id
  * Method: PUT
  * header: {Authorization:Bearer <access_token> }
  */
 conversationsRouter.put(
-  '/conversation/:messages_id',
+  '/conversation/message/:messages_id',
   AccessTokenValidator,
   verifiedUserValidator,
+  editMessageValidator,
+  wrapAsync(editConversationController)
+)
+
+/**
+ * Description: delete message in conversation
+ * Path: /conversation/message/:messages_id
+ * Method: DELETE
+ * header: {Authorization:Bearer <access_token> }
+ */
+conversationsRouter.put(
+  '/conversation/message/:messages_id',
+  AccessTokenValidator,
+  verifiedUserValidator,
+  deleteMessageValidator,
   wrapAsync(editConversationController)
 )
 export default conversationsRouter

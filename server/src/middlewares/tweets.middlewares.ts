@@ -4,7 +4,7 @@ import { isEmpty, isLength, isNumber } from 'lodash'
 import { ObjectId } from 'mongodb'
 import { AccountStatus, MediaType, TweetAudience, TweetType, UserVerifyStatus } from '~/constants/enums'
 import HTTP_STATUS from '~/constants/httpStatus'
-import { COMMENT_MESSAGES, TWEET_MESSAGE, USERS_MESSAGES } from '~/constants/messages'
+import { COMMENT_MESSAGES, CONVERSATIONS_MESSAGE, TWEET_MESSAGE, USERS_MESSAGES } from '~/constants/messages'
 import { ErrorWithStatus } from '~/models/Errors'
 import Tweet from '~/models/schemas/Tweet.schema'
 import databaseService from '~/services/database.services'
@@ -491,3 +491,65 @@ export const premiumUserValidator = validate(
 )
 
 export const messageUploadValidator = validate(checkSchema({ message: { isString: true } }, ['body']))
+export const editMessageValidator = validate(
+  checkSchema(
+    {
+      message_id: {
+        custom: {
+          options: async (value, { req }) => {
+            const _id = (req as Request).query.message_id
+            if (!_id) {
+              throw new ErrorWithStatus({
+                message: CONVERSATIONS_MESSAGE.MESSAGE_ID_IS_REQUIRED,
+                status: HTTP_STATUS.BAD_REQUEST
+              })
+            }
+            const message = await databaseService.conversations.findOne({
+              _id: new ObjectId(_id as string)
+            })
+            if (!message) {
+              throw new ErrorWithStatus({
+                message: CONVERSATIONS_MESSAGE.MESSAGE_NOT_FOUND,
+                status: HTTP_STATUS.NOT_FOUND
+              })
+            }
+            return true
+          }
+        }
+      },
+      content: { isString: true }
+    },
+    ['body']
+  )
+)
+
+export const deleteMessageValidator = validate(
+  checkSchema(
+    {
+      message_id: {
+        custom: {
+          options: async (value, { req }) => {
+            const _id = (req as Request).query.message_id
+            if (!_id) {
+              throw new ErrorWithStatus({
+                message: CONVERSATIONS_MESSAGE.MESSAGE_ID_IS_REQUIRED,
+                status: HTTP_STATUS.BAD_REQUEST
+              })
+            }
+            const message = await databaseService.conversations.findOne({
+              _id: new ObjectId(_id as string)
+            })
+            if (!message) {
+              throw new ErrorWithStatus({
+                message: CONVERSATIONS_MESSAGE.MESSAGE_NOT_FOUND,
+                status: HTTP_STATUS.NOT_FOUND
+              })
+            }
+            return true
+          }
+        }
+      }
+    },
+    ['query']
+  )
+)

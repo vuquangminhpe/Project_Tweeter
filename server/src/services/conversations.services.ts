@@ -42,8 +42,21 @@ class ConversationService {
           {
             $lookup: {
               from: 'followers',
-              localField: '_id',
-              foreignField: 'user_id',
+              let: { userId: '$_id' },
+              pipeline: [
+                {
+                  $match: {
+                    $expr: {
+                      $or: [{ $eq: ['$user_id', '$$userId'] }, { $eq: ['$followed_user_id', '$$userId'] }]
+                    }
+                  }
+                },
+                {
+                  $addFields: {
+                    isFollowing: { $eq: ['$user_id', '$$userId'] }
+                  }
+                }
+              ],
               as: 'followers_info'
             }
           },
@@ -55,8 +68,22 @@ class ConversationService {
           {
             $lookup: {
               from: 'users',
-              localField: 'followers_info.followed_user_id',
-              foreignField: '_id',
+              let: {
+                lookupId: {
+                  $cond: {
+                    if: '$followers_info.isFollowing',
+                    then: '$followers_info.followed_user_id',
+                    else: '$followers_info.user_id'
+                  }
+                }
+              },
+              pipeline: [
+                {
+                  $match: {
+                    $expr: { $eq: ['$_id', '$$lookupId'] }
+                  }
+                }
+              ],
               as: 'users_follower_info'
             }
           },
@@ -68,10 +95,13 @@ class ConversationService {
           {
             $project: {
               _id: 0,
+              'users_follower_info._id': 1,
               'users_follower_info.name': 1,
               'users_follower_info.username': 1,
               'users_follower_info.avatar': 1,
-              'users_follower_info.cover_photo': 1
+              'users_follower_info.cover_photo': 1,
+              'users_follower_info.is_online': 1,
+              'users_follower_info.last_active': 1
             }
           },
           {
@@ -92,8 +122,16 @@ class ConversationService {
           {
             $lookup: {
               from: 'followers',
-              localField: '_id',
-              foreignField: 'user_id',
+              let: { userId: '$_id' },
+              pipeline: [
+                {
+                  $match: {
+                    $expr: {
+                      $or: [{ $eq: ['$user_id', '$$userId'] }, { $eq: ['$followed_user_id', '$$userId'] }]
+                    }
+                  }
+                }
+              ],
               as: 'followers_info'
             }
           },
@@ -118,10 +156,13 @@ class ConversationService {
           {
             $project: {
               _id: 0,
+              'users_follower_info._id': 1,
               'users_follower_info.name': 1,
               'users_follower_info.username': 1,
               'users_follower_info.avatar': 1,
-              'users_follower_info.cover_photo': 1
+              'users_follower_info.cover_photo': 1,
+              'users_follower_info.is_online': 1,
+              'users_follower_info.last_active': 1
             }
           }
         ])
@@ -142,7 +183,7 @@ class ConversationService {
       },
       { returnDocument: 'after' }
     )
-    return ''
+    return result
   }
 }
 const conversationServices = new ConversationService()
