@@ -52,7 +52,7 @@ conversationsRouter.get(
  * header: {Authorization:Bearer <access_token> }
  */
 conversationsRouter.put(
-  '/conversation/message/:messages_id',
+  '/message/:messages_id',
   AccessTokenValidator,
   verifiedUserValidator,
   editMessageValidator,
@@ -66,7 +66,7 @@ conversationsRouter.put(
  * header: {Authorization:Bearer <access_token> }
  */
 conversationsRouter.delete(
-  '/conversation/message/:messages_id',
+  '/message/:messages_id',
   AccessTokenValidator,
   verifiedUserValidator,
   deleteMessageValidator,

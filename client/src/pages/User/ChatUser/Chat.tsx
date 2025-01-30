@@ -7,6 +7,7 @@ import { Profile } from '@/types/User.type'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import StatusWithChat from './StatusWithChat/StatusWithChat'
 import EventWithMessage from './EventWithMessage'
+import { HoverCard, HoverCardContent, HoverCardTrigger } from '@radix-ui/react-hover-card'
 
 interface UserStatus {
   user_id: string
@@ -95,6 +96,7 @@ function Chat() {
 
   const {
     data: chatData,
+    refetch: refetchChatData,
     fetchPreviousPage,
     hasPreviousPage,
     isFetchingPreviousPage
@@ -187,7 +189,7 @@ function Chat() {
       receive_id: receiver,
       _id: new Date().getTime(),
       created_at: new Date(),
-      update_at: new Date()
+      updated_at: new Date()
     }
     socket.emit('send_conversation', {
       payload: conversation
@@ -210,6 +212,7 @@ function Chat() {
       send()
     }
   }
+  console.log(conversation)
 
   return (
     <div className='container mx-auto max-w-4xl px-4 py-8'>
@@ -238,7 +241,7 @@ function Chat() {
         }}
         onWheel={handleWheel}
       >
-        {conversation.map((conversation) => (
+        {conversation?.map((conversation) => (
           <div
             key={conversation._id}
             className={`flex mb-3 ${conversation.sender_id === profile._id ? 'justify-end' : 'justify-start'}`}
@@ -261,9 +264,24 @@ function Chat() {
                       : 'bg-gray-200 text-black rounded-bl-none'
                   }`}
                 >
-                  {conversation.content}
+                  <HoverCard>
+                    <HoverCardTrigger className='flex items-center justify-between'>
+                      <div>{conversation.content}</div>
+                    </HoverCardTrigger>
+                    <HoverCardContent className='bg-gray-300 translate-y-6 p-3 rounded-xl shadow-xl'>
+                      {new Date(conversation?.created_at).toISOString() !==
+                      new Date(conversation?.updated_at).toISOString()
+                        ? new Date(conversation?.updated_at).toLocaleString() + ' (đã chỉnh sửa)'
+                        : new Date(conversation?.created_at).toLocaleString()}
+                    </HoverCardContent>
+                  </HoverCard>
                 </div>
-                <EventWithMessage />
+
+                <EventWithMessage
+                  refetchChatData={refetchChatData}
+                  message_id={conversation?._id}
+                  content={conversation?.content}
+                />
               </Fragment>
             ) : (
               <Fragment>

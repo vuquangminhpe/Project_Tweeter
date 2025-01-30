@@ -93,6 +93,52 @@ class ConversationService {
             }
           },
           {
+            $lookup: {
+              from: 'conversations',
+              let: {
+                userId: '$_id',
+                otherUserId: '$users_follower_info._id'
+              },
+              pipeline: [
+                {
+                  $match: {
+                    $expr: {
+                      $or: [
+                        {
+                          $and: [{ $eq: ['$sender_id', '$$userId'] }, { $eq: ['$receive_id', '$$otherUserId'] }]
+                        },
+                        {
+                          $and: [{ $eq: ['$sender_id', '$$otherUserId'] }, { $eq: ['$receive_id', '$$userId'] }]
+                        }
+                      ]
+                    }
+                  }
+                }
+              ],
+              as: 'conversations'
+            }
+          },
+          {
+            $addFields: {
+              messageCount: { $size: '$conversations' },
+              lastMessage: {
+                $max: {
+                  $map: {
+                    input: '$conversations',
+                    as: 'conversation',
+                    in: '$$conversation.created_at'
+                  }
+                }
+              }
+            }
+          },
+          {
+            $sort: {
+              messageCount: -1,
+              lastMessage: -1
+            }
+          },
+          {
             $project: {
               _id: 0,
               'users_follower_info._id': 1,
@@ -101,7 +147,9 @@ class ConversationService {
               'users_follower_info.avatar': 1,
               'users_follower_info.cover_photo': 1,
               'users_follower_info.is_online': 1,
-              'users_follower_info.last_active': 1
+              'users_follower_info.last_active': 1,
+              messageCount: 1,
+              lastMessage: 1
             }
           },
           {
@@ -143,26 +191,23 @@ class ConversationService {
           {
             $lookup: {
               from: 'users',
-              localField: 'followers_info.followed_user_id',
-              foreignField: '_id',
+              let: {
+                lookupId: {
+                  $cond: {
+                    if: '$followers_info.isFollowing',
+                    then: '$followers_info.followed_user_id',
+                    else: '$followers_info.user_id'
+                  }
+                }
+              },
+              pipeline: [
+                {
+                  $match: {
+                    $expr: { $eq: ['$_id', '$$lookupId'] }
+                  }
+                }
+              ],
               as: 'users_follower_info'
-            }
-          },
-          {
-            $unwind: {
-              path: '$users_follower_info'
-            }
-          },
-          {
-            $project: {
-              _id: 0,
-              'users_follower_info._id': 1,
-              'users_follower_info.name': 1,
-              'users_follower_info.username': 1,
-              'users_follower_info.avatar': 1,
-              'users_follower_info.cover_photo': 1,
-              'users_follower_info.is_online': 1,
-              'users_follower_info.last_active': 1
             }
           }
         ])
@@ -170,19 +215,17 @@ class ConversationService {
     ])
     return { allConversations, total: total.length }
   }
-  async editConversation({ message_id, user_id, content }: { message_id: string; user_id: string; content: string }) {
+  async editConversation({ messages_id, content }: { messages_id: string; content: string }) {
     const result = await databaseService.conversations.findOneAndUpdate(
       {
-        _id: new ObjectId(message_id),
-        sender_id: new ObjectId(user_id)
+        _id: new ObjectId(messages_id)
       },
       {
         $set: {
           content
         },
-        $currentDate: { update_at: true }
-      },
-      { returnDocument: 'after' }
+        $currentDate: { updated_at: true }
+      }
     )
     return result
   }

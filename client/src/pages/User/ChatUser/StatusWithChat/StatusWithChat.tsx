@@ -79,7 +79,7 @@ export default function StatusWithChat({ onReceiverChange, onlineUsers, setOnlin
   }
 
   return (
-    <div className='flex w-full h-full'>
+    <div className='flex'>
       <div className='w-full'>
         <Carousel className='relative'>
           <CarouselContent className='flex'>
@@ -129,12 +129,8 @@ export default function StatusWithChat({ onReceiverChange, onlineUsers, setOnlin
               ))
             )}
           </CarouselContent>
-          <div className='absolute -left-4 top-1/2 -translate-y-1/2'>
-            <CarouselPrevious className='hidden sm:flex h-8 w-8 sm:h-10 sm:w-10' />
-          </div>
-          <div className='absolute -right-4 top-1/2 -translate-y-1/2'>
-            <CarouselNext className='hidden sm:flex h-8 w-8 sm:h-10 sm:w-10' />
-          </div>
+          <CarouselPrevious />
+          <CarouselNext />
         </Carousel>
       </div>
     </div>

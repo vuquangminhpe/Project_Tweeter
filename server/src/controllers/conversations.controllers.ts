@@ -54,9 +54,14 @@ export const editMessageInConversationController = async (
   req: Request<ParamsDictionary, any, editMessageInConversationResBody>,
   res: Response
 ) => {
-  const { user_id } = req.decode_authorization as TokenPayload
-  const { content, message_id } = req.body
-  const result = await conversationServices.editConversation({ message_id, user_id, content })
+  const { messages_id } = req.params
+  const { content } = req.body
+  console.log(content)
+
+  if (!content) {
+    res.status(400).json({ message: CONVERSATIONS_MESSAGE.CONTENT_IS_REQUIRED })
+  }
+  const result = await conversationServices.editConversation({ messages_id, content })
   res.json({ message: CONVERSATIONS_MESSAGE.EDIT_CONVERSATION_SUCCESSFULLY, result })
 }
 export const deleteMessageInConversationController = async (

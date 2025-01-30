@@ -494,42 +494,12 @@ export const messageUploadValidator = validate(checkSchema({ message: { isString
 export const editMessageValidator = validate(
   checkSchema(
     {
-      message_id: {
+      messages_id: {
         custom: {
           options: async (value, { req }) => {
-            const _id = (req as Request).query.message_id
-            if (!_id) {
-              throw new ErrorWithStatus({
-                message: CONVERSATIONS_MESSAGE.MESSAGE_ID_IS_REQUIRED,
-                status: HTTP_STATUS.BAD_REQUEST
-              })
-            }
-            const message = await databaseService.conversations.findOne({
-              _id: new ObjectId(_id as string)
-            })
-            if (!message) {
-              throw new ErrorWithStatus({
-                message: CONVERSATIONS_MESSAGE.MESSAGE_NOT_FOUND,
-                status: HTTP_STATUS.NOT_FOUND
-              })
-            }
-            return true
-          }
-        }
-      },
-      content: { isString: true }
-    },
-    ['body']
-  )
-)
+            const _id = (req as Request).params.messages_id
+            console.log(_id)
 
-export const deleteMessageValidator = validate(
-  checkSchema(
-    {
-      message_id: {
-        custom: {
-          options: async (value, { req }) => {
-            const _id = (req as Request).query.message_id
             if (!_id) {
               throw new ErrorWithStatus({
                 message: CONVERSATIONS_MESSAGE.MESSAGE_ID_IS_REQUIRED,
@@ -550,6 +520,39 @@ export const deleteMessageValidator = validate(
         }
       }
     },
-    ['query']
+    ['params']
+  )
+)
+
+export const deleteMessageValidator = validate(
+  checkSchema(
+    {
+      messages_id: {
+        custom: {
+          options: async (value, { req }) => {
+            const _id = (req as Request).params.messages_id
+            console.log(_id)
+
+            if (!_id) {
+              throw new ErrorWithStatus({
+                message: CONVERSATIONS_MESSAGE.MESSAGE_ID_IS_REQUIRED,
+                status: HTTP_STATUS.BAD_REQUEST
+              })
+            }
+            const message = await databaseService.conversations.findOne({
+              _id: new ObjectId(_id as string)
+            })
+            if (!message) {
+              throw new ErrorWithStatus({
+                message: CONVERSATIONS_MESSAGE.MESSAGE_NOT_FOUND,
+                status: HTTP_STATUS.NOT_FOUND
+              })
+            }
+            return true
+          }
+        }
+      }
+    },
+    ['params']
   )
 )

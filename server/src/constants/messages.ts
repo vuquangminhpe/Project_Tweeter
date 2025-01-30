@@ -134,7 +134,8 @@ export const CONVERSATIONS_MESSAGE = {
   EDIT_CONVERSATION_SUCCESSFULLY: 'Edit conversation successfully',
   MESSAGE_ID_IS_REQUIRED: 'Message id is required',
   MESSAGE_NOT_FOUND: 'Message not found',
-  DELETE_MESSAGE_IN_CONVERSATION_SUCCESSFULLY: 'Delete message in conversation successfully'
+  DELETE_MESSAGE_IN_CONVERSATION_SUCCESSFULLY: 'Delete message in conversation successfully',
+  CONTENT_IS_REQUIRED: 'Content is required'
 }
 export const COMMENT_MESSAGES = {
   GET_COMMENT_SUCCESS: 'Get comment success',
