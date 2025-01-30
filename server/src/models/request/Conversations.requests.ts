@@ -17,3 +17,7 @@ export interface editMessageInConversationResBody {
 export interface deleteMessageInConversationResBody {
   message_id: string
 }
+
+export interface setEmojiMessageInConversationResBody {
+  emoji: string
+}

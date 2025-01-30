@@ -3,6 +3,7 @@ export interface Conversation {
   content: string
   created_at: Date
   updated_at: Date
+  emoji: string
   sender_id: string
   receive_id: string
 }

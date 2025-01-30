@@ -3,6 +3,7 @@ import conversationsApi from '@/apis/conversation.api'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { useMutation } from '@tanstack/react-query'
 import { Event_Message_Status } from '@/types/Emoji.types'
+import { HoverCard, HoverCardContent, HoverCardTrigger } from '@radix-ui/react-hover-card'
 
 interface Props {
   refetchChatData: () => void
@@ -13,8 +14,16 @@ interface Props {
 export default function EventWithMessage({ refetchChatData, message_id, content }: Props) {
   const [isEditing, setIsEditing] = useState(false)
   const [newContent, setNewContent] = useState(content)
-  const [selectedEmoji, setSelectedEmoji] = useState<string>('')
-
+  const setEmojiMessageInConversationMutation = useMutation({
+    mutationFn: (selectedEmoji: string) => conversationsApi.setEmojiMessageInConversation(message_id, selectedEmoji),
+    onSuccess: (data) => {
+      console.log(data)
+      refetchChatData()
+    },
+    onError: (error) => {
+      console.log(error)
+    }
+  })
   const editMessageMutation = useMutation({
     mutationFn: (updatedContent: string) => conversationsApi.editMessageInConversation(message_id, updatedContent),
     onSuccess: (data) => {
@@ -35,10 +44,8 @@ export default function EventWithMessage({ refetchChatData, message_id, content 
     }
   }
 
-  const handleEmojiSelect = (emoji: string) => {
-    const emojiNumber = emoji.split('.')[1]
-    setSelectedEmoji(emojiNumber)
-    console.log('Selected emoji number:', emojiNumber)
+  const handleEmojiSelect = async (emoji: string) => {
+    setEmojiMessageInConversationMutation.mutateAsync(emoji)
   }
 
   const emojiList = Object.values(Event_Message_Status).map((emoji) => ({
@@ -59,7 +66,6 @@ export default function EventWithMessage({ refetchChatData, message_id, content 
           defaultValue={content}
           onChange={(e) => {
             const value = e.target.value
-            console.log('New value:', value)
             setNewContent(value)
           }}
           className='flex-1 p-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500'
@@ -102,7 +108,7 @@ export default function EventWithMessage({ refetchChatData, message_id, content 
             />
           </svg>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align='end' className='min-w-[100px] rounded-xl shadow-xl flex flex-col p-1'>
+        <DropdownMenuContent align='end' className='min-w-[100px] rounded-xl shadow-xl flex p-1'>
           <DropdownMenuItem
             className='flex items-center gap-2 px-3 py-2 text-sm cursor-pointer hover:bg-gray-100 rounded-lg'
             onClick={() => setIsEditing(true)}
@@ -123,25 +129,44 @@ export default function EventWithMessage({ refetchChatData, message_id, content 
             </svg>
           </DropdownMenuItem>
           <DropdownMenuItem className='p-2'>
-            <div className='max-h-64 overflow-y-auto w-72'>
-              {groupedEmojis.map((row, rowIndex) => (
-                <div key={rowIndex} className='flex'>
-                  {row.map((emoji, index) => (
-                    <button
-                      key={index}
-                      onClick={() =>
-                        handleEmojiSelect(Event_Message_Status[emoji.icon as keyof typeof Event_Message_Status])
-                      }
-                      className='p-2 hover:bg-gray-100 rounded-lg transition-colors'
-                    >
-                      {emoji.icon}
-                    </button>
+            <HoverCard>
+              <HoverCardTrigger>
+                {' '}
+                <svg
+                  xmlns='http://www.w3.org/2000/svg'
+                  fill='none'
+                  viewBox='0 0 24 24'
+                  strokeWidth={1.5}
+                  stroke='currentColor'
+                  className='size-6'
+                >
+                  <path
+                    strokeLinecap='round'
+                    strokeLinejoin='round'
+                    d='M15.182 15.182a4.5 4.5 0 0 1-6.364 0M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0ZM9.75 9.75c0 .414-.168.75-.375.75S9 10.164 9 9.75 9.168 9 9.375 9s.375.336.375.75Zm-.375 0h.008v.015h-.008V9.75Zm5.625 0c0 .414-.168.75-.375.75s-.375-.336-.375-.75.168-.75.375-.75.375.336.375.75Zm-.375 0h.008v.015h-.008V9.75Z'
+                  />
+                </svg>
+              </HoverCardTrigger>
+              <HoverCardContent className='z-50'>
+                <div className='max-h-64 overflow-y-auto w-72 rounded-xl shadow-lg bg-white'>
+                  {groupedEmojis.map((row, rowIndex) => (
+                    <div key={rowIndex} className='flex'>
+                      {row.map((emoji, index) => (
+                        <button
+                          key={index}
+                          onClick={() => handleEmojiSelect(emoji.number)}
+                          className='p-2 hover:bg-gray-100 rounded-lg transition-colors'
+                        >
+                          {emoji.icon}
+                        </button>
+                      ))}
+                    </div>
                   ))}
                 </div>
-              ))}
-            </div>
+              </HoverCardContent>
+            </HoverCard>
           </DropdownMenuItem>
-          <DropdownMenuItem className='flex items-center gap-2 px-3 py-2 text-sm text-red-600 cursor-pointer hover:bg-red-50 rounded-lg'>
+          <DropdownMenuItem className='flex items-center z-10 gap-2 px-3 py-2 text-sm text-red-600 cursor-pointer hover:bg-red-50 rounded-lg'>
             <svg
               xmlns='http://www.w3.org/2000/svg'
               fill='none'

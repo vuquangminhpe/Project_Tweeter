@@ -3,7 +3,8 @@ import {
   deleteMessageInConversationController,
   editMessageInConversationController,
   getAllConverSationsController,
-  getConversationsByReceiverIdController
+  getConversationsByReceiverIdController,
+  setEmojiMessageInConversationController
 } from '~/controllers/conversations.controllers'
 import {
   deleteMessageValidator,
@@ -47,9 +48,10 @@ conversationsRouter.get(
 
 /**
  * Description: edit message in conversation
- * Path: /conversation/message/:messages_id
+ * Path: /message/:messages_id
  * Method: PUT
  * header: {Authorization:Bearer <access_token> }
+ * body: {content: string}
  */
 conversationsRouter.put(
   '/message/:messages_id',
@@ -60,8 +62,22 @@ conversationsRouter.put(
 )
 
 /**
+ * Description: set emoji message in conversation
+ * Path: /message/emoji/:messages_id
+ * Method: post
+ * header: {Authorization:Bearer <access_token> }
+ */
+conversationsRouter.post(
+  '/message/emoji/:messages_id',
+  AccessTokenValidator,
+  verifiedUserValidator,
+  deleteMessageValidator,
+  wrapAsync(setEmojiMessageInConversationController)
+)
+
+/**
  * Description: delete message in conversation
- * Path: /conversation/message/:messages_id
+ * Path: /message/:messages_id
  * Method: DELETE
  * header: {Authorization:Bearer <access_token> }
  */

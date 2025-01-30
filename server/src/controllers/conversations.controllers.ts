@@ -5,7 +5,8 @@ import {
   deleteMessageInConversationResBody,
   editMessageInConversationResBody,
   GetAllConversationsParams,
-  GetConversationsParams
+  GetConversationsParams,
+  setEmojiMessageInConversationResBody
 } from '~/models/request/Conversations.requests'
 import conversationServices from '~/services/conversations.services'
 import { TokenPayload } from '~/models/request/User.request'
@@ -71,4 +72,13 @@ export const deleteMessageInConversationController = async (
   const { messages_id } = req.params
   const result = await conversationServices.deleteMessageInConversation({ messages_id })
   res.json({ message: CONVERSATIONS_MESSAGE.DELETE_MESSAGE_IN_CONVERSATION_SUCCESSFULLY, result })
+}
+export const setEmojiMessageInConversationController = async (
+  req: Request<ParamsDictionary, any, setEmojiMessageInConversationResBody>,
+  res: Response
+) => {
+  const { messages_id } = req.params
+  const { emoji } = req.body
+  const result = await conversationServices.setEmojiMessageInConversation({ messages_id, emoji: Number(emoji) })
+  res.json({ message: CONVERSATIONS_MESSAGE.SET_EMOJI_MESSAGE_IN_CONVERSATION_SUCCESSFULLY, result })
 }

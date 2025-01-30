@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { useEffect, useState, useCallback, useMemo, useRef, WheelEvent, Fragment } from 'react'
 import axios from 'axios'
 import { useInfiniteQuery } from '@tanstack/react-query'
@@ -8,6 +10,8 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import StatusWithChat from './StatusWithChat/StatusWithChat'
 import EventWithMessage from './EventWithMessage'
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@radix-ui/react-hover-card'
+import { Event_Message_Status } from '@/types/Emoji.types'
+import EmojiPicker from 'emoji-picker-react'
 
 interface UserStatus {
   user_id: string
@@ -35,7 +39,24 @@ function Chat() {
   })
 
   const isLoadingRef = useRef<boolean>(false)
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false)
+  const inputRef = useRef<HTMLInputElement>(null)
 
+  const handleEmojiClick = (emojiObject: { emoji: string | any[] }, event: MouseEvent) => {
+    if (inputRef.current) {
+      const cursorPosition = inputRef.current.selectionStart || 0
+      const text = inputRef.current.value
+      const newText = text.slice(0, cursorPosition) + emojiObject.emoji + text.slice(cursorPosition)
+      inputRef.current.value = newText
+      setValue(newText)
+      inputRef.current.focus()
+      inputRef.current.selectionEnd = cursorPosition + emojiObject.emoji.length
+    }
+  }
+
+  const toggleEmojiPicker = () => {
+    setShowEmojiPicker(!showEmojiPicker)
+  }
   useEffect(() => {
     if (profile._id) {
       setReceiver(profile._id)
@@ -188,6 +209,7 @@ function Chat() {
       sender_id: profile._id,
       receive_id: receiver,
       _id: new Date().getTime(),
+      emoji: '',
       created_at: new Date(),
       updated_at: new Date()
     }
@@ -212,8 +234,13 @@ function Chat() {
       send()
     }
   }
-  console.log(conversation)
-
+  const getEmojiByNumber = (number: number): string | undefined => {
+    const emojiEntry = Object.entries(Event_Message_Status).find(([key, value]) => {
+      const [emoji, num] = value.split('.')
+      return parseInt(num, 10) === number
+    })
+    return emojiEntry ? emojiEntry[1].split('.')[0] : undefined
+  }
   return (
     <div className='container mx-auto max-w-4xl px-4 py-8'>
       <StatusWithChat onReceiverChange={setReceiver} onlineUsers={onlineUsers} setOnlineUsers={setOnlineUsers} />
@@ -258,7 +285,7 @@ function Chat() {
                   )}
                 </div>
                 <div
-                  className={`max-w-[70%] items-center px-4 py-2 rounded-2xl ${
+                  className={`max-w-[70%] items-center px-4 py-2 rounded-2xl relative ${
                     conversation.sender_id === profile._id
                       ? 'bg-blue-500 text-white rounded-br-none'
                       : 'bg-gray-200 text-black rounded-bl-none'
@@ -267,6 +294,9 @@ function Chat() {
                   <HoverCard>
                     <HoverCardTrigger className='flex items-center justify-between'>
                       <div>{conversation.content}</div>
+                      <div className='absolute right-0 bottom-0 translate-y-2'>
+                        {getEmojiByNumber(conversation.emoji as unknown as number)}
+                      </div>
                     </HoverCardTrigger>
                     <HoverCardContent className='bg-gray-300 translate-y-6 p-3 rounded-xl shadow-xl'>
                       {new Date(conversation?.created_at).toISOString() !==
@@ -309,8 +339,9 @@ function Chat() {
         ))}
       </div>
 
-      <div className='flex items-center mt-4 shadow-sm'>
+      <div className='flex items-center mt-4 gap-2 shadow-sm'>
         <input
+          ref={inputRef}
           type='text'
           onChange={(e) => setValue(e.target.value)}
           value={value}
@@ -319,6 +350,26 @@ function Chat() {
           className='flex-grow p-3 border-2 border-r-0 border-gray-300 rounded-xl mr-2
                      focus:outline-none focus:border-blue-500 transition duration-300'
         />
+        <svg
+          xmlns='http://www.w3.org/2000/svg'
+          fill='none'
+          viewBox='0 0 24 24'
+          strokeWidth={1.5}
+          stroke='currentColor'
+          className='size-8 bg-white rounded-xl p-2 cursor-pointer hover:bg-gray-100 transition duration-300'
+          onClick={toggleEmojiPicker}
+        >
+          <path
+            strokeLinecap='round'
+            strokeLinejoin='round'
+            d='M15.182 15.182a4.5 4.5 0 0 1-6.364 0M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0ZM9.75 9.75c0 .414-.168.75-.375.75S9 10.164 9 9.75 9.168 9 9.375 9s.375.336.375.75Zm-.375 0h.008v.015h-.008V9.75Zm5.625 0c0 .414-.168.75-.375.75s-.375-.336-.375-.75.168-.75.375-.75.375.336.375.75Zm-.375 0h.008v.015h-.008V9.75Z'
+          />
+        </svg>
+        {showEmojiPicker && (
+          <div className='absolute z-10'>
+            <EmojiPicker onEmojiClick={handleEmojiClick} />
+          </div>
+        )}
         <button
           type='submit'
           onClick={send}

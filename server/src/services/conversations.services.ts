@@ -235,6 +235,20 @@ class ConversationService {
     })
     return result
   }
+  async setEmojiMessageInConversation({ messages_id, emoji }: { messages_id: string; emoji: number }) {
+    const result = await databaseService.conversations.findOneAndUpdate(
+      {
+        _id: new ObjectId(messages_id)
+      },
+      {
+        $set: {
+          emoji
+        },
+        $currentDate: { updated_at: true }
+      }
+    )
+    return result
+  }
 }
 const conversationServices = new ConversationService()
 export default conversationServices
