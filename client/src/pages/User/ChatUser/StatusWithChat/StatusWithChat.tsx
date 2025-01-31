@@ -3,7 +3,6 @@ import { useEffect } from 'react'
 import socket from '@/utils/socket'
 import { Profile } from '@/types/User.type'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel'
 import { useQuery } from '@tanstack/react-query'
 import conversationsApi from '@/apis/conversation.api'
 import axios from 'axios'
@@ -79,59 +78,49 @@ export default function StatusWithChat({ onReceiverChange, onlineUsers, setOnlin
   }
 
   return (
-    <div className='flex'>
-      <div className='w-full'>
-        <Carousel className='relative'>
-          <CarouselContent className='flex'>
-            {allData?.map((data) =>
-              Array(data.users_follower_info).map((user: any) => (
-                <CarouselItem key={user.username} className='w-full basis-1/9 sm:w-1/2 md:w-1/3 lg:w-1/4 xl:w-1/5 p-2'>
-                  <button
-                    onClick={() => getProfile(user.username)}
-                    className='w-full h-full flex flex-col bg-blue-900 items-center justify-center p-4 hover:bg-blue-600'
-                  >
-                    <div className='flex items-center space-x-2'>
-                      <Avatar className='w-12 h-12 sm:w-16 sm:h-16'>
-                        <AvatarImage src={user.avatar || user.cover_photo} />
-                        <AvatarFallback className='text-black bg-white rounded-full'>
-                          {user.name.charAt(0)}
-                        </AvatarFallback>
-                      </Avatar>
-                      <span className='text-sm sm:text-base font-medium truncate text-white'>
-                        {user.name.slice(0, 5)}
-                      </span>
-                    </div>
+    <div className='h-full flex flex-col'>
+      <div className='p-4 border-b border-gray-200'>
+        <input
+          type='text'
+          placeholder='Search messages'
+          className='w-full px-4 py-2 bg-gray-100 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-blue-500'
+        />
+      </div>
 
-                    {onlineUsers[user._id] ? (
-                      <div className='mt-2 text-xs sm:text-sm'>
-                        {onlineUsers[user._id].is_online ? (
-                          <div className='flex items-center space-x-1'>
-                            <span className='relative flex h-2 w-2'>
-                              <span className='absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75 animate-ping'></span>
-                              <span className='relative inline-flex h-2 w-2 rounded-full bg-green-500'></span>
-                            </span>
-                          </div>
-                        ) : (
-                          <span className='text-gray-200 text-[11px]'>
-                            {`Last seen ${formatLastActive(onlineUsers[user._id].last_active)}`}
-                          </span>
-                        )}
-                      </div>
-                    ) : (
-                      <div className='mt-2 text-xs sm:text-sm'>
-                        <span className='text-gray-200 text-[11px]'>
-                          {`Last seen ${formatLastActive(user.last_active !== null ? new Date(user.last_active) : new Date())}`}
-                        </span>
-                      </div>
-                    )}
-                  </button>
-                </CarouselItem>
-              ))
-            )}
-          </CarouselContent>
-          <CarouselPrevious />
-          <CarouselNext />
-        </Carousel>
+      <div className='flex-1 overflow-y-auto'>
+        {allData?.map((data) =>
+          Array(data.users_follower_info).map((user: any) => (
+            <button
+              key={user.username}
+              onClick={() => getProfile(user.username)}
+              className='w-full p-2 hover:bg-gray-100 transition-colors flex items-center space-x-3'
+            >
+              <div className='relative'>
+                <Avatar className='h-12 w-12'>
+                  <AvatarImage src={user.avatar || user.cover_photo} />
+                  <AvatarFallback className='text-black bg-white'>{user.name.charAt(0)}</AvatarFallback>
+                </Avatar>
+                {onlineUsers[user._id]?.is_online && (
+                  <span className='absolute bottom-0 right-0 h-3 w-3'>
+                    <span className='absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75 animate-ping'></span>
+                    <span className='relative inline-flex h-3 w-3 rounded-full bg-green-500 border-2 border-white'></span>
+                  </span>
+                )}
+              </div>
+
+              <div className='flex-1 flex flex-col items-start'>
+                <span className='font-medium text-gray-900'>{user.name}</span>
+                <span className='text-xs text-gray-500'>
+                  {onlineUsers[user._id]
+                    ? onlineUsers[user._id].is_online
+                      ? 'Active Now'
+                      : `Last seen ${formatLastActive(onlineUsers[user._id].last_active)}`
+                    : `Last seen ${formatLastActive(user.last_active !== null ? new Date(user.last_active) : new Date())}`}
+                </span>
+              </div>
+            </button>
+          ))
+        )}
       </div>
     </div>
   )

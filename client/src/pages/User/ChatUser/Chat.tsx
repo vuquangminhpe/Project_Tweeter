@@ -130,7 +130,7 @@ function Chat() {
           Authorization: `Bearer ${localStorage.getItem('access_token')}`
         },
         params: {
-          limit: 10,
+          limit: 15,
           page: pageParam
         }
       })
@@ -158,7 +158,13 @@ function Chat() {
       if (target.isIntersecting && hasPreviousPage && !isFetchingPreviousPage) {
         const currentScrollHeight = chatContainerRef.current?.scrollHeight || 0
 
+        // Set click to true to trigger the load
+        setClick(true)
+
         fetchPreviousPage().then(() => {
+          // Reset click to false after loading the page
+          setClick(false)
+
           requestAnimationFrame(() => {
             if (chatContainerRef.current) {
               const newScrollHeight = chatContainerRef.current.scrollHeight
@@ -186,8 +192,16 @@ function Chat() {
       }
     }
   }, [handleObserver])
+  console.log(chatData)
 
-  const allMessages = useMemo(() => chatData?.pages?.flatMap((page) => page.result.conversations) ?? [], [chatData])
+  const allMessages = useMemo(() => {
+    return (
+      chatData?.pages
+        ?.flatMap((page) => page.result.conversations)
+        ?.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()) ?? []
+    )
+  }, [chatData])
+  console.log(allMessages)
 
   useEffect(() => {
     if (!isLoadingRef.current) {
@@ -222,11 +236,15 @@ function Chat() {
     }
   }
 
-  const handleWheel = useCallback((e: WheelEvent<HTMLDivElement>) => {
-    if (e.deltaY < 0) {
-      setClick(true)
-    }
-  }, [])
+  const handleWheel = useCallback(
+    (e: WheelEvent<HTMLDivElement>) => {
+      if (e.deltaY < 0 && !isFetchingPreviousPage) {
+        setClick(true)
+        setTimeout(() => setClick(false), 100)
+      }
+    },
+    [isFetchingPreviousPage]
+  )
 
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -242,144 +260,145 @@ function Chat() {
     return emojiEntry ? emojiEntry[1].split('.')[0] : undefined
   }
   return (
-    <div className='container mx-auto max-w-4xl px-4 py-8'>
-      <StatusWithChat onReceiverChange={setReceiver} onlineUsers={onlineUsers} setOnlineUsers={setOnlineUsers} />
-
-      <div ref={loadPreviousRef} className='w-full py-4 text-center'>
-        {isFetchingPreviousPage ? (
-          <div className='flex justify-center'>
-            <div className='animate-spin rounded-full h-3 w-3 border-t-4 border-b-4 border-blue-500'></div>
-          </div>
-        ) : hasPreviousPage ? (
-          <div className='text-gray-500 italic'>Scroll up for previous messages...</div>
-        ) : (
-          receiver.length > 0 && <div className='text-gray-400'>No more messages to load</div>
-        )}
+    <div className='flex h-screen bg-gray-100'>
+      <div className='w-[320px] min-w-[280px] border-r border-gray-200 bg-white overflow-hidden'>
+        <StatusWithChat onReceiverChange={setReceiver} onlineUsers={onlineUsers} setOnlineUsers={setOnlineUsers} />
       </div>
 
-      <div
-        ref={chatContainerRef}
-        className='bg-white rounded-lg shadow-md border border-gray-200 overflow-y-auto'
-        style={{
-          height: '500px',
-          display: 'flex',
-          flexDirection: 'column',
-          padding: '1rem'
-        }}
-        onWheel={handleWheel}
-      >
-        {conversation?.map((conversation) => (
-          <div
-            key={conversation._id}
-            className={`flex mb-3 ${conversation.sender_id === profile._id ? 'justify-end' : 'justify-start'}`}
-          >
-            {conversation.sender_id !== profile._id ? (
-              <Fragment>
-                <div className='relative'>
-                  <Avatar className='mr-3'>
-                    <AvatarImage src='https://github.com/shadcn.png' />
-                    <AvatarFallback>CN</AvatarFallback>
-                  </Avatar>
-                  {onlineUsers[conversation.sender_id]?.is_online && (
-                    <span className='absolute bottom-0 left-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white'></span>
-                  )}
-                </div>
-                <div
-                  className={`max-w-[70%] items-center px-4 py-2 rounded-2xl relative ${
-                    conversation.sender_id === profile._id
-                      ? 'bg-blue-500 text-white rounded-br-none'
-                      : 'bg-gray-200 text-black rounded-bl-none'
-                  }`}
-                >
-                  <HoverCard>
-                    <HoverCardTrigger className='flex items-center justify-between'>
-                      <div>{conversation.content}</div>
-                      <div className='absolute right-0 bottom-0 translate-y-2'>
-                        {getEmojiByNumber(conversation.emoji as unknown as number)}
-                      </div>
-                    </HoverCardTrigger>
-                    <HoverCardContent className='bg-gray-300 translate-y-6 p-3 rounded-xl shadow-xl'>
-                      {new Date(conversation?.created_at).toISOString() !==
-                      new Date(conversation?.updated_at).toISOString()
-                        ? new Date(conversation?.updated_at).toLocaleString() + ' (đã chỉnh sửa)'
-                        : new Date(conversation?.created_at).toLocaleString()}
-                    </HoverCardContent>
-                  </HoverCard>
-                </div>
+      <div className='flex-1 flex flex-col min-w-0'>
+        {' '}
+        <div ref={loadPreviousRef} className='w-full py-4 text-center'>
+          {isFetchingPreviousPage ? (
+            <div className='flex justify-center'>
+              <div className='animate-spin rounded-full h-3 w-3 border-t-4 border-b-4 border-blue-500'></div>
+            </div>
+          ) : hasPreviousPage ? (
+            <div className='text-gray-500 italic'>Scroll up for previous messages...</div>
+          ) : (
+            receiver.length > 0 && <div className='text-gray-400'>No more messages to load</div>
+          )}
+        </div>
+        <div ref={chatContainerRef} className='flex-1 bg-white overflow-y-auto px-4' onWheel={handleWheel}>
+          {conversation?.map((conversation) => (
+            <div
+              key={conversation._id}
+              className={`flex mb-3 ${conversation.sender_id === profile._id ? 'justify-end' : 'justify-start'}`}
+            >
+              {conversation.sender_id !== profile._id ? (
+                <Fragment>
+                  <div className='relative shrink-0'>
+                    <Avatar className='mr-3 h-8 w-8 sm:h-10 sm:w-10'>
+                      <AvatarImage src='https://github.com/shadcn.png' />
+                      <AvatarFallback>CN</AvatarFallback>
+                    </Avatar>
+                    {onlineUsers[conversation.sender_id]?.is_online && (
+                      <span className='absolute bottom-0 left-0 w-2 h-2 sm:w-3 sm:h-3 bg-green-500 rounded-full border-2 border-white'></span>
+                    )}
+                  </div>
+                  <div
+                    className={`max-w-[70%] items-center px-3 py-2 sm:px-4 sm:py-2 rounded-2xl relative ${
+                      conversation.sender_id === profile._id
+                        ? 'bg-blue-500 text-white rounded-br-none'
+                        : 'bg-gray-200 text-black rounded-bl-none'
+                    }`}
+                  >
+                    <HoverCard>
+                      <HoverCardTrigger className='flex items-center justify-between'>
+                        <div className='break-words'>{conversation.content}</div>
+                        <div className='absolute right-0 bottom-0 translate-y-2 text-sm'>
+                          {getEmojiByNumber(conversation.emoji as unknown as number)}
+                        </div>
+                      </HoverCardTrigger>
+                      <HoverCardContent className='bg-gray-300 translate-y-6 p-3 rounded-xl shadow-xl z-50'>
+                        {new Date(conversation?.created_at).toISOString() !==
+                        new Date(conversation?.updated_at).toISOString()
+                          ? new Date(conversation?.updated_at).toLocaleString() + ' (đã chỉnh sửa)'
+                          : new Date(conversation?.created_at).toLocaleString()}
+                      </HoverCardContent>
+                    </HoverCard>
+                  </div>
 
-                <EventWithMessage
-                  refetchChatData={refetchChatData}
-                  message_id={conversation?._id}
-                  content={conversation?.content}
+                  <EventWithMessage
+                    refetchChatData={refetchChatData}
+                    message_id={conversation?._id}
+                    content={conversation?.content}
+                    receiver={receiver}
+                    totalPages={totalPages as number}
+                  />
+                </Fragment>
+              ) : (
+                <Fragment>
+                  <div
+                    className={`max-w-[70%] px-3 py-2 sm:px-4 sm:py-2 rounded-2xl ${
+                      conversation.sender_id === profile._id
+                        ? 'bg-blue-500 text-white rounded-br-none'
+                        : 'bg-gray-200 text-black rounded-bl-none'
+                    }`}
+                  >
+                    <div className='break-words'>{conversation.content}</div>
+                  </div>
+                  <div className='relative shrink-0'>
+                    <Avatar className='ml-3 h-8 w-8 sm:h-10 sm:w-10'>
+                      <AvatarImage src='https://github.com/shadcn.png' />
+                      <AvatarFallback>CN</AvatarFallback>
+                    </Avatar>
+                    {onlineUsers[conversation.sender_id]?.is_online && (
+                      <span className='absolute bottom-0 right-0 w-2 h-2 sm:w-3 sm:h-3 bg-green-500 rounded-full border-2 border-white'></span>
+                    )}
+                  </div>
+                </Fragment>
+              )}
+            </div>
+          ))}
+        </div>
+        <div className='p-2 sm:p-4 border-t border-gray-200'>
+          <div className='flex items-center gap-2'>
+            <input
+              ref={inputRef}
+              type='text'
+              onChange={(e) => setValue(e.target.value)}
+              value={value}
+              onKeyPress={handleKeyPress}
+              placeholder='Type a message...'
+              className='flex-1 p-2 sm:p-3 border-2 border-gray-300 rounded-xl
+                       focus:outline-none focus:border-blue-500 transition duration-300'
+            />
+            <div className='relative'>
+              <svg
+                xmlns='http://www.w3.org/2000/svg'
+                fill='none'
+                viewBox='0 0 24 24'
+                strokeWidth={1.5}
+                stroke='currentColor'
+                className='size-8 bg-white rounded-xl p-2 cursor-pointer hover:bg-gray-100 transition duration-300'
+                onClick={toggleEmojiPicker}
+              >
+                <path
+                  strokeLinecap='round'
+                  strokeLinejoin='round'
+                  d='M15.182 15.182a4.5 4.5 0 0 1-6.364 0M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0ZM9.75 9.75c0 .414-.168.75-.375.75S9 10.164 9 9.75 9.168 9 9.375 9s.375.336.375.75Zm-.375 0h.008v.015h-.008V9.75Zm5.625 0c0 .414-.168.75-.375.75s-.375-.336-.375-.75.168-.75.375-.75.375.336.375.75Zm-.375 0h.008v.015h-.008V9.75Z'
                 />
-              </Fragment>
-            ) : (
-              <Fragment>
-                <div
-                  className={`max-w-[70%] px-4 py-2 rounded-2xl ${
-                    conversation.sender_id === profile._id
-                      ? 'bg-blue-500 text-white rounded-br-none'
-                      : 'bg-gray-200 text-black rounded-bl-none'
-                  }`}
-                >
-                  {conversation.content}
+              </svg>
+              {showEmojiPicker && (
+                <div className='absolute bottom-full right-0 mb-2'>
+                  <div className='bg-white rounded-lg shadow-xl border border-gray-200'>
+                    <EmojiPicker onEmojiClick={handleEmojiClick} />
+                  </div>
                 </div>
-                <div className='relative'>
-                  <Avatar className='ml-3'>
-                    <AvatarImage src='https://github.com/shadcn.png' />
-                    <AvatarFallback>CN</AvatarFallback>
-                  </Avatar>
-                  {onlineUsers[conversation.sender_id]?.is_online && (
-                    <span className='absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white'></span>
-                  )}
-                </div>
-              </Fragment>
-            )}
+              )}
+            </div>
+            <button
+              type='submit'
+              onClick={send}
+              disabled={!value.trim()}
+              className='px-4 sm:px-6 py-2 sm:py-3 bg-blue-500 text-white rounded-xl
+                       hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300 
+                       transition duration-300 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed'
+            >
+              Send
+            </button>
           </div>
-        ))}
-      </div>
-
-      <div className='flex items-center mt-4 gap-2 shadow-sm'>
-        <input
-          ref={inputRef}
-          type='text'
-          onChange={(e) => setValue(e.target.value)}
-          value={value}
-          onKeyPress={handleKeyPress}
-          placeholder='Type a message...'
-          className='flex-grow p-3 border-2 border-r-0 border-gray-300 rounded-xl mr-2
-                     focus:outline-none focus:border-blue-500 transition duration-300'
-        />
-        <svg
-          xmlns='http://www.w3.org/2000/svg'
-          fill='none'
-          viewBox='0 0 24 24'
-          strokeWidth={1.5}
-          stroke='currentColor'
-          className='size-8 bg-white rounded-xl p-2 cursor-pointer hover:bg-gray-100 transition duration-300'
-          onClick={toggleEmojiPicker}
-        >
-          <path
-            strokeLinecap='round'
-            strokeLinejoin='round'
-            d='M15.182 15.182a4.5 4.5 0 0 1-6.364 0M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0ZM9.75 9.75c0 .414-.168.75-.375.75S9 10.164 9 9.75 9.168 9 9.375 9s.375.336.375.75Zm-.375 0h.008v.015h-.008V9.75Zm5.625 0c0 .414-.168.75-.375.75s-.375-.336-.375-.75.168-.75.375-.75.375.336.375.75Zm-.375 0h.008v.015h-.008V9.75Z'
-          />
-        </svg>
-        {showEmojiPicker && (
-          <div className='absolute z-10'>
-            <EmojiPicker onEmojiClick={handleEmojiClick} />
-          </div>
-        )}
-        <button
-          type='submit'
-          onClick={send}
-          disabled={!value.trim()}
-          className='px-6 py-3 bg-blue-500 text-white rounded-xl
-                     hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300 
-                     transition duration-300 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed'
-        >
-          Send
-        </button>
+        </div>
       </div>
     </div>
   )

@@ -80,15 +80,16 @@ export default function useRouteElement() {
               path: path.changePassword,
               element: <ChangePassword />
             },
-            {
-              path: path.chat,
-              element: <Chat />
-            },
+
             {
               path: path.verifyEmail,
               element: <VerifyEmail />
             }
           ]
+        },
+        {
+          path: path.chat,
+          element: <Chat />
         }
       ]
     },

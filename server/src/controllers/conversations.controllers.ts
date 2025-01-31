@@ -25,7 +25,7 @@ export const getConversationsByReceiverIdController = async (req: Request<GetCon
     message: CONVERSATIONS_MESSAGE.GET_CONVERSATION_SUCCESSFULLY,
     result: {
       conversations,
-      page: page,
+      page: Number(page),
       total_pages: Math.ceil(total / Number(limit))
     }
   })

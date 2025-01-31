@@ -1,17 +1,24 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState } from 'react'
 import conversationsApi from '@/apis/conversation.api'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { useMutation } from '@tanstack/react-query'
 import { Event_Message_Status } from '@/types/Emoji.types'
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@radix-ui/react-hover-card'
+import { useQueryClient } from '@tanstack/react-query'
 
 interface Props {
   refetchChatData: () => void
   message_id: string | number
   content: string
+  receiver: string
+  totalPages: number
 }
 
-export default function EventWithMessage({ refetchChatData, message_id, content }: Props) {
+export default function EventWithMessage({ refetchChatData, message_id, content, receiver, totalPages }: Props) {
+  const queryClient = useQueryClient()
+
   const [isEditing, setIsEditing] = useState(false)
   const [newContent, setNewContent] = useState(content)
   const setEmojiMessageInConversationMutation = useMutation({
@@ -35,7 +42,15 @@ export default function EventWithMessage({ refetchChatData, message_id, content 
       console.log(error)
     }
   })
-
+  const deleteMessageInConversationMutation = useMutation({
+    mutationFn: () => conversationsApi.deleteMessageInConversation(message_id),
+    onSuccess: (data) => {
+      refetchChatData()
+    },
+    onError: (error) => {
+      console.log(error)
+    }
+  })
   const handleEditMessage = async () => {
     try {
       await editMessageMutation.mutateAsync(newContent)
@@ -47,7 +62,9 @@ export default function EventWithMessage({ refetchChatData, message_id, content 
   const handleEmojiSelect = async (emoji: string) => {
     setEmojiMessageInConversationMutation.mutateAsync(emoji)
   }
-
+  const handleDeleteMessage = async () => {
+    deleteMessageInConversationMutation.mutateAsync()
+  }
   const emojiList = Object.values(Event_Message_Status).map((emoji) => ({
     icon: emoji.split('.')[0],
     number: emoji.split('.')[1]
@@ -174,6 +191,7 @@ export default function EventWithMessage({ refetchChatData, message_id, content 
               strokeWidth={1.5}
               stroke='currentColor'
               className='w-4 h-4'
+              onClick={handleDeleteMessage}
             >
               <path
                 strokeLinecap='round'
