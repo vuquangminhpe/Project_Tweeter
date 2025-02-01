@@ -28,13 +28,13 @@ export default function StatusWithChat({ onReceiverChange, onlineUsers, setOnlin
   const allData = dataFollowers?.data?.result
 
   useEffect(() => {
+    socket.connect()
     if (profile._id) {
       socket.auth = {
         Authorization: `Bearer ${localStorage.getItem('access_token')}`,
         _id: profile._id
       }
     }
-    socket.connect()
     socket.emit('get_all_online_users')
 
     socket.on('user_status_change', (data: UserStatus) => {
@@ -53,6 +53,7 @@ export default function StatusWithChat({ onReceiverChange, onlineUsers, setOnlin
       socket.off('all_online_users_response')
     }
   }, [profile._id, setOnlineUsers])
+  console.log('onlineUsers', onlineUsers)
 
   const formatLastActive = (date: Date) => {
     const lastActive = new Date(date)

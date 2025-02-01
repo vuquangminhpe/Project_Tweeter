@@ -30,6 +30,7 @@ const initSocket = (httpServer: ServerHttp) => {
 
   io.on('connection', async (socket: Socket) => {
     const user_id = socket.handshake.auth._id
+
     console.log(`User ${user_id} connected with socket ${socket.id}`)
     if (users[user_id]?.timeoutId) {
       clearTimeout(users[user_id].timeoutId)

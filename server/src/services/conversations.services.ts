@@ -30,7 +30,17 @@ class ConversationService {
     const total = await databaseService.conversations.countDocuments(match)
     return { conversations, total: total || 0 }
   }
-  async getAllConversations({ user_id, page, limit }: { user_id: string; page: number; limit: number }) {
+  async getAllConversations({
+    user_id,
+    page,
+    limit,
+    search
+  }: {
+    user_id: string
+    page: number
+    limit: number
+    search: string
+  }) {
     const [allConversations, total] = await Promise.all([
       databaseService.users
         .aggregate([
@@ -90,6 +100,22 @@ class ConversationService {
           {
             $unwind: {
               path: '$users_follower_info'
+            }
+          },
+          {
+            $match: {
+              $expr: {
+                $cond: {
+                  if: { $ne: [search, ''] },
+                  then: {
+                    $regexMatch: {
+                      input: '$users_follower_info.name',
+                      regex: new RegExp(search, 'i')
+                    }
+                  },
+                  else: true
+                }
+              }
             }
           },
           {
@@ -178,6 +204,11 @@ class ConversationService {
                       $or: [{ $eq: ['$user_id', '$$userId'] }, { $eq: ['$followed_user_id', '$$userId'] }]
                     }
                   }
+                },
+                {
+                  $addFields: {
+                    isFollowing: { $eq: ['$user_id', '$$userId'] }
+                  }
                 }
               ],
               as: 'followers_info'
@@ -208,6 +239,27 @@ class ConversationService {
                 }
               ],
               as: 'users_follower_info'
+            }
+          },
+          {
+            $unwind: {
+              path: '$users_follower_info'
+            }
+          },
+          {
+            $match: {
+              $expr: {
+                $cond: {
+                  if: { $ne: [search, ''] },
+                  then: {
+                    $regexMatch: {
+                      input: '$users_follower_info.name',
+                      regex: new RegExp(search, 'i')
+                    }
+                  },
+                  else: true
+                }
+              }
             }
           }
         ])
