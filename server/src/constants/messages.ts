@@ -136,7 +136,8 @@ export const CONVERSATIONS_MESSAGE = {
   MESSAGE_NOT_FOUND: 'Message not found',
   DELETE_MESSAGE_IN_CONVERSATION_SUCCESSFULLY: 'Delete message in conversation successfully',
   CONTENT_IS_REQUIRED: 'Content is required',
-  SET_EMOJI_MESSAGE_IN_CONVERSATION_SUCCESSFULLY: 'Set emoji message in conversation successfully'
+  SET_EMOJI_MESSAGE_IN_CONVERSATION_SUCCESSFULLY: 'Set emoji message in conversation successfully',
+  DELETE_ALL_MESSAGE_IN_CONVERSATION_SUCCESSFULLY: 'Delete all message in conversation successfully'
 }
 export const COMMENT_MESSAGES = {
   GET_COMMENT_SUCCESS: 'Get comment success',

@@ -301,6 +301,20 @@ class ConversationService {
     )
     return result
   }
+  async deleteAllMessageInConversation({ sender_id, receiver_id }: { sender_id: string; receiver_id: string }) {
+    const match = {
+      $or: [
+        { sender_id: new ObjectId(sender_id), receive_id: new ObjectId(receiver_id) },
+        { sender_id: new ObjectId(receiver_id), receive_id: new ObjectId(sender_id) }
+      ]
+    }
+
+    const result = await databaseService.conversations.deleteMany(match)
+
+    return {
+      success: result.acknowledged
+    }
+  }
 }
 const conversationServices = new ConversationService()
 export default conversationServices

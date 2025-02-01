@@ -1,5 +1,6 @@
 import { Router } from 'express'
 import {
+  deleteAllMessageInConversationController,
   deleteMessageInConversationController,
   editMessageInConversationController,
   getAllConverSationsController,
@@ -7,11 +8,11 @@ import {
   setEmojiMessageInConversationController
 } from '~/controllers/conversations.controllers'
 import {
+  deleteAllMessageInConversationValidator,
   deleteMessageValidator,
-  editMessageValidator,
-  paginationValidator,
-  premiumUserValidator
-} from '~/middlewares/tweets.middlewares'
+  editMessageValidator
+} from '~/middlewares/conversations.middlewares'
+import { paginationValidator } from '~/middlewares/tweets.middlewares'
 import { AccessTokenValidator, getConversationsValidator, verifiedUserValidator } from '~/middlewares/users.middlewares'
 import { wrapAsync } from '~/utils/handler'
 
@@ -87,5 +88,19 @@ conversationsRouter.delete(
   verifiedUserValidator,
   deleteMessageValidator,
   wrapAsync(deleteMessageInConversationController)
+)
+
+/**
+ * Description: delete all message in conversation
+ * Path: /message/:messages_id
+ * Method: DELETE
+ * header: {Authorization:Bearer <access_token> }
+ */
+conversationsRouter.delete(
+  '/message/:receive_id',
+  AccessTokenValidator,
+  verifiedUserValidator,
+  deleteAllMessageInConversationValidator,
+  wrapAsync(deleteAllMessageInConversationController)
 )
 export default conversationsRouter

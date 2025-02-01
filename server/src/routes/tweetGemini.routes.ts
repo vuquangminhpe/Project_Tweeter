@@ -1,7 +1,7 @@
 import { Router } from 'express'
 import { chatWithGeminiController, generateTweetTextGeminiController } from '~/controllers/tweet.controllers'
-import { messageUploadValidator, premiumUserValidator } from '~/middlewares/tweets.middlewares'
-import { AccessTokenValidator, verifiedUserValidator } from '~/middlewares/users.middlewares'
+import { messageUploadValidator } from '~/middlewares/conversations.middlewares'
+import { AccessTokenValidator, premiumUserValidator, verifiedUserValidator } from '~/middlewares/users.middlewares'
 import { wrapAsync } from '~/utils/handler'
 
 const tweetGeminiRoutes = Router()

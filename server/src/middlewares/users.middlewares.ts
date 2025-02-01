@@ -12,7 +12,7 @@ import _, { capitalize } from 'lodash'
 import { NextFunction, Request, RequestHandler } from 'express'
 import { ObjectId } from 'bson'
 import { TokenPayload } from '~/models/request/User.request'
-import { UserVerifyStatus } from '~/constants/enums'
+import { AccountStatus, UserVerifyStatus } from '~/constants/enums'
 import { REGEX_USERNAME } from '~/constants/regex'
 import { ParsedQs } from 'qs'
 import { ParamsDictionary } from 'express-serve-static-core'
@@ -584,5 +584,36 @@ export const deleteS3Validator = validate(
       }
     },
     ['body']
+  )
+)
+
+export const premiumUserValidator = validate(
+  checkSchema(
+    {
+      user_id: {
+        custom: {
+          options: async (value, { req }) => {
+            const user_id = req.decode_authorization.user_id
+            const user = await databaseService.users.findOne({
+              _id: new ObjectId(user_id as string)
+            })
+
+            if (user?.typeAccount === AccountStatus.FREE && user.count_type_account > 5) {
+              throw new ErrorWithStatus({
+                message: TWEET_MESSAGE.PREMIUM_USER_REQUIRED,
+                status: HTTP_STATUS.FORBIDDEN
+              })
+            }
+            if (user?.typeAccount === AccountStatus.PREMIUM && user.count_type_account > 40) {
+              throw new ErrorWithStatus({
+                message: TWEET_MESSAGE.PLATINUM_USER_REQUIRED,
+                status: HTTP_STATUS.FORBIDDEN
+              })
+            }
+          }
+        }
+      }
+    },
+    ['headers']
   )
 )

@@ -86,3 +86,10 @@ export const setEmojiMessageInConversationController = async (
   const result = await conversationServices.setEmojiMessageInConversation({ messages_id, emoji: Number(emoji) })
   res.json({ message: CONVERSATIONS_MESSAGE.SET_EMOJI_MESSAGE_IN_CONVERSATION_SUCCESSFULLY, result })
 }
+
+export const deleteAllMessageInConversationController = async (req: Request, res: Response) => {
+  const { user_id } = req.decode_authorization as TokenPayload
+  const { receiver_id } = req.params
+  const result = await conversationServices.deleteAllMessageInConversation({ sender_id: user_id, receiver_id })
+  res.json({ message: CONVERSATIONS_MESSAGE.DELETE_ALL_MESSAGE_IN_CONVERSATION_SUCCESSFULLY, result })
+}
