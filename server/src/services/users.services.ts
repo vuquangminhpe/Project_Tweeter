@@ -101,12 +101,6 @@ class UserService {
       new RefreshToken({ user_id: new ObjectId(user_id), token: refresh_token })
     )
 
-    //Flow verify email
-    //1. Server send email to user
-    //2. User click link in email
-    //3. Client send request to server with email_verify_token
-    //4. Server verify email_verify_token
-    //5. Client receive access_token and refresh_token
     await sendVerifyEmail(payload.email, email_verify_token)
 
     return {

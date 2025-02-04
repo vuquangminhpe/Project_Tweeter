@@ -2,6 +2,7 @@ import { MediaTypeQuery } from './enums'
 
 export const USERS_MESSAGES = {
   VALIDATION_ERROR: 'Validation error',
+  INVALID_USER_ID: 'Invalid user id',
   NAME_IS_REQUIRED: 'Name is required',
   NAME_MUST_BE_A_STRING: 'Name must be a string',
   NAME_LENGTH_MUST_BE_FROM_1_TO_100: 'Name must be from 1 to 100',
@@ -150,4 +151,31 @@ export const COMMENT_MESSAGES = {
   NO_EDIT_COMMENT: 'No edit comment',
   DELETE_COMMENT_SUCCESS: 'Delete comment success',
   NO_COMMENT_TO_DELETE: 'No comment to delete'
+}
+
+export const STORIES_MESSAGE = {
+  CREATE_STORY_SUCCESS: 'Create story success',
+  GET_STORY_SUCCESS: 'Get story success',
+  GET_STORY_DETAILS_SUCCESS: 'Get story details success',
+  STORY_NOT_FOUND: 'Story not found',
+  STORY_ID_MUST_BE_A_STRING: 'Story id must be a string',
+  STORY_IS_NOT_PUBLIC: 'Story is not public',
+  GET_STORY_CHILDREN_SUCCESS: 'Get story children success',
+  CAPTION_MUST_BE_A_STRING: 'Caption must be a string',
+  CONTENT_MUST_BE_A_STRING: 'Content must be a string',
+  MEDIA_URL_MUST_BE_A_STRING: 'Media url must be a string',
+  MEDIA_TYPE_MUST_BE_A_STRING: 'Media type must be a string',
+  PRIVACY_MUST_BE_AN_ARRAY: 'Privacy must be an array',
+  PRIVACY_MUST_BE_AN_ARRAY_OF_USER_ID: 'Privacy must be an array of user id',
+  STORY_ID_IS_REQUIRED: 'Story id is required',
+  STORY_NOT_FOUND_OR_NOT_PUBLIC: 'Story not found or not public',
+  DELETE_STORY_SUCCESS: 'Delete story success',
+  EDIT_STORY_SUCCESS: 'Edit story success',
+  STORY_ALREADY_EXISTS: 'Story already exists',
+  STORY_NOT_EXISTS: 'Story not exists',
+  STORY_NOT_PUBLIC: 'Story not public',
+  STORY_LINK_IS_REQUIRED: 'Story link is required',
+  STORY_LINK_MUST_BE_A_STRING: 'Story link must be a string',
+  CONTENT_MUST_NOT_BE_EMPTY: 'Content must not be empty',
+  CAPTION_MUST_BE_NOT_BE_EMPTY: 'Caption must not be empty'
 }

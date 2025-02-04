@@ -25,6 +25,7 @@ export const envConfig = {
   commentCollection: process.env.DB_COMMENTS_COLLECTION as string,
   likesCollection: process.env.DB_LIKES_COLLECTION as string,
   conversationsCollection: process.env.DB_CONVERSATIONS_COLLECTION as string,
+  storiesCollection: process.env.DB_STORIES_COLLECTION as string,
   region: process.env.AWS_REGION,
   secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
   accessKeyId: process.env.AWS_ACCESS_KEY_ID,
