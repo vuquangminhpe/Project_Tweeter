@@ -1,6 +1,7 @@
 import { Router } from 'express'
 import {
   createNewStoryController,
+  getNewsFeedStoriesController,
   updateStoryStoryController,
   viewAndStatusStoryController
 } from '~/controllers/stories.controllers'
@@ -60,10 +61,98 @@ storiesRouter.post(
 )
 
 /**
- * Description:reaction story
- * Path: /reaction-story
- * Method: POST
- * Body: {content: string, media_url: string, media_type: string, caption: string, privacy: string[]}
- * header: {Authorization:Bearer <access_token> }
+ * Description: Get stories of user and friends
+ * Path: /get-news-feed-stories
+ * Method: GET
+ * Query: {page: number, limit: number}
+ * header: {Authorization:Bearer <access_token>}
  */
+storiesRouter.get(
+  '/get-news-feed-stories',
+  AccessTokenValidator,
+  verifiedUserValidator,
+  wrapAsync(getNewsFeedStoriesController)
+)
+
+/**
+ * Description: Get stories archive of current user
+ * Path: /get-archive-stories
+ * Method: GET
+ * Query: {page: number, limit: number}
+ * header: {Authorization:Bearer <access_token>}
+ */
+storiesRouter.get(
+  '/get-archive-stories',
+  AccessTokenValidator,
+  verifiedUserValidator
+  // wrapAsync(getArchiveStoriesController)
+)
+
+/**
+ * Description: Delete a story
+ * Path: /delete-story/:story_id
+ * Method: DELETE
+ * header: {Authorization:Bearer <access_token>}
+ */
+storiesRouter.delete(
+  '/delete-story/:story_id',
+  AccessTokenValidator,
+  verifiedUserValidator
+  // wrapAsync(deleteStoryController)
+)
+
+/**
+ * Description: Get story viewers
+ * Path: /get-story-viewers/:story_id
+ * Method: GET
+ * Query: {page: number, limit: number}
+ * header: {Authorization:Bearer <access_token>}
+ */
+storiesRouter.get(
+  '/get-story-viewers/:story_id',
+  AccessTokenValidator,
+  verifiedUserValidator
+  // wrapAsync(getStoryViewersController)
+)
+
+/**
+ * Description: Share story to news feed
+ * Path: /share-story-to-newsfeed/:story_id
+ * Method: POST
+ * Body: {caption: string}
+ * header: {Authorization:Bearer <access_token>}
+ */
+storiesRouter.post(
+  '/share-story-to-newsfeed/:story_id',
+  AccessTokenValidator,
+  verifiedUserValidator
+  // wrapAsync(shareStoryToNewsFeedController)
+)
+
+/**
+ * Description: Mute stories from a user
+ * Path: /mute-user-stories/:user_id
+ * Method: POST
+ * header: {Authorization:Bearer <access_token>}
+ */
+storiesRouter.post(
+  '/mute-user-stories/:user_id',
+  AccessTokenValidator,
+  verifiedUserValidator
+  // wrapAsync(muteUserStoriesController)
+)
+
+/**
+ * Description: Get muted stories users
+ * Path: /get-muted-stories-users
+ * Method: GET
+ * Query: {page: number, limit: number}
+ * header: {Authorization:Bearer <access_token>}
+ */
+storiesRouter.get(
+  '/get-muted-stories-users',
+  AccessTokenValidator,
+  verifiedUserValidator
+  // wrapAsync(getMutedStoriesUsersController)
+)
 export default storiesRouter
