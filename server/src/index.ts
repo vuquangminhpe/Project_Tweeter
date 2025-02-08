@@ -23,6 +23,10 @@ import rateLimit from 'express-rate-limit'
 import commentsRouter from './routes/comments.routes'
 import tweetGeminiRoutes from './routes/tweetGemini.routes'
 import storiesRouter from './routes/stories.routes'
+import { Server } from 'socket.io'
+import { Server as HttpServer } from 'http'
+import autoDeleteSystem from './services/System/AutoDeleteStoriesSystem.system'
+
 config()
 databaseService
   .connect()
@@ -71,7 +75,9 @@ app.use('/stories', storiesRouter)
 // app.use('/static/video-hls', express.static(UPLOAD_VIDEO_HLS_DIR))
 
 app.use(defaultErrorHandler)
-initSocket(httpServer)
+const io = initSocket(httpServer)
+autoDeleteSystem.initialize(io)
+
 httpServer.listen(port, () => {
   console.log(`Server listening on port ${port}`)
 })

@@ -69,3 +69,47 @@ export const createNewStoryValidator = validate(
     ['body']
   )
 )
+
+export const viewAndStatusStoryValidator = validate(
+  checkSchema({
+    story_id: {
+      isString: {
+        errorMessage: STORIES_MESSAGE.STORY_ID_MUST_BE_A_STRING
+      },
+      notEmpty: {
+        errorMessage: STORIES_MESSAGE.STORY_ID_MUST_NOT_BE_EMPTY
+      },
+      custom: {
+        options: async (value, { req }) => {
+          const story = await databaseService.stories.findOne({
+            _id: new ObjectId(value as string)
+          })
+
+          if (!story) {
+            throw new ErrorWithStatus({
+              message: STORIES_MESSAGE.STORY_NOT_FOUND,
+              status: HTTP_STATUS.NOT_FOUND
+            })
+          }
+
+          return true
+        }
+      }
+    },
+    view_status: {
+      isString: {
+        errorMessage: STORIES_MESSAGE.VIEW_STATUS_MUST_BE_A_STRING
+      },
+      notEmpty: {
+        errorMessage: STORIES_MESSAGE.VIEW_STATUS_MUST_NOT_BE_EMPTY
+      }
+    },
+    content: {
+      isString: {
+        errorMessage: STORIES_MESSAGE.CONTENT_MUST_BE_A_STRING
+      }
+    }
+  })
+)
+
+export const updateStoryValidator = createNewStoryValidator

@@ -1,13 +1,14 @@
-import { ObjectId } from 'bson'
+import { ObjectId } from 'mongodb'
 import { MediaTypeQuery } from '~/constants/enums'
 interface ViewerType {
   viewer_id: ObjectId[]
   seen_at: Date
+  content: string
   view_status: string
 }
 interface StoryType {
   _id?: ObjectId
-  user_id: string
+  user_id: ObjectId
   media_url: string
   media_type: MediaTypeQuery
   caption?: string
@@ -22,7 +23,7 @@ interface StoryType {
 
 export default class Stories {
   _id?: ObjectId
-  user_id: string
+  user_id: ObjectId
   media_url: string
   media_type: MediaTypeQuery
   caption?: string

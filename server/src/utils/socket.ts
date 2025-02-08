@@ -149,6 +149,7 @@ const initSocket = (httpServer: ServerHttp) => {
       }
     })
   })
+  return io
 }
 
 export default initSocket

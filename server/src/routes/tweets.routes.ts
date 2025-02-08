@@ -94,9 +94,10 @@ tweetsRouter.get(
  */
 tweetsRouter.get(
   '/new/new-feeds',
-  paginationValidator,
+
   AccessTokenValidator,
   verifiedUserValidator,
+  paginationValidator,
   wrapAsync(getNewTweetController)
 )
 

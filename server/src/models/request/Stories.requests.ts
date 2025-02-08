@@ -7,3 +7,8 @@ export interface createNewStoryResBody {
   caption: string
   privacy: string[]
 }
+export interface viewAndStatusStoryResBody {
+  story_id: string
+  content: string
+  view_status: string
+}

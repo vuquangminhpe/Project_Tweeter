@@ -177,5 +177,11 @@ export const STORIES_MESSAGE = {
   STORY_LINK_IS_REQUIRED: 'Story link is required',
   STORY_LINK_MUST_BE_A_STRING: 'Story link must be a string',
   CONTENT_MUST_NOT_BE_EMPTY: 'Content must not be empty',
-  CAPTION_MUST_BE_NOT_BE_EMPTY: 'Caption must not be empty'
+  CAPTION_MUST_BE_NOT_BE_EMPTY: 'Caption must not be empty',
+  STORY_ID_MUST_NOT_BE_EMPTY: 'Story id must not be empty',
+  VIEW_STATUS_MUST_BE_A_STRING: 'View status must be a string',
+  VIEW_STATUS_MUST_NOT_BE_EMPTY: 'View status must not be empty',
+  VIEW_AND_STATUS_STORY_SUCCESS: 'View and status story success',
+  CANNOT_VIEW_AND_STATUS_YOURSELF_STORY: 'Cannot view and status yourself story',
+  UPDATE_STORY_SUCCESS: 'Update story success'
 }

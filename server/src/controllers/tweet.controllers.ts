@@ -80,7 +80,8 @@ export const getNewTweetController = async (req: Request<ParamsDictionary, any, 
   res.json({
     message: TWEET_MESSAGE.GET_NEW_TWEET_SUCCESS,
     results: tweets,
-    total
+    total,
+    total_pages: Math.ceil(total / limit)
   })
 }
 export const editTweetController = async (req: Request<ParamsDictionary, any, EditTweetRequestBody>, res: Response) => {
