@@ -1,10 +1,5 @@
-import { ExtendedError, Server, Socket } from 'socket.io'
-import { verifyAccessToken } from './common'
-import { TokenPayload } from '~/models/request/User.request'
-import { UserVerifyStatus } from '~/constants/enums'
-import { ErrorWithStatus } from '~/models/Errors'
-import { USERS_MESSAGES } from '~/constants/messages'
-import HTTP_STATUS from '~/constants/httpStatus'
+import { Server, Socket } from 'socket.io'
+
 import Conversations from '~/models/schemas/conversations.schema'
 import { ObjectId } from 'mongodb'
 import databaseService from '~/services/database.services'

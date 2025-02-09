@@ -262,6 +262,13 @@ class StoriesService {
     })
     return result
   }
+  async getStoryViewers({ user_id, story_id }: { user_id: string; story_id: string }) {
+    const result = await databaseService.stories.findOne({
+      user_id: new ObjectId(user_id),
+      _id: new ObjectId(story_id)
+    })
+    return result?.viewer
+  }
 }
 
 const storiesService = new StoriesService()

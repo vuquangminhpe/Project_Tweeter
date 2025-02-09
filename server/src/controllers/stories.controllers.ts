@@ -15,7 +15,8 @@ export const createNewStoryController = async (
   const { user_id } = req.decode_authorization as TokenPayload
   const result = await storiesService.createNewStory({ payload: req.body, user_id })
   res.json({
-    message: STORIES_MESSAGE.CREATE_STORY_SUCCESS
+    message: STORIES_MESSAGE.CREATE_STORY_SUCCESS,
+    result
   })
 }
 export const viewAndStatusStoryController = async (
@@ -82,6 +83,18 @@ export const deleteStoryController = async (req: Request, res: Response) => {
   const result = await storiesService.deleteStory({ user_id, story_id })
   res.json({
     message: STORIES_MESSAGE.DELETE_STORY_SUCCESS,
+    result
+  })
+}
+export const getStoryViewersController = async (req: Request, res: Response) => {
+  const { user_id } = req.decode_authorization as TokenPayload
+  const { story_id } = req.params
+  const result = await storiesService.getStoryViewers({
+    user_id,
+    story_id
+  })
+  res.json({
+    message: STORIES_MESSAGE.GET_STORY_VIEWERS_SUCCESS,
     result
   })
 }

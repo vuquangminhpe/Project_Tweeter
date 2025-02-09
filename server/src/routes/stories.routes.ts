@@ -4,6 +4,7 @@ import {
   deleteStoryController,
   getArchiveStoriesController,
   getNewsFeedStoriesController,
+  getStoryViewersController,
   updateStoryStoryController,
   viewAndStatusStoryController
 } from '~/controllers/stories.controllers'
@@ -113,48 +114,8 @@ storiesRouter.delete(
 storiesRouter.get(
   '/get-story-viewers/:story_id',
   AccessTokenValidator,
-  verifiedUserValidator
-  // wrapAsync(getStoryViewersController)
+  verifiedUserValidator,
+  wrapAsync(getStoryViewersController)
 )
 
-/**
- * Description: Share story to news feed
- * Path: /share-story-to-newsfeed/:story_id
- * Method: POST
- * Body: {caption: string}
- * header: {Authorization:Bearer <access_token>}
- */
-storiesRouter.post(
-  '/share-story-to-newsfeed/:story_id',
-  AccessTokenValidator,
-  verifiedUserValidator
-  // wrapAsync(shareStoryToNewsFeedController)
-)
-
-/**
- * Description: Mute stories from a user
- * Path: /mute-user-stories/:user_id
- * Method: POST
- * header: {Authorization:Bearer <access_token>}
- */
-storiesRouter.post(
-  '/mute-user-stories/:user_id',
-  AccessTokenValidator,
-  verifiedUserValidator
-  // wrapAsync(muteUserStoriesController)
-)
-
-/**
- * Description: Get muted stories users
- * Path: /get-muted-stories-users
- * Method: GET
- * Query: {page: number, limit: number}
- * header: {Authorization:Bearer <access_token>}
- */
-storiesRouter.get(
-  '/get-muted-stories-users',
-  AccessTokenValidator,
-  verifiedUserValidator
-  // wrapAsync(getMutedStoriesUsersController)
-)
 export default storiesRouter
