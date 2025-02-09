@@ -16,9 +16,7 @@ interface Props {
   totalPages: number
 }
 
-export default function EventWithMessage({ refetchChatData, message_id, content, receiver, totalPages }: Props) {
-  const queryClient = useQueryClient()
-
+export default function EventWithMessage({ refetchChatData, message_id, content }: Props) {
   const [isEditing, setIsEditing] = useState(false)
   const [newContent, setNewContent] = useState(content)
   const setEmojiMessageInConversationMutation = useMutation({

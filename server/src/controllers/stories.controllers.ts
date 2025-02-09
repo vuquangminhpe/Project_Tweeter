@@ -75,3 +75,13 @@ export const getArchiveStoriesController = async (req: Request, res: Response) =
     total_pages: Math.ceil(total / Number(limit))
   })
 }
+
+export const deleteStoryController = async (req: Request, res: Response) => {
+  const { user_id } = req.decode_authorization as TokenPayload
+  const { story_id } = req.params
+  const result = await storiesService.deleteStory({ user_id, story_id })
+  res.json({
+    message: STORIES_MESSAGE.DELETE_STORY_SUCCESS,
+    result
+  })
+}

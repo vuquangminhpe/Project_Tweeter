@@ -27,7 +27,7 @@ function Chat() {
   const [value, setValue] = useState<string>('')
   const [conversation, setConversation] = useState<Conversation[]>([])
   const [totalPages, setTotalPages] = useState<number | undefined>()
-  const [receiver, setReceiver] = useState<string>('')
+  const [receiver, setReceiver] = useState<string>(profile?._id)
   const chatContainerRef = useRef<HTMLDivElement>(null)
   const [initialScrollSet, setInitialScrollSet] = useState<boolean>(false)
   const [onlineUsers, setOnlineUsers] = useState<{ [key: string]: UserStatus }>({
@@ -42,6 +42,7 @@ function Chat() {
   const isLoadingRef = useRef<boolean>(false)
 
   useEffect(() => {
+    socket.connect()
     if (profile._id) {
       setReceiver(profile._id)
     }
