@@ -64,6 +64,7 @@ function Chat() {
 
   // Cập nhật receiver từ profile và thiết lập socket lắng nghe
   useEffect(() => {
+    socket.connect()
     if (profile._id) {
       setReceiver(profile._id)
     }

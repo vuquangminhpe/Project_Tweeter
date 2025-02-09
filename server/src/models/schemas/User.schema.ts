@@ -27,8 +27,8 @@ interface UserType {
   username?: string
   avatar?: string
   cover_photo?: string
-  is_online?: boolean // Thêm trường mới
-  last_active?: Date // Thêm trường mới
+  is_online?: boolean
+  last_active?: Date
 }
 
 export default class User {
