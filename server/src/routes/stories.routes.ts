@@ -1,6 +1,7 @@
 import { Router } from 'express'
 import {
   createNewStoryController,
+  getArchiveStoriesController,
   getNewsFeedStoriesController,
   updateStoryStoryController,
   viewAndStatusStoryController
@@ -84,8 +85,8 @@ storiesRouter.get(
 storiesRouter.get(
   '/get-archive-stories',
   AccessTokenValidator,
-  verifiedUserValidator
-  // wrapAsync(getArchiveStoriesController)
+  verifiedUserValidator,
+  wrapAsync(getArchiveStoriesController)
 )
 
 /**

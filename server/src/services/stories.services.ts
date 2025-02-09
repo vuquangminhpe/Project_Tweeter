@@ -231,6 +231,30 @@ class StoriesService {
 
     return { result: result[0]?.stories || [], total: result[0]?.stories.length || 0 }
   }
+  async getArchiveStories({ user_id, limit, page }: { user_id: string; limit: number; page: number }) {
+    const result = await databaseService.stories
+      .aggregate([
+        {
+          $match: {
+            user_id: new ObjectId(user_id),
+            is_active: false
+          }
+        },
+        {
+          $sort: {
+            created_at: -1
+          }
+        },
+        {
+          $skip: limit * (page - 1)
+        },
+        {
+          $limit: page
+        }
+      ])
+      .toArray()
+    return { result, total: result.length }
+  }
 }
 
 const storiesService = new StoriesService()
