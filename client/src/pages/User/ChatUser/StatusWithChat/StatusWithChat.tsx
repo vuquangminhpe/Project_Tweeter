@@ -1,7 +1,4 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useEffect } from 'react'
-import socket from '@/utils/socket'
-import { Profile } from '@/types/User.type'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { useQuery } from '@tanstack/react-query'
 import conversationsApi from '@/apis/conversation.api'
@@ -14,58 +11,17 @@ interface UserStatus {
 }
 
 interface StatusWithChatProps {
+  statusOnline: boolean
   onReceiverChange: (receiverId: string) => void
   onlineUsers: { [key: string]: UserStatus }
-  setOnlineUsers: React.Dispatch<React.SetStateAction<{ [key: string]: UserStatus }>>
 }
 
-export default function StatusWithChat({ onReceiverChange, onlineUsers, setOnlineUsers }: StatusWithChatProps) {
-  const profile = JSON.parse(localStorage.getItem('profile') as string) as Profile
+export default function StatusWithChat({ onReceiverChange, statusOnline }: StatusWithChatProps) {
   const { data: dataFollowers } = useQuery({
     queryKey: ['followers'],
     queryFn: () => conversationsApi.getAllConversationsWithFollower(10, 1)
   })
   const allData = dataFollowers?.data?.result
-
-  useEffect(() => {
-    socket.connect()
-    if (profile._id) {
-      socket.auth = {
-        Authorization: `Bearer ${localStorage.getItem('access_token')}`,
-        _id: profile._id
-      }
-    }
-    socket.emit('get_all_online_users')
-
-    socket.on('user_status_change', (data: UserStatus) => {
-      setOnlineUsers((prev) => ({
-        ...prev,
-        [data.user_id]: data
-      }))
-    })
-
-    socket.on('all_online_users_response', (users: { [key: string]: UserStatus }) => {
-      setOnlineUsers(users)
-    })
-
-    return () => {
-      socket.off('user_status_change')
-      socket.off('all_online_users_response')
-    }
-  }, [profile._id, setOnlineUsers])
-  console.log('onlineUsers', onlineUsers)
-
-  const formatLastActive = (date: Date) => {
-    const lastActive = new Date(date)
-    const now = new Date()
-    const diffInMilliseconds = Math.abs(now.getTime() - lastActive.getTime())
-    const diffInMinutes = Math.floor(diffInMilliseconds / (1000 * 60))
-
-    if (diffInMinutes < 1) return 'just now'
-    if (diffInMinutes < 60) return `${diffInMinutes}m ago`
-    if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes / 60)}h ago`
-    return `${Math.floor(diffInMinutes / 1440)}d ago`
-  }
 
   const getProfile = async (username: string) => {
     try {
@@ -101,7 +57,7 @@ export default function StatusWithChat({ onReceiverChange, onlineUsers, setOnlin
                   <AvatarImage src={user.avatar || user.cover_photo} />
                   <AvatarFallback className='text-black bg-white'>{user.name.charAt(0)}</AvatarFallback>
                 </Avatar>
-                {onlineUsers[user._id]?.is_online && (
+                {statusOnline && (
                   <span className='absolute bottom-0 right-0 h-3 w-3'>
                     <span className='absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75 animate-ping'></span>
                     <span className='relative inline-flex h-3 w-3 rounded-full bg-green-500 border-2 border-white'></span>
@@ -111,13 +67,6 @@ export default function StatusWithChat({ onReceiverChange, onlineUsers, setOnlin
 
               <div className='flex-1 flex flex-col items-start'>
                 <span className='font-medium text-gray-900'>{user.name}</span>
-                <span className='text-xs text-gray-500'>
-                  {onlineUsers[user._id]
-                    ? onlineUsers[user._id].is_online
-                      ? 'Active Now'
-                      : `Last seen ${formatLastActive(onlineUsers[user._id].last_active)}`
-                    : `Last seen ${formatLastActive(user.last_active !== null ? new Date(user.last_active) : new Date())}`}
-                </span>
               </div>
             </button>
           ))

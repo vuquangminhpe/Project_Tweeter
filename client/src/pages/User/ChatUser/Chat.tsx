@@ -12,15 +12,15 @@ import { HoverCard, HoverCardContent, HoverCardTrigger } from '@radix-ui/react-h
 import { Event_Message_Status } from '@/types/Emoji.types'
 import conversationsApi from '@/apis/conversation.api'
 import ChatInput from './ChatInput'
+import HeaderChat from './HeaderChat'
 
-interface UserStatus {
+export interface UserStatus {
   user_id: string
   is_online: boolean
   last_active: Date
 }
 
 function Chat() {
-  // Refs & state
   const observerRef = useRef<IntersectionObserver | null>(null)
   const loadPreviousRef = useRef<HTMLDivElement>(null)
   const chatContainerRef = useRef<HTMLDivElement>(null)
@@ -43,17 +43,6 @@ function Chat() {
     }
   })
 
-  // Hàm duy trì vị trí scroll hiện tại (sử dụng chatContainerRef)
-  const maintainScroll = () => {
-    const currentScroll = chatContainerRef.current?.scrollTop
-    setTimeout(() => {
-      if (chatContainerRef.current !== null && currentScroll !== undefined) {
-        chatContainerRef.current.scrollTop = currentScroll
-      }
-    }, 0)
-  }
-
-  // Hàm refetch giữ nguyên vị trí scroll
   const handleRefetch = async () => {
     const currentScroll = chatContainerRef.current?.scrollTop || 0
     await refetchChatData()
@@ -62,7 +51,6 @@ function Chat() {
     }
   }
 
-  // Cập nhật receiver từ profile và thiết lập socket lắng nghe
   useEffect(() => {
     socket.connect()
     if (profile._id) {
@@ -102,7 +90,6 @@ function Chat() {
     fetchData()
   }, [receiver])
 
-  // Sử dụng useInfiniteQuery để tải dữ liệu chat
   const {
     data: chatData,
     refetch: refetchChatData,
@@ -127,11 +114,9 @@ function Chat() {
     select: (data) => ({
       pages: [...data.pages],
       pageParams: [...data.pageParams]
-    }),
-    keepPreviousData: true
+    })
   })
 
-  // Observer để tải tin nhắn cũ khi cuộn lên
   const handleObserver = useCallback(
     (entries: IntersectionObserverEntry[]) => {
       const target = entries[0]
@@ -166,7 +151,6 @@ function Chat() {
     }
   }, [handleObserver])
 
-  // Gom tất cả tin nhắn từ các trang trả về
   const allMessages = useMemo(() => {
     return chatData?.pages?.flatMap((page) => page.result.conversations) ?? []
   }, [chatData])
@@ -181,7 +165,6 @@ function Chat() {
     }
   }, [allMessages, initialScrollSet])
 
-  // Hàm gửi tin nhắn mới
   const send = () => {
     if (!value.trim()) return
 
@@ -212,7 +195,6 @@ function Chat() {
     [isFetchingPreviousPage]
   )
 
-  // Hàm chuyển số emoji thành icon (nếu có)
   const getEmojiByNumber = (number: number): string | undefined => {
     const emojiEntry = Object.entries(Event_Message_Status).find(([key, value]) => {
       const [emoji, num] = value.split('.')
@@ -222,72 +204,58 @@ function Chat() {
   }
 
   return (
-    <div ref={messagesEndRef} className="flex h-screen bg-gray-100">
-      {/* Sidebar chat (trạng thái, danh sách bạn bè, ...) */}
-      <div className="w-[320px] min-w-[280px] border-r border-gray-200 bg-white overflow-hidden">
+    <div ref={messagesEndRef} className='flex h-screen bg-gray-100'>
+      <div className='w-[320px] min-w-[280px] border-r border-gray-200 bg-white overflow-hidden'>
         <StatusWithChat
           onReceiverChange={setReceiver}
           onlineUsers={onlineUsers}
-          setOnlineUsers={setOnlineUsers}
+          statusOnline={onlineUsers[receiver]?.is_online}
         />
       </div>
 
-      {/* Khu vực chat chính */}
-      <div className="flex-1 flex flex-col min-w-0">
-        <div ref={loadPreviousRef} className="w-full py-4 text-center">
-          {isFetchingPreviousPage ? (
-            <div className="flex justify-center">
-              <div className="animate-spin rounded-full h-3 w-3 border-t-4 border-b-4 border-blue-500"></div>
-            </div>
-          ) : hasPreviousPage ? (
-            <div className="text-gray-500 italic">Scroll up for previous messages...</div>
-          ) : (
-            receiver.length > 0 && <div className="text-gray-400">No more messages to load</div>
-          )}
+      <div className='flex-1 flex flex-col min-w-0'>
+        <div ref={loadPreviousRef} className='w-full py-4 text-center'>
+          <HeaderChat
+            receiverId={receiver}
+            onlineReceiver={onlineUsers[receiver]?.is_online}
+            onlineUsers={onlineUsers}
+            setOnlineUsers={setOnlineUsers}
+          />
         </div>
 
-        {/* Danh sách tin nhắn */}
-        <div
-          ref={chatContainerRef}
-          className="flex-1 bg-white overflow-y-auto px-4"
-          onWheel={handleWheel}
-        >
+        <div ref={chatContainerRef} className='flex-1 bg-white overflow-y-auto px-4' onWheel={handleWheel}>
           {conversation?.map((msg) => (
             <div
               key={msg._id}
               className={`flex mb-3 ${msg.sender_id === profile._id ? 'justify-end' : 'justify-start'}`}
             >
               {msg.sender_id !== profile._id ? (
-                // Tin nhắn của người khác:
-                <div className="flex items-center group">
-                  {/* Avatar bên trái */}
-                  <div className="relative shrink-0 ml-2 mr-3">
-                    <Avatar className="h-8 w-8 sm:h-10 sm:w-10">
-                      <AvatarImage src="https://github.com/shadcn.png" />
+                <div className='flex items-center group'>
+                  <div className='relative shrink-0 ml-2 mr-3'>
+                    <Avatar className='h-8 w-8 sm:h-10 sm:w-10'>
+                      <AvatarImage src='https://github.com/shadcn.png' />
                       <AvatarFallback>CN</AvatarFallback>
                     </Avatar>
                     {onlineUsers[msg.sender_id]?.is_online && (
-                      <span className="absolute bottom-0 left-0 w-2 h-2 sm:w-3 sm:h-3 bg-green-500 rounded-full border-2 border-white"></span>
+                      <span className='absolute bottom-0 left-0 w-2 h-2 sm:w-3 sm:h-3 bg-green-500 rounded-full border-2 border-white'></span>
                     )}
                   </div>
-                  {/* Nội dung tin nhắn */}
-                  <div className="max-w-[70%] items-center px-3 py-2 sm:px-4 sm:py-2 rounded-2xl relative bg-gray-200 text-black rounded-bl-none">
+                  <div className='max-w-[70%] items-center px-3 py-2 sm:px-4 sm:py-2 rounded-2xl relative bg-gray-200 text-black rounded-bl-none'>
                     <HoverCard>
-                      <HoverCardTrigger className="flex items-center justify-between">
-                        <div className="break-words">{msg.content}</div>
-                        <div className="absolute right-0 bottom-0 translate-y-2 text-sm">
+                      <HoverCardTrigger className='flex items-center justify-between'>
+                        <div className='break-words'>{msg.content}</div>
+                        <div className='absolute right-0 bottom-0 translate-y-2 text-sm'>
                           {getEmojiByNumber(msg.emoji as unknown as number)}
                         </div>
                       </HoverCardTrigger>
-                      <HoverCardContent className="bg-gray-300 translate-y-6 p-3 rounded-xl shadow-xl z-50">
+                      <HoverCardContent className='bg-gray-300 translate-y-6 p-3 rounded-xl shadow-xl z-50'>
                         {new Date(msg.created_at).toISOString() !== new Date(msg.updated_at).toISOString()
                           ? new Date(msg.updated_at).toLocaleString() + ' (đã chỉnh sửa)'
                           : new Date(msg.created_at).toLocaleString()}
                       </HoverCardContent>
                     </HoverCard>
                   </div>
-                  {/* Nút “...” (với hiệu ứng hiển thị khi hover) */}
-                  <div className="ml-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                  <div className='ml-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200'>
                     <EventWithMessage
                       refetchChatData={handleRefetch}
                       message_id={msg._id}
@@ -299,10 +267,8 @@ function Chat() {
                   </div>
                 </div>
               ) : (
-                // Tin nhắn của chính người dùng:
-                <div className="flex items-center group">
-                  {/* Nút “...” (hiển thị khi hover) */}
-                  <div className="mr-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                <div className='flex items-center group'>
+                  <div className='mr-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200'>
                     <EventWithMessage
                       refetchChatData={handleRefetch}
                       message_id={msg._id}
@@ -312,18 +278,16 @@ function Chat() {
                       isOwnMessage={true}
                     />
                   </div>
-                  {/* Nội dung tin nhắn */}
-                  <div className="max-w-[70%] px-3 py-2 sm:px-4 sm:py-2 rounded-2xl bg-blue-500 text-white rounded-br-none">
-                    <div className="break-words">{msg.content}</div>
+                  <div className='max-w-[70%] px-3 py-2 sm:px-4 sm:py-2 rounded-2xl bg-blue-500 text-white rounded-br-none'>
+                    <div className='break-words'>{msg.content}</div>
                   </div>
-                  {/* Avatar bên phải */}
-                  <div className="relative shrink-0 ml-3">
-                    <Avatar className="h-8 w-8 sm:h-10 sm:w-10">
-                      <AvatarImage src="https://github.com/shadcn.png" />
+                  <div className='relative shrink-0 ml-3'>
+                    <Avatar className='h-8 w-8 sm:h-10 sm:w-10'>
+                      <AvatarImage src='https://github.com/shadcn.png' />
                       <AvatarFallback>CN</AvatarFallback>
                     </Avatar>
                     {onlineUsers[msg.sender_id]?.is_online && (
-                      <span className="absolute bottom-0 right-0 w-2 h-2 sm:w-3 sm:h-3 bg-green-500 rounded-full border-2 border-white"></span>
+                      <span className='absolute bottom-0 right-0 w-2 h-2 sm:w-3 sm:h-3 bg-green-500 rounded-full border-2 border-white'></span>
                     )}
                   </div>
                 </div>
@@ -331,15 +295,7 @@ function Chat() {
             </div>
           ))}
         </div>
-
-        {/* Input gửi tin nhắn */}
-        <ChatInput
-          value={value}
-          setValue={setValue}
-          send={send}
-          inputRef={inputRef}
-          refetchChatData={handleRefetch}
-        />
+        <ChatInput value={value} setValue={setValue} send={send} inputRef={inputRef} refetchChatData={handleRefetch} />
       </div>
     </div>
   )
