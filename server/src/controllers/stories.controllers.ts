@@ -98,3 +98,22 @@ export const getStoryViewersController = async (req: Request, res: Response) => 
     result
   })
 }
+export const reactStoryController = async (req: Request, res: Response) => {
+  const { user_id } = req.decode_authorization as TokenPayload
+  const { story_id } = req.params
+  const { reaction_type } = req.body
+  const result = await storiesService.reactStory({ user_id, story_id, reaction_type })
+  res.json({
+    message: STORIES_MESSAGE.REACT_STORY_SUCCESS,
+    result
+  })
+}
+export const replyStoryController = async (req: Request, res: Response) => {
+  const { user_id } = req.decode_authorization as TokenPayload
+  const { story_id } = req.params
+  const result = await storiesService.replyStory({ user_id, story_id, payload: req.body })
+  res.json({
+    message: STORIES_MESSAGE.REPLY_STORY_SUCCESS,
+    result
+  })
+}

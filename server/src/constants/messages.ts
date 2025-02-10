@@ -186,5 +186,7 @@ export const STORIES_MESSAGE = {
   UPDATE_STORY_SUCCESS: 'Update story success',
   GET_NEWS_FEED_STORIES_SUCCESS: 'Get news feed stories success',
   GET_ARCHIVE_STORIES_SUCCESS: 'Get archive stories success',
-  GET_STORY_VIEWERS_SUCCESS: 'Get story viewers success'
+  GET_STORY_VIEWERS_SUCCESS: 'Get story viewers success',
+  REACT_STORY_SUCCESS: 'React story success',
+  REPLY_STORY_SUCCESS: 'Reply story success'
 }

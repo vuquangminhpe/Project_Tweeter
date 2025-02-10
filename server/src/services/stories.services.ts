@@ -269,6 +269,46 @@ class StoriesService {
     })
     return result?.viewer
   }
+  async reactStory({ user_id, story_id, reaction }: { user_id: string; story_id: string; reaction: string }) {
+    const result = await databaseService.stories.findOneAndUpdate(
+      {
+        user_id: new ObjectId(user_id),
+        _id: new ObjectId(story_id)
+      },
+      {
+        $push: {
+          reactions: {
+            user_id: new ObjectId(user_id),
+            reaction
+          }
+        }
+      },
+      {
+        returnDocument: 'after'
+      }
+    )
+    return result
+  }
+  async replyStory({ user_id, story_id, payload }: { user_id: string; story_id: string; payload: any }) {
+    const result = await databaseService.stories.findOneAndUpdate(
+      {
+        user_id: new ObjectId(user_id),
+        _id: new ObjectId(story_id)
+      },
+      {
+        $push: {
+          replies: {
+            user_id: new ObjectId(user_id),
+            ...payload
+          }
+        }
+      },
+      {
+        returnDocument: 'after'
+      }
+    )
+    return result
+  }
 }
 
 const storiesService = new StoriesService()
