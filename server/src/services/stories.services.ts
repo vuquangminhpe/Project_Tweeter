@@ -269,7 +269,7 @@ class StoriesService {
     })
     return result?.viewer
   }
-  async reactStory({ user_id, story_id, reaction }: { user_id: string; story_id: string; reaction: string }) {
+  async reactStory({ user_id, story_id, reaction_type }: { user_id: string; story_id: string; reaction_type: string }) {
     const result = await databaseService.stories.findOneAndUpdate(
       {
         user_id: new ObjectId(user_id),
@@ -279,7 +279,7 @@ class StoriesService {
         $push: {
           reactions: {
             user_id: new ObjectId(user_id),
-            reaction
+            reaction_type
           }
         }
       },
@@ -305,6 +305,25 @@ class StoriesService {
       },
       {
         returnDocument: 'after'
+      }
+    )
+    return result
+  }
+
+  async hideUserStories({ user_id, target_user_id }: { user_id: string; target_user_id: string }) {
+    const result = await databaseService.stories.updateMany(
+      {
+        user_id: new ObjectId(user_id),
+        viewer: {
+          $elemMatch: {
+            viewer_id: new ObjectId(target_user_id)
+          }
+        }
+      },
+      {
+        $set: {
+          'viewer.$.view_status': 'hidden'
+        }
       }
     )
     return result

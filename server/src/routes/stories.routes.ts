@@ -5,12 +5,16 @@ import {
   getArchiveStoriesController,
   getNewsFeedStoriesController,
   getStoryViewersController,
+  hideUserStoriesController,
   reactStoryController,
+  replyStoryController,
   updateStoryStoryController,
   viewAndStatusStoryController
 } from '~/controllers/stories.controllers'
 import {
   createNewStoryValidator,
+  deleteStoryValidator,
+  hideUserStoriesValidator,
   reactStoryValidator,
   replyStoryValidator,
   updateStoryValidator,
@@ -104,6 +108,7 @@ storiesRouter.delete(
   '/delete-story/:story_id',
   AccessTokenValidator,
   verifiedUserValidator,
+  deleteStoryValidator,
   wrapAsync(deleteStoryController)
 )
 
@@ -143,28 +148,28 @@ storiesRouter.post(
  * Body: {content: string, media_url?: string, media_type?: string}
  * header: {Authorization: Bearer <access_token>}
  */
-// storiesRouter.post(
-//   '/reply-story/:story_id',
-//   AccessTokenValidator,
-//   verifiedUserValidator,
-//   replyStoryValidator,
-//   wrapAsync(replyStoryController)
-// )
+storiesRouter.post(
+  '/reply-story/:story_id',
+  AccessTokenValidator,
+  verifiedUserValidator,
+  replyStoryValidator,
+  wrapAsync(replyStoryController)
+)
 
-// /**
-//  * Description: Hide stories from a specific user
-//  * Path: /hide-user-stories/:user_id
-//  * Method: POST
-//  * Body: {duration?: string}
-//  * header: {Authorization: Bearer <access_token>}
-//  */
-// storiesRouter.post(
-//   '/hide-user-stories/:user_id',
-//   AccessTokenValidator,
-//   verifiedUserValidator,
-//   hideUserStoriesValidator,
-//   wrapAsync(hideUserStoriesController)
-// )
+/**
+ * Description: Hide stories from a specific user
+ * Path: /hide-user-stories/:user_id
+ * Method: POST
+ * Body: {duration?: string}
+ * header: {Authorization: Bearer <access_token>}
+ */
+storiesRouter.post(
+  '/hide-user-stories/:reaction_user_id',
+  AccessTokenValidator,
+  verifiedUserValidator,
+  hideUserStoriesValidator,
+  wrapAsync(hideUserStoriesController)
+)
 
 // /**
 //  * Description: Toggle story notifications for a user
