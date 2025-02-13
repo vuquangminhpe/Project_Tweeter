@@ -2,7 +2,7 @@ import { createNewStoryResBody, viewAndStatusStoryResBody } from '~/models/reque
 import databaseService from './database.services'
 import { ObjectId } from 'mongodb'
 import Stories from '~/models/schemas/Stories.schema'
-
+ 
 class StoriesService {
   async createNewStory({ payload, user_id }: { payload: createNewStoryResBody; user_id: string }) {
     try {
@@ -224,7 +224,7 @@ class StoriesService {
           $skip: limit * (page - 1)
         },
         {
-          $limit: page
+          $limit: limit
         }
       ])
       .toArray()

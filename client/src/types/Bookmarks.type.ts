@@ -4,3 +4,4 @@ export interface Bookmark {
   tweet_id: string
   created_at?: Date
 }
+ 

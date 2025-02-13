@@ -4,7 +4,7 @@
 const { Container } = require('postcss')
 const plugin = require('tailwindcss/plugin')
 module.exports = {
-  darkMode: ['class'],
+  darkMode: ['false'],
   content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
   corePlugins: {
     container: false

@@ -11,7 +11,7 @@ interface StoryType {
   user_id: ObjectId
   media_url: string
   media_type: MediaTypeQuery
-  caption?: string
+  caption?: string 
   content: string
   created_at?: Date
   expires_at?: Date

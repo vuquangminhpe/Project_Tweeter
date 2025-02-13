@@ -48,6 +48,8 @@ export const updateStoryStoryController = async (req: Request<ParamsDictionary, 
 export const getNewsFeedStoriesController = async (req: Request, res: Response) => {
   const { user_id } = req.decode_authorization as TokenPayload
   const { limit, page } = req.query
+  console.log(user_id);
+  
   const { result, total } = await storiesService.getNewsFeedStories({
     user_id,
     limit: Number(limit),
