@@ -217,14 +217,10 @@ class StoriesService {
         {
           $project: {
             _id: 0,
-            stories: 1
+            stories: {
+              $slice: ['$stories', limit * (page - 1), limit]
+            }
           }
-        },
-        {
-          $skip: limit * (page - 1)
-        },
-        {
-          $limit: page
         }
       ])
       .toArray()
