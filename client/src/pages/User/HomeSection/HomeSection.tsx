@@ -16,6 +16,7 @@ import { Media } from '@/types/Medias.type'
 import { TweetAudience, TweetType } from '@/constants/enum'
 import apiUser from '@/apis/users.api'
 import { createdTweet, TweetFormValues, Tweets } from '@/types/Tweet.type'
+import ActiveGemini from './ActiveGemini'
 
 const validationSchema = Yup.object().shape({
   content: Yup.string().required('Tweet text is required'),
@@ -36,6 +37,7 @@ const HomeSection = ({ setEdit, isPendingTweet = true, isTitleName = 'Post', cus
   const [activeTab, setActiveTab] = useState<string>('forYou')
   const [uploadingImage, setUploadingImage] = useState<boolean>(false)
   const [selectItemInTweet, setSelectItemInTweet] = useState<File[]>([])
+  const [contentWithGenerateAi, setContentWithGenerateAi] = useState<string>('')
   const [imagePreviews, setImagePreviews] = useState<(string | ArrayBuffer)[]>([])
   const [allLinkCreatedTweet, setAllLinkCreatedTweet] = useState<Media[]>([])
   const [allIdWithMentionName, setAllIdWithMentionName] = useState<string[]>([])
@@ -332,7 +334,7 @@ const HomeSection = ({ setEdit, isPendingTweet = true, isTitleName = 'Post', cus
           </div>
         </div>
       )}
-
+      <ActiveGemini setContentWithGenerateAi={setContentWithGenerateAi} />
       <div className={`bg-gray-50 rounded-xl p-4 shadow-inner ${isPendingTweet ? 'mb-6' : 'w-full'}`}>
         <div className='flex items-start space-x-4'>
           <Avatar className='w-12 h-12 border-2 border-blue-100'>

@@ -76,7 +76,7 @@ app.use('/stories', storiesRouter)
 
 app.use(defaultErrorHandler)
 const io = initSocket(httpServer)
-autoDeleteSystem.initialize(io)
+// autoDeleteSystem.initialize(io)
 
 httpServer.listen(port, () => {
   console.log(`Server listening on port ${port}`)

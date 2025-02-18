@@ -7,7 +7,7 @@ import { wrapAsync } from '~/utils/handler'
 const tweetGeminiRoutes = Router()
 
 /**
- * Description: generate tweet with gemini (image)
+ * Description: generate tweet with gemini (text)
  * Path: /generate/text
  * Method: POST
  * header: {Authorization:Bearer <access_token> }

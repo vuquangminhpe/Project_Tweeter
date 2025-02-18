@@ -217,14 +217,10 @@ class StoriesService {
         {
           $project: {
             _id: 0,
-            stories: 1
+            stories: {
+              $slice: ['$stories', limit * (page - 1), limit]
+            }
           }
-        },
-        {
-          $skip: limit * (page - 1)
-        },
-        {
-          $limit: limit
         }
       ])
       .toArray()
@@ -260,6 +256,72 @@ class StoriesService {
       _id: new ObjectId(story_id),
       user_id: new ObjectId(user_id)
     })
+    return result
+  }
+  async getStoryViewers({ user_id, story_id }: { user_id: string; story_id: string }) {
+    const result = await databaseService.stories.findOne({
+      user_id: new ObjectId(user_id),
+      _id: new ObjectId(story_id)
+    })
+    return result?.viewer
+  }
+  async reactStory({ user_id, story_id, reaction_type }: { user_id: string; story_id: string; reaction_type: string }) {
+    const result = await databaseService.stories.findOneAndUpdate(
+      {
+        user_id: new ObjectId(user_id),
+        _id: new ObjectId(story_id)
+      },
+      {
+        $push: {
+          reactions: {
+            user_id: new ObjectId(user_id),
+            reaction_type
+          }
+        }
+      },
+      {
+        returnDocument: 'after'
+      }
+    )
+    return result
+  }
+  async replyStory({ user_id, story_id, payload }: { user_id: string; story_id: string; payload: any }) {
+    const result = await databaseService.stories.findOneAndUpdate(
+      {
+        user_id: new ObjectId(user_id),
+        _id: new ObjectId(story_id)
+      },
+      {
+        $push: {
+          replies: {
+            user_id: new ObjectId(user_id),
+            ...payload
+          }
+        }
+      },
+      {
+        returnDocument: 'after'
+      }
+    )
+    return result
+  }
+
+  async hideUserStories({ user_id, target_user_id }: { user_id: string; target_user_id: string }) {
+    const result = await databaseService.stories.updateMany(
+      {
+        user_id: new ObjectId(user_id),
+        viewer: {
+          $elemMatch: {
+            viewer_id: new ObjectId(target_user_id)
+          }
+        }
+      },
+      {
+        $set: {
+          'viewer.$.view_status': 'hidden'
+        }
+      }
+    )
     return result
   }
 }

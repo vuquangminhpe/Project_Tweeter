@@ -75,7 +75,8 @@ export const USERS_MESSAGES = {
   S3_LINK_IS_REQUIRED: 'S3 link is required',
   S3_LINK_MUST_BE_A_STRING: 'S3 link must be a string',
   LINK_IS_REQUIRED: 'Link is required',
-  LINK_MUST_BE_A_STRING: 'Link must be a string'
+  LINK_MUST_BE_A_STRING: 'Link must be a string',
+  REACTION_USER_ID_MUST_NOT_BE_EMPTY: 'Reaction user id must not be empty'
 } as const
 
 export const TWEET_MESSAGE = {
@@ -185,5 +186,10 @@ export const STORIES_MESSAGE = {
   CANNOT_VIEW_AND_STATUS_YOURSELF_STORY: 'Cannot view and status yourself story',
   UPDATE_STORY_SUCCESS: 'Update story success',
   GET_NEWS_FEED_STORIES_SUCCESS: 'Get news feed stories success',
-  GET_ARCHIVE_STORIES_SUCCESS: 'Get archive stories success'
+  GET_ARCHIVE_STORIES_SUCCESS: 'Get archive stories success',
+  GET_STORY_VIEWERS_SUCCESS: 'Get story viewers success',
+  REACT_STORY_SUCCESS: 'React story success',
+  REPLY_STORY_SUCCESS: 'Reply story success',
+  HIDE_USER_STORIES_SUCCESS: 'Hide user stories success',
+  STORY_IS_NOT_YOURS_SELF_YOU_CANNOT_DELETE_IT: 'Story is not yours self you cannot delete it'
 }

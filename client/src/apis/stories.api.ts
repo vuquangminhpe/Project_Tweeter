@@ -11,18 +11,11 @@ export type NewsFeedStory = Pick<
 }
 
 const storiesApi = {
-  getNewsFeedStories: async (limit: number = 5, page: number = 1) => {
-    try {
-      const response = await http.get<SuccessResponse<NewsFeedStory[]>>(
-        `/stories/get-news-feed-stories?limit=${limit}&page=${page}`
-      )
-      console.log("Fetched news feed stories:", response.data)
-      return response
-    } catch (error) {
-      console.error("Error fetching news feed stories:", error)
-      throw error
-    }
-  }
+  getNewsFeedStories: (limit: number = 5, page: number = 1 )=>
+    http.get<SuccessResponse<{ result: NewsFeedStory[]; page: number; total_pages: number }>>(
+      `/stories/get-news-feed-stories?limit=${limit}&page=${page}`
+    )
+    
 }
 
 export default storiesApi

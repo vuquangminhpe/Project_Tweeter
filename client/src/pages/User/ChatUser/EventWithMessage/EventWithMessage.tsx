@@ -17,6 +17,7 @@ interface Props {
   receiver: string
   totalPages: number
   isOwnMessage: boolean
+  onStartEditing: (messageId: string | number, content: string) => void
 }
 
 export default function EventWithMessage({
@@ -25,11 +26,10 @@ export default function EventWithMessage({
   content,
   receiver,
   totalPages,
-  isOwnMessage
+  isOwnMessage,
+  onStartEditing
 }: Props) {
   const queryClient = useQueryClient()
-  const [isEditing, setIsEditing] = useState(false)
-  const [newContent, setNewContent] = useState(content)
   const [dropdownOpen, setDropdownOpen] = useState(false)
 
   const setEmojiMessageInConversationMutation = useMutation({
@@ -38,19 +38,6 @@ export default function EventWithMessage({
     onSuccess: (data) => {
       console.log(data)
       refetchChatData()
-    },
-    onError: (error) => {
-      console.log(error)
-    }
-  })
-
-  const editMessageMutation = useMutation({
-    mutationFn: (updatedContent: string) =>
-      conversationsApi.editMessageInConversation(message_id, updatedContent),
-    onSuccess: (data) => {
-      console.log(data)
-      refetchChatData()
-      setIsEditing(false)
     },
     onError: (error) => {
       console.log(error)
@@ -67,21 +54,14 @@ export default function EventWithMessage({
     }
   })
 
-  const handleEditMessage = async () => {
-    try {
-      await editMessageMutation.mutateAsync(newContent)
-    } catch (error) {
-      console.error('Error editing message:', error)
-    }
-  }
-
   const handleEmojiSelect = async (emoji: string) => {
     await setEmojiMessageInConversationMutation.mutateAsync(emoji)
     setDropdownOpen(false)
   }
 
   const handleDeleteMessage = async () => {
-    deleteMessageInConversationMutation.mutateAsync()
+    await deleteMessageInConversationMutation.mutateAsync()
+    setDropdownOpen(false)
   }
 
   const emojiList = Object.values(Event_Message_Status).map((emoji) => ({
@@ -89,120 +69,90 @@ export default function EventWithMessage({
     number: emoji.split('.')[1]
   }))
 
-  // Nhóm theo hàng: 5 emoji 1 hàng
+  // Nhóm emoji theo hàng: 5 emoji/1 hàng
   const groupedEmojis = []
   for (let i = 0; i < emojiList.length; i += 5) {
     groupedEmojis.push(emojiList.slice(i, i + 5))
   }
 
-  if (isEditing) {
-    return (
-      <div className='flex items-center gap-2'>
-        <input
-          type='text'
-          defaultValue={content}
-          onChange={(e) => setNewContent(e.target.value)}
-          className='flex-1 p-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500'
-        />
-        <button
-          onClick={() => {
-            setIsEditing(false)
-            setNewContent(content)
-          }}
-          className='px-4 py-2 text-sm text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300'
-        >
-          Cancel
-        </button>
-        <button
-          onClick={handleEditMessage}
-          className='px-4 py-2 text-sm text-white bg-blue-600 rounded-md hover:bg-blue-700'
-        >
-          Save
-        </button>
-      </div>
-    )
-  }
-
   return (
-    <div className='relative flex'>
+    <div className="relative flex">
       <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
-        <DropdownMenuTrigger className='p-1 hover:bg-gray-100 rounded-full transition-colors'>
+        <DropdownMenuTrigger className="p-1 hover:bg-gray-100 rounded-full transition-colors">
           <svg
-            xmlns='http://www.w3.org/2000/svg'
-            fill='none'
-            viewBox='0 0 24 24'
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
             strokeWidth={1.5}
-            stroke='currentColor'
-            className='w-5 h-5 text-gray-600'
+            stroke="currentColor"
+            className="w-5 h-5 text-gray-600"
           >
             <path
-              strokeLinecap='round'
-              strokeLinejoin='round'
-              d='M6.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM12.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM18.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z'
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M6.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM12.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM18.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z"
             />
           </svg>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align='end' className='min-w-[200px] rounded-xl shadow-xl p-1'>
+        <DropdownMenuContent align="end" className="min-w-[200px] rounded-xl shadow-xl p-1">
           {isOwnMessage ? (
             <>
               <DropdownMenuItem
-                className='flex items-center gap-2 px-3 py-2 text-sm cursor-pointer hover:bg-gray-100 rounded-lg'
+                className="flex items-center gap-2 px-3 py-2 text-sm cursor-pointer hover:bg-gray-100 rounded-lg"
                 onClick={() => {
-                  setIsEditing(true)
+                  onStartEditing(message_id, content)
                   setDropdownOpen(false)
                 }}
               >
                 <svg
-                  xmlns='http://www.w3.org/2000/svg'
-                  fill='none'
-                  viewBox='0 0 24 24'
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
                   strokeWidth={1.5}
-                  stroke='currentColor'
-                  className='w-4 h-4'
+                  stroke="currentColor"
+                  className="w-4 h-4"
                 >
                   <path
-                    strokeLinecap='round'
-                    strokeLinejoin='round'
-                    d='m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897Z'
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897Z"
                   />
-                  <path d='M16.862 4.487L19.5 7.125' />
+                  <path d="M16.862 4.487L19.5 7.125" />
                 </svg>
                 Edit
               </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={() => {
                   handleDeleteMessage()
-                  setDropdownOpen(false)
                 }}
-                className='flex items-center gap-2 px-3 py-2 text-sm text-red-600 cursor-pointer hover:bg-red-50 rounded-lg'
+                className="flex items-center gap-2 px-3 py-2 text-sm text-red-600 cursor-pointer hover:bg-red-50 rounded-lg"
               >
                 <svg
-                  xmlns='http://www.w3.org/2000/svg'
-                  fill='none'
-                  viewBox='0 0 24 24'
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
                   strokeWidth={1.5}
-                  stroke='currentColor'
-                  className='w-4 h-4'
+                  stroke="currentColor"
+                  className="w-4 h-4"
                 >
                   <path
-                    strokeLinecap='round'
-                    strokeLinejoin='round'
-                    d='m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0'
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"
                   />
                 </svg>
                 Delete
               </DropdownMenuItem>
             </>
           ) : (
-            // Phần bảng emoji cho tin nhắn của người khác
-            <div className='w-[200px]'>
-              <div className='max-h-[200px] overflow-y-auto px-2 bg-white'>
-                <div className='grid grid-cols-5 gap-1'>
+            <div className="w-[200px]">
+              <div className="max-h-[200px] overflow-y-auto px-2 bg-white">
+                <div className="grid grid-cols-5 gap-1">
                   {emojiList.map((emoji, index) => (
                     <button
                       key={index}
                       onClick={() => handleEmojiSelect(emoji.number)}
-                      className='p-1 text-sm bg-white border border-white hover:bg-gray-100 rounded-md transition-colors'
+                      className="p-1 text-sm bg-white border border-white hover:bg-gray-100 rounded-md transition-colors"
                     >
                       {emoji.icon}
                     </button>

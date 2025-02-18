@@ -12,3 +12,6 @@ export interface viewAndStatusStoryResBody {
   content: string
   view_status: string
 }
+export interface ReactStoryResBody {
+  reaction_type: string
+}

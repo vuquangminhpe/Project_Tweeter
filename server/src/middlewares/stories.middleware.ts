@@ -2,7 +2,6 @@ import { ObjectId } from 'mongodb'
 import { checkSchema } from 'express-validator'
 import databaseService from '~/services/database.services'
 import { validate } from '~/utils/validation'
-import { Request } from 'express'
 import { ErrorWithStatus } from '~/models/Errors'
 import HTTP_STATUS from '~/constants/httpStatus'
 import { STORIES_MESSAGE, USERS_MESSAGES } from '~/constants/messages'
@@ -113,3 +112,104 @@ export const viewAndStatusStoryValidator = validate(
 )
 
 export const updateStoryValidator = createNewStoryValidator
+export const reactStoryValidator = validate(
+  checkSchema(
+    {
+      story_id: {
+        isString: {
+          errorMessage: STORIES_MESSAGE.STORY_ID_MUST_BE_A_STRING
+        },
+        notEmpty: {
+          errorMessage: STORIES_MESSAGE.STORY_ID_MUST_NOT_BE_EMPTY
+        },
+        custom: {
+          options: async (value, { req }) => {
+            const story = await databaseService.stories.findOne({
+              _id: new ObjectId(value as string)
+            })
+
+            if (!story) {
+              throw new ErrorWithStatus({
+                message: STORIES_MESSAGE.STORY_NOT_FOUND,
+                status: HTTP_STATUS.NOT_FOUND
+              })
+            }
+
+            return true
+          }
+        }
+      }
+    },
+    ['params']
+  )
+)
+export const replyStoryValidator = reactStoryValidator
+export const hideUserStoriesValidator = validate(
+  checkSchema(
+    {
+      reaction_user_id: {
+        isString: {
+          errorMessage: USERS_MESSAGES.INVALID_USER_ID
+        },
+        notEmpty: {
+          errorMessage: USERS_MESSAGES.REACTION_USER_ID_MUST_NOT_BE_EMPTY
+        },
+        custom: {
+          options: async (value, { req }) => {
+            const user = await databaseService.users.findOne({
+              _id: new ObjectId(value as string)
+            })
+            if (!user) {
+              throw new ErrorWithStatus({
+                message: USERS_MESSAGES.USER_NOT_FOUND,
+                status: HTTP_STATUS.NOT_FOUND
+              })
+            }
+            return true
+          }
+        }
+      }
+    },
+    ['params']
+  )
+)
+
+export const toggleNotificationsValidator = validate(checkSchema({ enabled: { isBoolean: true } }))
+export const deleteStoryValidator = validate(
+  checkSchema({
+    story_id: {
+      isString: {
+        errorMessage: STORIES_MESSAGE.STORY_ID_MUST_BE_A_STRING
+      },
+      notEmpty: {
+        errorMessage: STORIES_MESSAGE.STORY_ID_MUST_NOT_BE_EMPTY
+      },
+      custom: {
+        options: async (value, { req }) => {
+          const story = await databaseService.stories.findOne({
+            _id: new ObjectId(value as string)
+          })
+
+          if (!story) {
+            throw new ErrorWithStatus({
+              message: STORIES_MESSAGE.STORY_NOT_FOUND,
+              status: HTTP_STATUS.NOT_FOUND
+            })
+          }
+          const user_id = req.decode_authorization?.user_id
+          const yourself = await databaseService.stories.findOne({
+            _id: new ObjectId(value as string),
+            user_id: new ObjectId(user_id as string)
+          })
+          if (!yourself) {
+            throw new ErrorWithStatus({
+              message: STORIES_MESSAGE.STORY_IS_NOT_YOURS_SELF_YOU_CANNOT_DELETE_IT,
+              status: HTTP_STATUS.NOT_FOUND
+            })
+          }
+          return true
+        }
+      }
+    }
+  })
+)
