@@ -59,5 +59,3 @@ const sendVerifyEmail = async (toAddress, subject, body) => {
     return e
   }
 }
-
-
