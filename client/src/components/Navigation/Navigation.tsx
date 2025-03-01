@@ -41,8 +41,7 @@ const Navigation = () => {
     const hasToken = localStorage.getItem('access_token') !== null
     const hasProfile = localStorage.getItem('profile') !== null
 
-    // Log authentication factors for debugging
-    console.log('Auth check - Token:', hasToken, 'Profile:', hasProfile)
+
 
     setIsAuthenticated(hasToken && hasProfile)
   }
