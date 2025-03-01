@@ -39,7 +39,7 @@ export default function Login() {
   const googleOAuthUrl = getGoogleAuthUrl()
 
   const loginUserMutation = useMutation({
-    mutationFn: (body: { email: string; password: string }[]) => apiUser.loginUser(body)
+    mutationFn: (body: { email: string; password: string }) => apiUser.loginUser(body)
   })
 
   const handleDataChange = (field: any) => (e: any) => {
@@ -69,13 +69,18 @@ export default function Login() {
   }
 
   const handleLogin = () => {
-    loginUserMutation.mutate([data[0]], {
+    console.log(data[0])
+    const body = {
+      email: data[0].email,
+      password: data[0].password
+    }
+    loginUserMutation.mutate(body, {
       onSuccess: (res) => {
         const { access_token, refresh_token } = res.data.result
         localStorage.setItem('access_token', access_token)
-        if (data[0].remember) {
-          localStorage.setItem('refresh_token', refresh_token)
-        }
+
+        localStorage.setItem('refresh_token', refresh_token)
+        toast.success('Login successfully')
         navigate('/home')
       },
       onError: (error) => {
