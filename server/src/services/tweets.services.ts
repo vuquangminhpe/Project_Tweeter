@@ -633,7 +633,7 @@ class TweetService {
   async generateTweetWithTextGemini(user_id: string, message: string) {
     const apiKey = process.env.GERMINI_API_KEY
     const genAI = new GoogleGenerativeAI(apiKey as string)
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' })
+    const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' })
     const user = await databaseService.users.findOne({ _id: new ObjectId(user_id) })
 
     if (user?.typeAccount === AccountStatus.FREE && user.count_type_account < 5) {

@@ -95,7 +95,10 @@ export default function Login() {
         const { access_token, refresh_token } = res.data.result
         localStorage.setItem('access_token', access_token as string)
         localStorage.setItem('refresh_token', refresh_token as string)
-        navigate('/home')
+
+        setTimeout(() => {
+          window.location.href = '/'
+        }, )
       },
       onError: (error: any) => {
         toast.error(`${error.data.messages}`)
