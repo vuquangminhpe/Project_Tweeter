@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useState, useContext } from 'react'
+import React, { useState, useContext, useEffect } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { useMutation } from '@tanstack/react-query'
 import { toast } from 'react-toastify'
@@ -31,12 +31,48 @@ export default function Login() {
       prompt: 'consent',
       access_type: 'offline'
     }
-
     const queryString = new URLSearchParams(query).toString()
     return `${url}?${queryString}`
   }
 
   const googleOAuthUrl = getGoogleAuthUrl()
+
+  const exchangeCodeForToken = async (code: string) => {
+    try {
+      const response = await fetch('https://oauth2.googleapis.com/token', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body: new URLSearchParams({
+          code,
+          client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
+          client_secret: import.meta.env.VITE_GOOGLE_CLIENT_SECRET,
+          redirect_uri: import.meta.env.VITE_GOOGLE_REDIRECT_URI,
+          grant_type: 'authorization_code'
+        })
+      })
+      return await response.json()
+    } catch (error) {
+      throw new Error(`Failed to exchange code for token: ${error}`)
+    }
+  }
+
+  useEffect(() => {
+    const code = params.get('code')
+    if (code) {
+      exchangeCodeForToken(code)
+        .then((res) => {
+          const { access_token, refresh_token } = res
+          localStorage.setItem('access_token', access_token)
+          localStorage.setItem('refresh_token', refresh_token)
+          navigate('/')
+        })
+        .catch((error) => {
+          toast.error(error.message)
+        })
+    }
+  }, [params, navigate])
 
   const loginUserMutation = useMutation({
     mutationFn: (body: { email: string; password: string }) => apiUser.loginUser(body)
@@ -69,24 +105,22 @@ export default function Login() {
   }
 
   const handleLogin = () => {
-    console.log(data[0])
-    const body = {
-      email: data[0].email,
-      password: data[0].password
-    }
-    loginUserMutation.mutate(body, {
-      onSuccess: (res) => {
-        const { access_token, refresh_token } = res.data.result
-        localStorage.setItem('access_token', access_token)
-
-        localStorage.setItem('refresh_token', refresh_token)
-        toast.success('Login successfully')
-        navigate('/home')
-      },
-      onError: (error) => {
-        toast.error(`${(error as any).data.messages}`)
+    loginUserMutation.mutate(
+      { email: data[0].email, password: data[0].password },
+      {
+        onSuccess: (res) => {
+          const { access_token, refresh_token } = res.data.result
+          localStorage.setItem('access_token', access_token as string)
+          localStorage.setItem('refresh_token', refresh_token as string)
+          setTimeout(() => {
+            window.location.href = '/'
+          }, 0)
+        },
+        onError: (error) => {
+          toast.error(`${(error as any).data.messages}`)
+        }
       }
-    })
+    )
   }
 
   const handleForgotPassword = () => {

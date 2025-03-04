@@ -14,7 +14,7 @@ export default function Register() {
       year: 0,
       month: 0,
       day: 0
-    }
+    } 
   ])
   const [data, setData] = useState<RegisterType[]>([
     { email: '', password: '', confirm_password: '', name: '', date_of_birth: '' }
