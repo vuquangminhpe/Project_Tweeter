@@ -43,3 +43,31 @@ export enum AccountStatus {
   PREMIUM = 1,
   PLATINUM = 2
 }
+
+export enum ActionType {
+  FRIEND_REQUEST = 'FRIEND_REQUEST',
+  FRIEND_REQUEST_ACCEPTED = 'FRIEND_REQUEST_ACCEPTED',
+  FRIEND_REQUEST_REJECTED = 'FRIEND_REQUEST_REJECTED',
+  FOLLOW = 'FOLLOW',
+  UNFOLLOW = 'UNFOLLOW',
+  LIKE = 'LIKE',
+  UNLIKE = 'UNLIKE',
+  COMMENT = 'COMMENT',
+  REPLY = 'REPLY',
+  RETWEET = 'RETWEET',
+  TWEET = 'TWEET',
+  QUOTE = 'QUOTE',
+  MENTION = 'MENTION',
+  TAG = 'TAG',
+  SHARE = 'SHARE',
+  REPORT = 'REPORT',
+  BLOCK = 'BLOCK',
+  UNBLOCK = 'UNBLOCK',
+  MUTE = 'MUTE',
+  UNMUTE = 'UNMUTE'
+}
+
+export enum NotificationStatus {
+  Unread,
+  Read
+}
