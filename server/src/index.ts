@@ -17,7 +17,6 @@ import '~/utils/s3'
 import { createServer } from 'http'
 import helmet from 'helmet'
 import conversationsRouter from './routes/conversations.routes'
-import initSocket from './utils/socket'
 import { envConfig, isProduction } from './constants/config'
 import rateLimit from 'express-rate-limit'
 import commentsRouter from './routes/comments.routes'
@@ -26,6 +25,7 @@ import storiesRouter from './routes/stories.routes'
 import { Server } from 'socket.io'
 import { Server as HttpServer } from 'http'
 import autoDeleteSystem from './services/System/AutoDeleteStoriesSystem.system'
+import initSocket from './utils/chat.socket'
 
 config()
 databaseService

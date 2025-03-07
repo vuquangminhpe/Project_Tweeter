@@ -334,7 +334,7 @@ const HomeSection = ({ setEdit, isPendingTweet = true, isTitleName = 'Post', cus
           </div>
         </div>
       )}
-      <ActiveGemini setContentWithGenerateAi={setContentWithGenerateAi} />
+      {/* <ActiveGemini setContentWithGenerateAi={setContentWithGenerateAi} /> */}
       <div className={`bg-gray-50 rounded-xl p-4 shadow-inner ${isPendingTweet ? 'mb-6' : 'w-full'}`}>
         <div className='flex items-start space-x-4'>
           <Avatar className='w-12 h-12 border-2 border-blue-100'>
@@ -430,7 +430,7 @@ const HomeSection = ({ setEdit, isPendingTweet = true, isTitleName = 'Post', cus
                         add hash tag
                       </div>
                       <div className='mt-4 flex flex-wrap gap-2'>
-                        {formik?.values?.hashtags?.map((hashtag, index) => {
+                        {formik?.values?.hashtags?.map((hashtag: any, index: any) => {
                           return (
                             <span
                               key={index}
@@ -485,7 +485,7 @@ const HomeSection = ({ setEdit, isPendingTweet = true, isTitleName = 'Post', cus
                         add mention
                       </div>
                       <div className='mt-4 flex flex-wrap gap-2'>
-                        {formik?.values?.mentions?.map((mention, index) => {
+                        {formik?.values?.mentions?.map((mention: any, index: any) => {
                           const isValid = allIdWithMentionName_Undefined.includes(mention)
 
                           return (

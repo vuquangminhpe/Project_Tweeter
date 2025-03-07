@@ -1,47 +1,33 @@
-export enum UserVerifyStatus {
-  Unverified,
-  Verified,
-  Banned
+/* eslint-disable @typescript-eslint/no-explicit-any */
+export interface NotificationData {
+  _id: string
+  userId: string
+  senderId: string
+  actionType: ActionType
+  targetId: string
+  content: string
+  timestamp: Date
+  status: NotificationStatus
+  sender: {
+    _id: string
+    name: string
+    username: string
+    avatar: string
+  }
+  targetData: any
+  createdAt: Date
 }
 
-export enum TokenType {
-  AccessToken,
-  RefreshToken,
-  ForgotPasswordToken,
-  EmailVerifyToken
+export interface PaginationData {
+  total: number
+  page: number
+  limit: number
+  totalPages: number
 }
 
-export enum MediaType {
-  Image,
-  Video,
-  HLS
-}
-export enum MediaTypeQuery {
-  Image = 'image',
-  Video = 'video'
-}
-export enum EncodingStatus {
-  Pending, //hàng đợi
-  Processing, //Đang encode
-  Success, // Encode thành công
-  Failed // Encode thất bại
-}
-
-export enum TweetType {
-  Tweet,
-  Retweet,
-  Comment,
-  QuoteTweet
-}
-export enum TweetAudience {
-  Everyone,
-  TwitterCircle
-}
-
-export enum AccountStatus {
-  FREE = 0,
-  PREMIUM = 1,
-  PLATINUM = 2
+export interface UseNotificationsProps {
+  userId: string
+  limit?: number
 }
 
 export enum ActionType {

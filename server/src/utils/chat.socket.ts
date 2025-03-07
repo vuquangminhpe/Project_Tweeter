@@ -3,6 +3,7 @@ import Conversations from '~/models/schemas/conversations.schema'
 import { ObjectId } from 'mongodb'
 import databaseService from '~/services/database.services'
 import { Server as ServerHttp } from 'http'
+import { registerNotificationHandlers } from './notifications.socket'
 
 interface UserStatus {
   socket_id: string
@@ -92,12 +93,13 @@ const initSocket = (httpServer: ServerHttp) => {
   }
 
   io.on('connection', async (socket: Socket) => {
+    registerNotificationHandlers(io, socket)
     const user_id = socket.handshake.auth._id
-    if (!user_id) {
-      console.error('User ID not provided')
-      socket.disconnect()
-      return
-    }
+    // if (!user_id) {
+    //   console.error('User ID not provided')
+    //   socket.disconnect()
+    //   return
+    // }
 
     console.log(`User ${user_id} connected with socket ${socket.id}`)
 
@@ -150,12 +152,6 @@ const initSocket = (httpServer: ServerHttp) => {
           is_online: memoryStatus?.is_online || false,
           last_active: memoryStatus?.last_active || result?.last_active || new Date()
         }
-
-        console.log(`Status check - User: ${target_user_id}`, {
-          memoryStatus: memoryStatus?.is_online,
-          dbStatus: result?.is_online,
-          finalStatus: user_status.is_online
-        })
 
         socket.emit('user_status_response', user_status)
       } catch (error) {

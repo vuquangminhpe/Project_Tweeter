@@ -212,8 +212,7 @@ export const AccessTokenValidator = validate(
         custom: {
           options: async (value: string, { req }) => {
             const access_token = value.split(' ')[1]
-            console.log(access_token);
-            
+
             return await verifyAccessToken(access_token, req as Request)
           }
         }

@@ -77,6 +77,7 @@ function Chat() {
     if (profile._id) {
       setReceiver(profile._id)
     }
+    console.log(socket)
 
     socket.on('receive_conversation', (data: { payload: Conversation }) => {
       const { payload } = data
@@ -284,7 +285,7 @@ function Chat() {
                       receiver={receiver}
                       totalPages={totalPages as number}
                       isOwnMessage={false}
-                      onStartEditing={handleStartEditing} 
+                      onStartEditing={handleStartEditing}
                     />
                   </div>
                 </div>
