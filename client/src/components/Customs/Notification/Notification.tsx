@@ -27,13 +27,11 @@ export default function NotificationIsland({
 
   const [ref, { height: viewHeight }] = useMeasure()
 
-  const { notifications, unreadCount, markAsRead, refreshNotifications } = useNotifications({ userId, limit: 10 })
+  const { notifications, unreadCount, markAsRead } = useNotifications({ userId, limit: 10 })
   console.log('notifications', notifications)
 
   useEffect(() => {
-    // Show the newest notification if there's an unread one
     if (notifications.length > 0 && unreadCount > 0) {
-      // Assuming NotificationStatus.Unread is the enum value we want to check against
       const newestNotification = notifications.find((n) => n.status === NotificationStatus.Unread)
       if (newestNotification) {
         setCurrentNotification(newestNotification)
@@ -45,7 +43,6 @@ export default function NotificationIsland({
   const handleOpenSettings = () => {
     setIsOpen((prev) => !prev)
 
-    // Mark all as read when opening
     if (!isOpen && unreadCount > 0) {
       markAsRead()
     }
@@ -55,13 +52,11 @@ export default function NotificationIsland({
     setShowNotification(false)
     setIsOpen(false)
 
-    // Mark current notification as read
     if (currentNotification) {
       markAsRead([currentNotification._id])
     }
   }
 
-  // Format the notification message
   const notificationMessage = currentNotification
     ? formatNotificationMessage(currentNotification.actionType, {
         senderName: currentNotification.sender.name,
@@ -71,10 +66,8 @@ export default function NotificationIsland({
       })
     : ''
 
-  // Get the notification icon
   const iconName = currentNotification ? getNotificationIcon(currentNotification.actionType) : 'bell'
 
-  // Convert kebab-case to PascalCase for icon names
   const iconComponentName = iconName
     .split('-')
     .map((part) => part.charAt(0).toUpperCase() + part.slice(1))

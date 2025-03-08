@@ -25,7 +25,6 @@ export const useNotifications = ({ userId, limit = 10 }: UseNotificationsProps) 
   useEffect(() => {
     socket.connect()
     if (!userId) return
-    console.log('userId', userId, socket)
 
     socket.emit('authenticate', { userId })
 

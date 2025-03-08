@@ -10,9 +10,7 @@ const RightPart: React.FC = () => {
   const ellipsisRefs = useRef<(HTMLDivElement | null)[]>([])
 
   const handleOptionClick = (index: number, event: React.MouseEvent) => {
-    event.stopPropagation() // Ngăn sự kiện lan ra
-
-    // Nếu modal của item này đã mở thì đóng lại
+    event.stopPropagation()
     if (isModalOpen === index) {
       setIsModalOpen(null)
       return

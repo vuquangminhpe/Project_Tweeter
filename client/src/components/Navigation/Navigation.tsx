@@ -153,7 +153,9 @@ const Navigation = () => {
           >
             Post
           </button>
-          <Notification userId={profile?._id as string} />
+          <div className='translate-x-40'>
+            <Notification userId={profile?._id as string} />
+          </div>
         </div>
 
         <div

@@ -3,8 +3,8 @@ import { ActionType, NotificationStatus } from '~/constants/enums'
 
 interface NotificationType {
   _id?: ObjectId
-  userId: string
-  senderId: string
+  userId: ObjectId
+  senderId: ObjectId
   actionType: ActionType
   targetId: string // All Nội dung của thông báo
   content: string
@@ -14,8 +14,8 @@ interface NotificationType {
 
 export class Notification {
   _id?: ObjectId
-  userId: string
-  senderId: string
+  userId: ObjectId
+  senderId: ObjectId
   actionType: ActionType
   targetId: string
   content: string

@@ -25,7 +25,7 @@ import storiesRouter from './routes/stories.routes'
 import { Server } from 'socket.io'
 import { Server as HttpServer } from 'http'
 import autoDeleteSystem from './services/System/AutoDeleteStoriesSystem.system'
-import initSocket from './utils/chat.socket'
+import initSocket from './utils/socket'
 
 config()
 databaseService
@@ -75,7 +75,7 @@ app.use('/stories', storiesRouter)
 // app.use('/static/video-hls', express.static(UPLOAD_VIDEO_HLS_DIR))
 
 app.use(defaultErrorHandler)
-const io = initSocket(httpServer)
+export const io = initSocket(httpServer)
 // autoDeleteSystem.initialize(io)
 
 httpServer.listen(port, () => {

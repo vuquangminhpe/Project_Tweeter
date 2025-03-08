@@ -233,7 +233,6 @@ const TwitterCard = ({ profile, data, refetchAllDataTweet, data_length }: Props)
   // khu vực custom data => chỉ viết custom data ở đây
   const userLike = dataLike?.filter((like) => like.user_info.username === profile?.username)
   const filterBookmark = dataBookmarks?.filter((bookmark) => bookmark.tweet_id === data._id)
-  console.log(data)
 
   // khu vực custom function => chỉ viết custom function ở đây
   const commentTime = (date: Date) => {

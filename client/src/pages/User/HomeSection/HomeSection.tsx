@@ -17,6 +17,9 @@ import { TweetAudience, TweetType } from '@/constants/enum'
 import apiUser from '@/apis/users.api'
 import { createdTweet, TweetFormValues, Tweets } from '@/types/Tweet.type'
 import ActiveGemini from './ActiveGemini'
+import { toast } from 'sonner'
+import useNotifications from '@/components/Customs/Notification/useNotifications/useNotifications'
+import { ActionType } from '@/types/Notifications.types'
 
 const validationSchema = Yup.object().shape({
   content: Yup.string().required('Tweet text is required'),
@@ -73,7 +76,7 @@ const HomeSection = ({ setEdit, isPendingTweet = true, isTitleName = 'Post', cus
       console.error('error', error)
     }
   }
-
+  const { createNotification } = useNotifications({ userId: profile?._id || '' })
   const formik = useFormik<TweetFormValues>({
     initialValues: {
       _id: !isPendingTweet ? dataEdit._id : '',
@@ -90,7 +93,6 @@ const HomeSection = ({ setEdit, isPendingTweet = true, isTitleName = 'Post', cus
     onSubmit: handleSubmit,
     validationSchema
   })
-  console.log(formik.values.hashtags)
 
   const {
     data: dataTweets,
@@ -260,17 +262,43 @@ const HomeSection = ({ setEdit, isPendingTweet = true, isTitleName = 'Post', cus
   }
   const handleCreatedTweet = useCallback(
     async (data: TweetFormValues, uploadedLinks: Media[]) => {
-      await createdTweetMutation.mutateAsync({
-        content: data.content,
-        medias: uploadedLinks,
-        type: formik.values.type,
-        parent_id: null,
-        hashtags: data.hashtags,
-        mentions: allIdWithMentionName,
-        audience: data.audience
-      })
+      await createdTweetMutation.mutateAsync(
+        {
+          content: data.content,
+          medias: uploadedLinks,
+          type: formik.values.type,
+          parent_id: null,
+          hashtags: data.hashtags,
+          mentions: allIdWithMentionName,
+          audience: data.audience
+        },
+        {
+          onSuccess: (data) => {
+            createNotification({
+              recipientId: profile?._id || '',
+              actionType: ActionType.TWEET,
+              targetId: data.data._id as unknown as string,
+              content: `${profile?.name || profile?.username} mentioned you in a tweet`
+            })
+            toast.success('Tạo tweet thành công')
+            refetchAllDataTweet()
+          },
+          onError: (error) => {
+            console.error('tạo tweet thất bại:', error)
+          }
+        }
+      )
     },
-    [allIdWithMentionName, createdTweetMutation, formik.values.type]
+    [
+      allIdWithMentionName,
+      createNotification,
+      createdTweetMutation,
+      formik.values.type,
+      profile?._id,
+      profile?.name,
+      profile?.username,
+      refetchAllDataTweet
+    ]
   )
   const handleEditTweet = useCallback(
     async (data: TweetFormValues, uploadedLinks: Media[]) => {
