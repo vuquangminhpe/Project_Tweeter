@@ -17,6 +17,9 @@ import { TweetAudience, TweetType } from '@/constants/enum'
 import apiUser from '@/apis/users.api'
 import { createdTweet, TweetFormValues, Tweets } from '@/types/Tweet.type'
 import ActiveGemini from './ActiveGemini'
+import { toast } from 'sonner'
+import useNotifications from '@/components/Customs/Notification/useNotifications/useNotifications'
+import { ActionType } from '@/types/Notifications.types'
 
 const validationSchema = Yup.object().shape({
   content: Yup.string().required('Tweet text is required'),
@@ -73,7 +76,7 @@ const HomeSection = ({ setEdit, isPendingTweet = true, isTitleName = 'Post', cus
       console.error('error', error)
     }
   }
-
+  const { createNotification } = useNotifications({ userId: profile?._id || '' })
   const formik = useFormik<TweetFormValues>({
     initialValues: {
       _id: !isPendingTweet ? dataEdit._id : '',
@@ -90,7 +93,6 @@ const HomeSection = ({ setEdit, isPendingTweet = true, isTitleName = 'Post', cus
     onSubmit: handleSubmit,
     validationSchema
   })
-  console.log(formik.values.hashtags)
 
   const {
     data: dataTweets,
@@ -260,17 +262,43 @@ const HomeSection = ({ setEdit, isPendingTweet = true, isTitleName = 'Post', cus
   }
   const handleCreatedTweet = useCallback(
     async (data: TweetFormValues, uploadedLinks: Media[]) => {
-      await createdTweetMutation.mutateAsync({
-        content: data.content,
-        medias: uploadedLinks,
-        type: formik.values.type,
-        parent_id: null,
-        hashtags: data.hashtags,
-        mentions: allIdWithMentionName,
-        audience: data.audience
-      })
+      await createdTweetMutation.mutateAsync(
+        {
+          content: data.content,
+          medias: uploadedLinks,
+          type: formik.values.type,
+          parent_id: null,
+          hashtags: data.hashtags,
+          mentions: allIdWithMentionName,
+          audience: data.audience
+        },
+        {
+          onSuccess: () => {
+            createNotification({
+              recipientId: profile?._id || '',
+              actionType: ActionType.TWEET,
+              targetId: allIdWithMentionName as unknown as string[],
+              content: `${profile?.name || profile?.username} mentioned you in a tweet`
+            })
+            toast.success('Tạo tweet thành công')
+            refetchAllDataTweet()
+          },
+          onError: (error) => {
+            console.error('tạo tweet thất bại:', error)
+          }
+        }
+      )
     },
-    [allIdWithMentionName, createdTweetMutation, formik.values.type]
+    [
+      allIdWithMentionName,
+      createNotification,
+      createdTweetMutation,
+      formik.values.type,
+      profile?._id,
+      profile?.name,
+      profile?.username,
+      refetchAllDataTweet
+    ]
   )
   const handleEditTweet = useCallback(
     async (data: TweetFormValues, uploadedLinks: Media[]) => {
@@ -334,7 +362,7 @@ const HomeSection = ({ setEdit, isPendingTweet = true, isTitleName = 'Post', cus
           </div>
         </div>
       )}
-      <ActiveGemini setContentWithGenerateAi={setContentWithGenerateAi} />
+      {/* <ActiveGemini setContentWithGenerateAi={setContentWithGenerateAi} /> */}
       <div className={`bg-gray-50 rounded-xl p-4 shadow-inner ${isPendingTweet ? 'mb-6' : 'w-full'}`}>
         <div className='flex items-start space-x-4'>
           <Avatar className='w-12 h-12 border-2 border-blue-100'>
@@ -430,7 +458,7 @@ const HomeSection = ({ setEdit, isPendingTweet = true, isTitleName = 'Post', cus
                         add hash tag
                       </div>
                       <div className='mt-4 flex flex-wrap gap-2'>
-                        {formik?.values?.hashtags?.map((hashtag, index) => {
+                        {formik?.values?.hashtags?.map((hashtag: any, index: any) => {
                           return (
                             <span
                               key={index}
@@ -485,7 +513,7 @@ const HomeSection = ({ setEdit, isPendingTweet = true, isTitleName = 'Post', cus
                         add mention
                       </div>
                       <div className='mt-4 flex flex-wrap gap-2'>
-                        {formik?.values?.mentions?.map((mention, index) => {
+                        {formik?.values?.mentions?.map((mention: any, index: any) => {
                           const isValid = allIdWithMentionName_Undefined.includes(mention)
 
                           return (

@@ -11,6 +11,7 @@ import Conversations from '~/models/schemas/conversations.schema'
 import { envConfig } from '../constants/config'
 import Comment from '~/models/schemas/Comment.schema'
 import Stories from '~/models/schemas/Stories.schema'
+import { Notification } from '~/models/schemas/Notification.shema'
 
 const uri = `mongodb+srv://${envConfig.db_username}:${envConfig.db_password}@minhdevmongo.hzvnp.mongodb.net/?retryWrites=true&w=majority&appName=minhdevMongo`
 
@@ -88,6 +89,9 @@ class DatabaseService {
   }
   get stories(): Collection<Stories> {
     return this.db.collection(envConfig.storiesCollection)
+  }
+  get notification(): Collection<Notification> {
+    return this.db.collection(envConfig.notificationCollection)
   }
 }
 

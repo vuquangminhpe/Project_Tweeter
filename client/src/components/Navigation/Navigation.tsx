@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useContext } from 'react'
 import NavigationMenu from './NavigationMenu'
 import {
   DropdownMenu,
@@ -13,6 +13,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { clearLocalStorage } from '@/utils/auth'
 // Import Sonner toast
 import { toast } from 'sonner'
+import { AppContext } from '@/Contexts/app.context'
 
 const Navigation = () => {
   const [showTitles, setShowTitles] = useState(true)
@@ -40,8 +41,6 @@ const Navigation = () => {
   const checkAuthStatus = () => {
     const hasToken = localStorage.getItem('access_token') !== null
     const hasProfile = localStorage.getItem('profile') !== null
-
-
 
     setIsAuthenticated(hasToken && hasProfile)
   }
@@ -88,7 +87,7 @@ const Navigation = () => {
     navigate('/user/chat')
   }
   // Get profile data if authenticated
-  const profile = isAuthenticated ? JSON.parse(localStorage.getItem('profile') || '{}') : {}
+  const { profile } = useContext(AppContext)
 
   return (
     <div
