@@ -84,6 +84,9 @@ const Navigation = () => {
     navigate('/auth/login')
   }
 
+  const handleChat = () => {
+    navigate('/user/chat')
+  }
   // Get profile data if authenticated
   const profile = isAuthenticated ? JSON.parse(localStorage.getItem('profile') || '{}') : {}
 
@@ -177,7 +180,9 @@ const Navigation = () => {
                   <DropdownMenuItem className='cursor-pointer hover:bg-gray-700 text-white px-3 py-2 rounded-md'>
                     Profile
                   </DropdownMenuItem>
-                  <DropdownMenuItem className='cursor-pointer hover:bg-gray-700 text-white px-3 py-2 rounded-md'>
+                  <DropdownMenuItem
+                    onClick={handleChat}
+                  className='cursor-pointer hover:bg-gray-700 text-white px-3 py-2 rounded-md'>
                     Messages
                   </DropdownMenuItem>
                   <DropdownMenuItem

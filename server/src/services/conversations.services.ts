@@ -15,7 +15,8 @@ class ConversationService {
   }) {
     const match = {
       $or: [
-        { sender_id: new ObjectId(sender_id), receive_id: new ObjectId(receiver_id) },
+        { sender_id: new ObjectId(sender_id), 
+          receive_id: new ObjectId(receiver_id) },
         {
           sender_id: new ObjectId(receiver_id),
           receive_id: new ObjectId(sender_id)
@@ -318,5 +319,3 @@ class ConversationService {
 }
 const conversationServices = new ConversationService()
 export default conversationServices
-
-
