@@ -1,10 +1,13 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import React, { useState, useRef, useEffect } from 'react'
+import React, { useState, useRef, useEffect, useContext } from 'react'
 import { GoVerified } from 'react-icons/go'
 import { FaEllipsisH } from 'react-icons/fa'
 import SearchGrowing from '../Customs/SearchGrowing'
+import Notification from '../Customs/Notification'
+import { AppContext } from '@/Contexts/app.context'
 
 const RightPart: React.FC = () => {
+  const { profile } = useContext(AppContext)
   const [isModalOpen, setIsModalOpen] = useState<number | null>(null)
   const modalRefs = useRef<(HTMLDivElement | null)[]>([])
   const ellipsisRefs = useRef<(HTMLDivElement | null)[]>([])
@@ -46,6 +49,7 @@ const RightPart: React.FC = () => {
   }
   return (
     <div className='w-full max-w-xs px-4 space-y-5'>
+      <Notification userId={profile?._id as string} />
       <SearchGrowing />
 
       {/* Expiring Section */}

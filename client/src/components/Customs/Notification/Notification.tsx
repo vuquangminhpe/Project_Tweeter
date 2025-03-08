@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { motion, AnimatePresence } from 'framer-motion'
 import { useEffect, useState } from 'react'
@@ -6,7 +7,6 @@ import useMeasure from 'react-use-measure'
 import { NotificationData, NotificationStatus } from '@/types/Notifications.types'
 import * as Icons from 'lucide-react'
 import useNotifications from './useNotifications/useNotifications'
-import { formatNotificationMessage, getNotificationIcon } from './FormatterNotifications/formatNotificationMessage'
 
 // Helper to get icon from string name
 const getIconComponent = (name: string) => {
@@ -23,55 +23,89 @@ export default function NotificationIsland({
 }>) {
   const [isOpen, setIsOpen] = useState(false)
   const [currentNotification, setCurrentNotification] = useState<NotificationData | null>(null)
-  const [showNotification, setShowNotification] = useState(false)
+  const [showNotification, setShowNotification] = useState(true)
 
   const [ref, { height: viewHeight }] = useMeasure()
 
-  const { notifications, unreadCount, markAsRead } = useNotifications({ userId, limit: 10 })
+  const { notifications, unreadCount, loading, markAsRead, refreshNotifications } = useNotifications({
+    userId,
+    limit: 10
+  })
+
+  // Group notifications by day
+  const groupedNotifications = (() => {
+    const groups: Record<string, NotificationData[]> = {}
+
+    notifications.forEach((notification) => {
+      const date = new Date(notification.timestamp).toLocaleDateString()
+      if (!groups[date]) {
+        groups[date] = []
+      }
+      groups[date].push(notification)
+    })
+
+    return groups
+  })()
+
   console.log('notifications', notifications)
 
+  // Set the most recent notification as current (can be read or unread)
   useEffect(() => {
-    if (notifications.length > 0 && unreadCount > 0) {
-      const newestNotification = notifications.find((n) => n.status === NotificationStatus.Unread)
-      if (newestNotification) {
-        setCurrentNotification(newestNotification)
-        setShowNotification(true)
+    if (notifications.length > 0) {
+      // Prioritize unread notifications first
+      const newestUnreadNotification = notifications.find((n) => n.status === NotificationStatus.Unread)
+
+      if (newestUnreadNotification) {
+        setCurrentNotification(newestUnreadNotification)
+      } else {
+        // If no unread notifications, show the most recent read one
+        setCurrentNotification(notifications[0])
       }
     }
-  }, [notifications, unreadCount])
+  }, [notifications])
 
   const handleOpenSettings = () => {
     setIsOpen((prev) => !prev)
 
-    if (!isOpen && unreadCount > 0) {
-      markAsRead()
+    // Refresh notifications when opening panel
+    if (!isOpen) {
+      refreshNotifications()
     }
   }
 
   const closeNotification = () => {
-    setShowNotification(false)
     setIsOpen(false)
 
-    if (currentNotification) {
+    if (currentNotification && currentNotification.status === NotificationStatus.Unread) {
       markAsRead([currentNotification._id])
     }
   }
 
   const notificationMessage = currentNotification
-    ? formatNotificationMessage(currentNotification.actionType, {
-        senderName: currentNotification.sender.name,
-        targetType: currentNotification.targetData?.type,
-        targetName: currentNotification.targetData?.name,
-        contentPreview: currentNotification.content
-      })
-    : ''
+    ? currentNotification.content || 'New notification'
+    : 'No notifications'
 
-  const iconName = currentNotification ? getNotificationIcon(currentNotification.actionType) : 'bell'
+  // Handle icon based on actionType
+  const getActionTypeIcon = (actionType: string) => {
+    switch (actionType) {
+      case 'TWEET':
+        return 'Twitter'
+      case 'LIKE':
+        return 'Heart'
+      case 'COMMENT':
+        return 'MessageSquare'
+      case 'SHARE':
+        return 'Share2'
+      case 'MENTION':
+        return 'AtSign'
+      case 'FOLLOW':
+        return 'UserPlus'
+      default:
+        return 'Bell'
+    }
+  }
 
-  const iconComponentName = iconName
-    .split('-')
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join('')
+  const iconComponentName = currentNotification ? getActionTypeIcon(currentNotification.actionType) : 'Bell'
 
   const NotificationIcon = getIconComponent(iconComponentName)
 
@@ -132,12 +166,99 @@ export default function NotificationIsland({
                 className='flex flex-col gap-4 p-2'
                 style={{ width: WIDTH }}
               >
-                <div className='p-2'>
-                  <h6 className='text tracking-tight font-medium text-sm text-neutral-400'>
-                    {currentNotification?.sender?.name || 'Notification'}
-                  </h6>
-                  <p className='text-neutral-600 dark:text-neutral-400 leading-5'>{notificationMessage}</p>
+                <div className='flex items-center justify-between px-2'>
+                  <h6 className='text-sm font-medium dark:text-neutral-200 text-neutral-700'>Notifications</h6>
+                  {unreadCount > 0 && (
+                    <button
+                      onClick={() => markAsRead()}
+                      className='text-xs text-amber-500 hover:text-amber-600 dark:hover:text-amber-400'
+                    >
+                      Mark all as read
+                    </button>
+                  )}
                 </div>
+
+                {loading ? (
+                  <div className='flex justify-center p-4'>
+                    <div className='animate-spin rounded-full h-6 w-6 border-t-2 border-amber-500'></div>
+                  </div>
+                ) : (
+                  <>
+                    {notifications.length > 0 ? (
+                      <div className='flex flex-col gap-2 max-h-80 overflow-y-auto'>
+                        {Object.entries(groupedNotifications).map(([date, dateNotifications]) => (
+                          <div key={date} className='flex flex-col gap-1.5'>
+                            <div className='px-2 py-1'>
+                              <span className='text-xs font-medium dark:text-neutral-400 text-neutral-500'>{date}</span>
+                            </div>
+
+                            {dateNotifications.map((notification) => {
+                              const isRead = notification.status === NotificationStatus.Read
+                              const message = notification.content || 'New notification'
+
+                              const notifIconComponentName = getActionTypeIcon(notification.actionType)
+                              const NotifIcon = getIconComponent(notifIconComponentName)
+
+                              return (
+                                <div
+                                  key={notification._id}
+                                  className={cn(
+                                    'p-2 rounded-lg',
+                                    isRead
+                                      ? 'opacity-60 dark:bg-neutral-800/50 bg-neutral-100/50'
+                                      : 'dark:bg-neutral-800 bg-neutral-100'
+                                  )}
+                                >
+                                  <div className='flex items-start gap-2'>
+                                    <div
+                                      className={cn(
+                                        'p-1.5 rounded-full',
+                                        isRead ? 'dark:bg-neutral-700 bg-neutral-200' : 'bg-amber-500/20'
+                                      )}
+                                    >
+                                      <NotifIcon
+                                        className={cn(
+                                          'size-4',
+                                          isRead ? 'dark:text-neutral-400 text-neutral-500' : 'text-amber-500'
+                                        )}
+                                      />
+                                    </div>
+                                    <div className='flex-1'>
+                                      <h6
+                                        className={cn(
+                                          'text-xs font-medium',
+                                          isRead
+                                            ? 'dark:text-neutral-400 text-neutral-600'
+                                            : 'dark:text-neutral-200 text-neutral-700'
+                                        )}
+                                      >
+                                        {notification.actionType}
+                                      </h6>
+                                      <p
+                                        className={cn(
+                                          'text-sm leading-5',
+                                          isRead
+                                            ? 'dark:text-neutral-500 text-neutral-500'
+                                            : 'dark:text-neutral-300 text-neutral-600'
+                                        )}
+                                      >
+                                        {message}
+                                      </p>
+                                    </div>
+                                  </div>
+                                </div>
+                              )
+                            })}
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className='p-4 text-center'>
+                        <p className='text-neutral-600 dark:text-neutral-400'>No notifications yet</p>
+                      </div>
+                    )}
+                  </>
+                )}
                 <button
                   className='rounded-lg bg-amber-500 dark:bg-amber-200 px-2 py-1 font-medium dark:text-neutral-800 text-neutral-100'
                   type='button'

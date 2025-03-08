@@ -6,7 +6,7 @@ interface NotificationType {
   userId: ObjectId
   senderId: ObjectId
   actionType: ActionType
-  targetId: string // All Nội dung của thông báo
+  targetId: string[]
   content: string
   timestamp: Date
   status: NotificationStatus
@@ -17,7 +17,7 @@ export class Notification {
   userId: ObjectId
   senderId: ObjectId
   actionType: ActionType
-  targetId: string
+  targetId: string[]
   content: string
   timestamp?: Date
   status: NotificationStatus

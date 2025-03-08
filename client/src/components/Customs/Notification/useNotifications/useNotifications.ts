@@ -22,10 +22,10 @@ export const useNotifications = ({ userId, limit = 10 }: UseNotificationsProps) 
   const [loading, setLoading] = useState<boolean>(true)
   const [error, setError] = useState<string | null>(null)
 
-  useEffect(() => {
-    socket.connect()
+  const connectSocket = useCallback(() => {
     if (!userId) return
 
+    socket.connect()
     socket.emit('authenticate', { userId })
 
     const handleCountUpdate = (data: { count: number }) => {
@@ -51,11 +51,19 @@ export const useNotifications = ({ userId, limit = 10 }: UseNotificationsProps) 
       }
     })
 
+    fetchNotifications(1)
+
     return () => {
       socket.off('notification_count_updated', handleCountUpdate)
       socket.off('new_notification', handleNewNotification)
     }
   }, [userId])
+
+  useEffect(() => {
+    connectSocket()
+
+    return () => {}
+  }, [userId, connectSocket])
 
   const fetchNotifications = useCallback(
     (page: number = 1) => {
@@ -79,12 +87,6 @@ export const useNotifications = ({ userId, limit = 10 }: UseNotificationsProps) 
     },
     [userId, limit]
   )
-
-  useEffect(() => {
-    if (userId && socket) {
-      fetchNotifications(1)
-    }
-  }, [userId, fetchNotifications])
 
   const loadMore = useCallback(() => {
     if (pagination.page < pagination.totalPages) {
@@ -115,7 +117,7 @@ export const useNotifications = ({ userId, limit = 10 }: UseNotificationsProps) 
   )
 
   const createNotification = useCallback(
-    (data: { recipientId: string; actionType: ActionType; targetId: string; content: string }) => {
+    (data: { recipientId: string; actionType: ActionType; targetId: string[]; content: string }) => {
       if (!userId || !socket) return
 
       socket.emit(
@@ -159,7 +161,8 @@ export const useNotifications = ({ userId, limit = 10 }: UseNotificationsProps) 
     loadMore,
     markAsRead,
     refreshNotifications: () => fetchNotifications(1),
-    createNotification
+    createNotification,
+    connectSocket
   }
 }
 

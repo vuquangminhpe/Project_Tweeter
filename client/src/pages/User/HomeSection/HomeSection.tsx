@@ -273,11 +273,11 @@ const HomeSection = ({ setEdit, isPendingTweet = true, isTitleName = 'Post', cus
           audience: data.audience
         },
         {
-          onSuccess: (data) => {
+          onSuccess: () => {
             createNotification({
               recipientId: profile?._id || '',
               actionType: ActionType.TWEET,
-              targetId: data.data._id as unknown as string,
+              targetId: allIdWithMentionName as unknown as string[],
               content: `${profile?.name || profile?.username} mentioned you in a tweet`
             })
             toast.success('Tạo tweet thành công')

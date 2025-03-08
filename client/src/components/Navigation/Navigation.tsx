@@ -14,7 +14,6 @@ import { clearLocalStorage } from '@/utils/auth'
 // Import Sonner toast
 import { toast } from 'sonner'
 import { AppContext } from '@/Contexts/app.context'
-import Notification from '../Customs/Notification'
 
 const Navigation = () => {
   const [showTitles, setShowTitles] = useState(true)
@@ -135,7 +134,6 @@ const Navigation = () => {
                 }`}
               >
                 {item.title}
-                {item.title === 'Notifications' && <Notification userId={profile?._id as string} />}
               </p>
             </Link>
           ))}
@@ -153,9 +151,6 @@ const Navigation = () => {
           >
             Post
           </button>
-          <div className='translate-x-40'>
-            <Notification userId={profile?._id as string} />
-          </div>
         </div>
 
         <div
