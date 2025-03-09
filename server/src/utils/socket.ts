@@ -270,14 +270,16 @@ const initSocket = (httpServer: ServerHttp) => {
             sender
           }
 
-          io.to(userId).emit('new_notification', notificationWithSender)
+          for (const targetUserId of targetId) {
+            io.to(targetUserId).emit('new_notification', notificationWithSender)
 
-          const unreadCount = await databaseService.notification.countDocuments({
-            userId: new ObjectId(userId),
-            status: NotificationStatus.Unread
-          })
+            const unreadCount = await databaseService.notification.countDocuments({
+              targetId: { $in: [targetUserId] },
+              status: NotificationStatus.Unread
+            })
 
-          io.to(userId).emit('notification_count_updated', { count: unreadCount })
+            io.to(targetUserId).emit('notification_count_updated', { count: unreadCount })
+          }
 
           callback({
             success: true,

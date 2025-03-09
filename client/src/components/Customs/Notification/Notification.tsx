@@ -8,7 +8,6 @@ import { NotificationData, NotificationStatus } from '@/types/Notifications.type
 import * as Icons from 'lucide-react'
 import useNotifications from './useNotifications/useNotifications'
 
-// Helper to get icon from string name
 const getIconComponent = (name: string) => {
   const Icon = (Icons as unknown as Record<string, React.FC<any>>)[name] || Icons.Bell
   return Icon
@@ -32,7 +31,6 @@ export default function NotificationIsland({
     limit: 10
   })
 
-  // Group notifications by day
   const groupedNotifications = (() => {
     const groups: Record<string, NotificationData[]> = {}
 
@@ -47,18 +45,13 @@ export default function NotificationIsland({
     return groups
   })()
 
-  console.log('notifications', notifications)
-
-  // Set the most recent notification as current (can be read or unread)
   useEffect(() => {
     if (notifications.length > 0) {
-      // Prioritize unread notifications first
       const newestUnreadNotification = notifications.find((n) => n.status === NotificationStatus.Unread)
 
       if (newestUnreadNotification) {
         setCurrentNotification(newestUnreadNotification)
       } else {
-        // If no unread notifications, show the most recent read one
         setCurrentNotification(notifications[0])
       }
     }
@@ -67,7 +60,6 @@ export default function NotificationIsland({
   const handleOpenSettings = () => {
     setIsOpen((prev) => !prev)
 
-    // Refresh notifications when opening panel
     if (!isOpen) {
       refreshNotifications()
     }
@@ -85,7 +77,6 @@ export default function NotificationIsland({
     ? currentNotification.content || 'New notification'
     : 'No notifications'
 
-  // Handle icon based on actionType
   const getActionTypeIcon = (actionType: string) => {
     switch (actionType) {
       case 'TWEET':

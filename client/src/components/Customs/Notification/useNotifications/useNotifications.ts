@@ -21,6 +21,7 @@ export const useNotifications = ({ userId, limit = 10 }: UseNotificationsProps) 
   })
   const [loading, setLoading] = useState<boolean>(true)
   const [error, setError] = useState<string | null>(null)
+  console.log(unreadCount)
 
   const connectSocket = useCallback(() => {
     if (!userId) return
