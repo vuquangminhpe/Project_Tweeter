@@ -1,6 +1,6 @@
-import React, { useState } from 'react'
-
+import React, { useEffect, useRef, useState } from 'react'
 import EmojiPicker from 'emoji-picker-react'
+import Orb from '@/components/ui/orb'
 
 interface ChatInputProps {
   value: string
@@ -46,14 +46,27 @@ const ChatInput = ({ value, setValue, send, inputRef }: ChatInputProps) => {
           placeholder='Type a message...'
           className='flex-1 p-2 sm:p-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:border-blue-500 transition duration-300'
         />
-        <div className='relative'>
+        
+      
+        <div className='relative flex items-center justify-center w-8 h-8 flex-shrink-0'>
+          <Orb
+            hoverIntensity={0.3} 
+            rotateOnHover={true}
+            hue={120} 
+            forceHoverState={false}
+         
+          />
+        </div>
+
+        {/* Emoji picker */}
+        <div className='relative flex-shrink-0'>
           <svg
             xmlns='http://www.w3.org/2000/svg'
             fill='none'
             viewBox='0 0 24 24'
             strokeWidth={1.5}
             stroke='currentColor'
-            className='size-8 bg-white rounded-xl p-2 cursor-pointer hover:bg-gray-100 transition duration-300'
+            className='size-8 bg-white rounded-xl p-1.5 cursor-pointer hover:bg-gray-100 transition duration-300'
             onClick={toggleEmojiPicker}
           >
             <path
@@ -63,18 +76,20 @@ const ChatInput = ({ value, setValue, send, inputRef }: ChatInputProps) => {
             />
           </svg>
           {showEmojiPicker && (
-            <div className='absolute bottom-full right-0 mb-2'>
+            <div className='absolute bottom-full right-0 mb-2 z-10'>
               <div className='bg-white rounded-lg shadow-xl border border-gray-200'>
                 <EmojiPicker onEmojiClick={handleEmojiClick} />
               </div>
             </div>
           )}
         </div>
+
+        {/* Send button */}
         <button
           type='submit'
           onClick={send}
           disabled={!value.trim()}
-          className='px-4 sm:px-6 py-2 sm:py-3 bg-blue-500 text-white rounded-xl hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300 transition duration-300 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed'
+          className='px-4 sm:px-6 py-2 sm:py-3 bg-blue-500 text-white rounded-xl hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300 transition duration-300 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0'
         >
           Send
         </button>
@@ -82,4 +97,5 @@ const ChatInput = ({ value, setValue, send, inputRef }: ChatInputProps) => {
     </div>
   )
 }
+
 export default ChatInput

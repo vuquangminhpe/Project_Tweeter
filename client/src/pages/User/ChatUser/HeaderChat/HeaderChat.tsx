@@ -4,7 +4,7 @@ import React, { useEffect } from 'react'
 import { UserStatus } from '../Chat'
 import apiUser from '@/apis/users.api'
 import { useQuery } from '@tanstack/react-query'
-import { Avatar, AvatarFallback, AvatarImage } from '@radix-ui/react-avatar'
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
 interface HeaderChatProps {
   onlineReceiver: boolean
@@ -66,43 +66,40 @@ export default function HeaderChat({ onlineReceiver, setOnlineUsers, onlineUsers
           className='w-full p-2 hover:bg-gray-100 transition-colors flex items-center space-x-3'
         >
           <div className='relative inline-block'>
-            {/* Border animation container */}
-            <div className={`absolute inset-0 rounded-full ${
-              onlineReceiver 
-                ? 'bg-gradient-to-r from-[#3F5EFB] to-[#FC466B] animate-spin-slow' 
-                : 'bg-gray-300'
-            }`}>
-            </div>
+            {/* Online indicator */}
+            {onlineReceiver && (
+              <span className='absolute bottom-0 right-0 h-3 w-3 z-10'>
+                <span className='absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75 animate-ping'></span>
+                <span className='relative inline-flex h-3 w-3 rounded-full bg-green-500 border-2 border-white'></span>
+              </span>
+            )}
             
-            {/* Padding container for border effect */}
-            <div className='relative p-[2px]'> {/* Adjust padding to control border thickness */}
-              {/* Avatar container */}
-              <div className='relative rounded-full bg-white p-[2px]'>
-                <Avatar className='h-10 w-10 rounded-full overflow-hidden'>
-                  <AvatarImage 
-                    src={data?.avatar || data?.cover_photo} 
-                    className='rounded-full object-cover'
-                  />
-                  <AvatarFallback className='text-black bg-white rounded-full'>
-                    {data?.name?.charAt(0)}
-                  </AvatarFallback>
-                </Avatar>
-              </div>
+            {/* Avatar with circular style */}
+            <div className='relative'>
+              <Avatar className='w-12 h-12 rounded-full overflow-hidden'>
+                <AvatarImage 
+                  className="rounded-full" 
+                  src={data?.avatar} 
+                  alt={data?.username} 
+                />
+                <AvatarFallback className='bg-gray-800 text-gray-400 rounded-full flex items-center justify-center'>
+                  {(data?.name || '?')[0].toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
             </div>
           </div>
   
           <div className='flex-1 ml-3'>
             <h3 className='text-sm font-semibold'>{data?.name}</h3>
             <p className='text-xs text-gray-500'>{data?.username}</p>
-            {!onlineReceiver && (
+            {!onlineReceiver && onlineUsers[receiverId]?.last_active && (
               <span className='text-xs text-gray-500'>
-                Last seen {formatLastActive(onlineUsers[profile._id].last_active)}
+                Last seen {formatLastActive(onlineUsers[receiverId].last_active)}
               </span>
             )}
           </div>
         </button>
       ))}
   </div>
-  
   )
 }

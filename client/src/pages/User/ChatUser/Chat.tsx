@@ -346,7 +346,7 @@ function Chat() {
                       <AvatarFallback>CN</AvatarFallback>
                     </Avatar>
                     {onlineUsers[msg.sender_id]?.is_online && (
-                      <span className='absolute bottom-0 right-0 w-2 h-2 sm:w-3 sm:h-3 bg-green-500 rounded-full border-2 border-white'></span>
+                    <span className='absolute bottom-0 left-0 w-2 h-2 sm:w-3 sm:h-3 bg-green-500 rounded-full border-2 border-white'></span>
                     )}
                   </div>
                 </div>
