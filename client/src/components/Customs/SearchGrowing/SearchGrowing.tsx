@@ -1,5 +1,7 @@
 'use client'
+import searchApis from '@/apis/search.api'
 import { cn } from '@/lib/utils'
+import { useMutation } from '@tanstack/react-query'
 import { SearchIcon } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
@@ -17,6 +19,9 @@ export const SearchBar = () => {
   const [searchSubmittedOutline, setSearchSubmittedOutline] = useState(false)
   const [searchSubmittedShadow, setSearchSubmittedShadow] = useState(false)
   const [searchValue, setSearchValue] = useState('')
+  const searchMutation = useMutation({
+    mutationFn: () => searchApis.search({ content: searchValue, limit: 10, page: 1 })
+  })
   function handleSearch() {
     setSearchSubmittedOutline(true)
     setSearchSubmittedShadow(true)
@@ -34,12 +39,22 @@ export const SearchBar = () => {
 
   useEffect(() => {
     if (searchSubmittedShadow) {
+      searchMutation.mutate(undefined, {
+        onSuccess: (data) => {
+          console.log(data)
+
+          toast.success(`Search for ${searchValue} successful`)
+        },
+        onError: () => {
+          toast.error(`Search for ${searchValue} failed`)
+        }
+      })
       // Wait 3 sec
       setTimeout(() => {
         setSearchSubmittedShadow(false)
       }, 1000)
     }
-  }, [searchSubmittedShadow])
+  }, [searchMutation, searchSubmittedShadow, searchValue])
 
   return (
     <label
