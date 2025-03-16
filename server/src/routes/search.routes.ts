@@ -6,10 +6,4 @@ import { wrapAsync } from '~/utils/handler'
 import { makeOptional } from '~/utils/makeOptional'
 
 export const searchRouter = Router()
-searchRouter.get(
-  '/',
-  makeOptional(AccessTokenValidator),
-  makeOptional(verifiedUserValidator),
-  searchValidator,
-  wrapAsync(searchController)
-)
+searchRouter.get('/', makeOptional(AccessTokenValidator), searchValidator, wrapAsync(searchController))

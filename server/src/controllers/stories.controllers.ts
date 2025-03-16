@@ -49,9 +49,9 @@ export const updateStoryStoryController = async (req: Request<ParamsDictionary, 
 export const getNewsFeedStoriesController = async (req: Request, res: Response) => {
   const { user_id } = req.decode_authorization as TokenPayload
   const { limit, page } = req.query
-  console.log(user_id);
-  
-  const { result, total } = await storiesService.getNewsFeedStories({
+  console.log(page)
+
+  const { result, total, totalPages } = await storiesService.getNewsFeedStories({
     user_id,
     limit: Number(limit),
     page: Number(page)
@@ -60,7 +60,8 @@ export const getNewsFeedStoriesController = async (req: Request, res: Response) 
     message: STORIES_MESSAGE.GET_NEWS_FEED_STORIES_SUCCESS,
     result,
     page: Number(page),
-    total_pages: Math.ceil(total / Number(limit))
+    total: Number(total),
+    total_pages: Number(totalPages)
   })
 }
 export const getArchiveStoriesController = async (req: Request, res: Response) => {

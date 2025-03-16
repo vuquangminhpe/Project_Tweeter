@@ -170,6 +170,7 @@
     "nanoid": "^5.0.8",
     "natural-compare": "^1.4.0",
     "negotiator": "^0.6.3",
+    "node-cache": "^5.1.2",
     "node-fetch": "2",
     "nodemon": "^3.1.7",
     "normalize-path": "^3.0.0",
