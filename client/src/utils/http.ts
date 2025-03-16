@@ -45,6 +45,15 @@ class Http {
         return response
       },
       function (error: AxiosError) {
+        console.error('[HTTP Client Error]', error)
+        
+        // Create a safe error object that won't cause 'cannot read properties' errors
+        const safeError = {
+          message: error?.message || 'Unknown error',
+          status: error?.response?.status || 500,
+          data: error?.response?.data || { message: 'No response data available' }
+        }
+        
         if (error.response?.status !== HttpStatusCode.UnprocessableEntity) {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const data: any | undefined = error.response?.data
@@ -54,7 +63,7 @@ class Http {
         if (error.response?.status === HttpStatusCode.Unauthorized) {
           // clearLocalStorage()
         }
-        return Promise.reject(error)
+        return Promise.reject(safeError)
       }
     )
   }

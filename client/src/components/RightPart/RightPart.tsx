@@ -50,7 +50,11 @@ const RightPart: React.FC = () => {
   return (
     <div className='w-full max-w-xs px-4 space-y-5'>
       <Notification userId={profile?._id as string} />
-      <SearchGrowing />
+      
+      {/* Added a container with proper styling for SearchGrowing */}
+      <div className='bg-black text-white rounded-lg p-4 border border-white/20'>
+        <SearchGrowing />
+      </div>
 
       {/* Expiring Section */}
       <div className='bg-blue-800 text-white rounded-xl p-4 space-y-2 '>
