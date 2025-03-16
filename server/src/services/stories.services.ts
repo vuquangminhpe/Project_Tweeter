@@ -2,7 +2,7 @@ import { createNewStoryResBody, viewAndStatusStoryResBody } from '~/models/reque
 import databaseService from './database.services'
 import { ObjectId } from 'mongodb'
 import Stories from '~/models/schemas/Stories.schema'
- 
+
 class StoriesService {
   async createNewStory({ payload, user_id }: { payload: createNewStoryResBody; user_id: string }) {
     try {
@@ -71,7 +71,8 @@ class StoriesService {
     }
   }
   async getNewsFeedStories({ user_id, limit, page }: { user_id: string; limit: number; page: number }) {
-    const result = await databaseService.users
+    // Bước 1: Lấy danh sách người dùng kết nối
+    const connectedUsersQuery = await databaseService.users
       .aggregate([
         {
           $match: {
@@ -143,89 +144,89 @@ class StoriesService {
               $setUnion: ['$all_users']
             }
           }
-        },
+        }
+      ])
+      .toArray()
+
+    const connectedUsers = connectedUsersQuery[0]?.connected_users || [new ObjectId(user_id)]
+
+    // Bước 2: Đếm tổng số stories để phân trang chính xác
+    console.log('Connected users:', connectedUsers)
+
+    const totalCount = await databaseService.stories.countDocuments({
+      user_id: { $in: connectedUsers },
+      is_active: true
+    })
+
+    console.log('Total count:', totalCount, 'Page:', page, 'Limit:', limit)
+
+    // Đảm bảo các thông số phân trang hợp lệ
+    page = Math.max(1, page)
+    limit = Math.max(1, Math.min(100, limit)) // Giới hạn limit tối đa 100 để tránh quá tải
+
+    const skip = (page - 1) * limit
+    console.log('Using skip:', skip, 'limit:', limit)
+
+    // Bước 3: Truy vấn stories với phân trang
+    const stories = await databaseService.stories
+      .aggregate([
         {
-          $lookup: {
-            from: 'stories',
-            let: {
-              user_ids: '$connected_users'
-            },
-            pipeline: [
-              {
-                $match: {
-                  $expr: {
-                    $and: [
-                      {
-                        $in: ['$user_id', '$$user_ids']
-                      },
-                      {
-                        $eq: ['$is_active', true]
-                      }
-                    ]
-                  }
-                }
-              },
-              {
-                $sort: {
-                  created_at: -1
-                }
-              }
-            ],
-            as: 'stories'
+          $match: {
+            user_id: { $in: connectedUsers },
+            is_active: true
           }
         },
         {
-          $unwind: {
-            path: '$stories',
-            preserveNullAndEmptyArrays: false
-          }
+          $sort: { created_at: -1 }
+        },
+        {
+          $skip: skip
+        },
+        {
+          $limit: limit
         },
         {
           $lookup: {
             from: 'users',
-            localField: 'stories.user_id',
+            localField: 'user_id',
             foreignField: '_id',
-            as: 'stories.user'
+            as: 'user'
           }
         },
         {
           $unwind: {
-            path: '$stories.user',
+            path: '$user',
             preserveNullAndEmptyArrays: false
           }
         },
         {
-          $group: {
-            _id: null,
-            stories: {
-              $push: {
-                _id: '$stories._id',
-                content: '$stories.content',
-                media_url: '$stories.media_url',
-                media_type: '$stories.media_type',
-                caption: '$stories.caption',
-                created_at: '$stories.created_at',
-                expires_at: '$stories.expires_at',
-                viewer: '$stories.viewer',
-                privacy: '$stories.privacy',
-                user_id: '$stories.user_id',
-                user: '$stories.user'
-              }
-            }
-          }
-        },
-        {
           $project: {
-            _id: 0,
-            stories: {
-              $slice: ['$stories', limit * (page - 1), limit]
-            }
+            _id: 1,
+            content: 1,
+            media_url: 1,
+            media_type: 1,
+            caption: 1,
+            created_at: 1,
+            expires_at: 1,
+            viewer: 1,
+            privacy: 1,
+            user_id: 1,
+            user: 1
           }
         }
       ])
       .toArray()
 
-    return { result: result[0]?.stories || [], total: result[0]?.stories.length || 0 }
+    console.log('Stories found:', stories.length)
+
+    return {
+      result: stories,
+      total: totalCount,
+      page,
+      limit,
+      skip,
+      totalPages: Math.ceil(totalCount / limit)
+    }
   }
   async getArchiveStories({ user_id, limit, page }: { user_id: string; limit: number; page: number }) {
     const result = await databaseService.stories
