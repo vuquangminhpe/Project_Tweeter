@@ -19,6 +19,7 @@ import { ParamsDictionary } from 'express-serve-static-core'
 import { Response as ExpressResponse } from 'express-serve-static-core'
 import { verifyAccessToken } from '~/utils/common'
 import { envConfig } from '~/constants/config'
+import valkeyService from '~/services/valkey.services'
 
 type ExpressMiddleware = RequestHandler<ParamsDictionary, any, any, ParsedQs, Record<string, any>>
 const passwordSchema: ParamSchema = {
@@ -236,14 +237,23 @@ export const RefreshTokenValidator = validate(
         custom: {
           options: async (value: string, { req }) => {
             try {
-              const [decoded_refresh_token, refresh_token] = await Promise.all([
-                verifyToken({ token: value, secretOnPublicKey: envConfig.secretOnPublicKey_Refresh as string }),
-                databaseService.refreshToken.findOne({ token: value })
-              ])
+              const decoded_refresh_token = await verifyToken({
+                token: value,
+                secretOnPublicKey: envConfig.secretOnPublicKey_Refresh as string
+              })
 
-              if (refresh_token === null) {
+              const user_id = await valkeyService.getUserIdFromToken(value)
+
+              if (!user_id) {
                 throw new ErrorWithStatus({
                   message: USERS_MESSAGES.USED_REFRESH_TOKEN_OR_NOT_EXITS,
+                  status: HTTP_STATUS.UNAUTHORIZED
+                })
+              }
+
+              if (user_id !== decoded_refresh_token.user_id) {
+                throw new ErrorWithStatus({
+                  message: USERS_MESSAGES.INVALID_REFRESH_TOKEN,
                   status: HTTP_STATUS.UNAUTHORIZED
                 })
               }

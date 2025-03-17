@@ -60,7 +60,6 @@ class SearchService {
 
     const $match: any = {}
     let useTextScore = false
-    let hintObj: Record<string, any> | null = null
 
     if (content && content.trim()) {
       const trimmedContent = content.trim()
@@ -70,7 +69,6 @@ class SearchService {
       if (hasTextIndex) {
         $match['$text'] = { $search: trimmedContent }
         useTextScore = true
-        hintObj = { content: 'text' }
       } else {
         const terms = trimmedContent.split(/\s+/).filter((t) => t.length > 0)
         if (terms.length > 1) {
@@ -86,10 +84,8 @@ class SearchService {
     if (media_type) {
       if (media_type === MediaTypeQuery.Image) {
         $match['medias.type'] = MediaType.Image
-        if (!hintObj) hintObj = { 'medias.type': 1 }
       } else if (media_type === MediaTypeQuery.Video) {
         $match['medias.type'] = { $in: [MediaType.Video, MediaType.HLS] }
-        if (!hintObj) hintObj = { 'medias.type': 1 }
       }
     }
 
@@ -120,8 +116,6 @@ class SearchService {
       }
 
       $match['user_id'] = { $in: followedUserIds }
-
-      if (!hintObj) hintObj = { user_id: 1 }
     }
 
     const audienceCondition = user_id
@@ -282,7 +276,7 @@ class SearchService {
     ]
 
     try {
-      const aggregateOptions = hintObj ? { hint: hintObj } : undefined
+      const aggregateOptions = undefined
 
       const [tweets, total] = await Promise.all([
         databaseService.tweets.aggregate(pipeline, aggregateOptions).toArray(),
@@ -339,7 +333,6 @@ class SearchService {
     }
 
     const $match: any = {}
-    let hintObj: Record<string, any> | null = null
 
     if (content && content.trim()) {
       const trimmedContent = content.trim()
@@ -347,7 +340,6 @@ class SearchService {
 
       if (hasTextIndex) {
         $match['$text'] = { $search: trimmedContent }
-        hintObj = { content: 'text' }
       } else {
         const terms = trimmedContent.split(/\s+/).filter((t) => t.length > 0)
         if (terms.length > 1) {
@@ -363,10 +355,12 @@ class SearchService {
     if (media_type) {
       if (media_type === MediaTypeQuery.Image) {
         $match['medias.type'] = MediaType.Image
-        if (!hintObj) hintObj = { 'medias.type': 1 }
+        console.log('medias.type', $match['medias.type'], media_type)
+
+        // if (!hintObj) hintObj = { 'medias.type': 1 }
       } else if (media_type === MediaTypeQuery.Video) {
         $match['medias.type'] = { $in: [MediaType.Video, MediaType.HLS] }
-        if (!hintObj) hintObj = { 'medias.type': 1 }
+        // if (!hintObj) hintObj = { 'medias.type': 1 }
       }
     }
 
@@ -393,8 +387,6 @@ class SearchService {
 
       followedUserIds.push(new ObjectId(user_id))
       $match['user_id'] = { $in: followedUserIds }
-
-      if (!hintObj) hintObj = { user_id: 1 }
     }
 
     const audienceCondition = user_id
@@ -431,13 +423,26 @@ class SearchService {
       { $count: 'total' }
     ]
 
-    const aggregateOptions = hintObj ? { hint: hintObj } : undefined
+    const aggregateOptions = undefined
+
     const countResult = await databaseService.tweets.aggregate(countPipeline, aggregateOptions).toArray()
     const count = countResult[0]?.total || 0
 
     this.cache.set(countCacheKey, count, this.CACHE_TTL_SECONDS)
 
     return count
+  }
+
+  async listIndexes() {
+    try {
+      const indexes = await databaseService.tweets.indexes()
+      console.log('Available indexes on tweets collection:')
+      console.log(JSON.stringify(indexes, null, 2))
+      return indexes
+    } catch (error) {
+      console.error('Error listing indexes:', error)
+      throw error
+    }
   }
 
   private incrementViewCountsAsync(tweets: any[], user_id?: string) {

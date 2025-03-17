@@ -76,7 +76,8 @@ export const USERS_MESSAGES = {
   S3_LINK_MUST_BE_A_STRING: 'S3 link must be a string',
   LINK_IS_REQUIRED: 'Link is required',
   LINK_MUST_BE_A_STRING: 'Link must be a string',
-  REACTION_USER_ID_MUST_NOT_BE_EMPTY: 'Reaction user id must not be empty'
+  REACTION_USER_ID_MUST_NOT_BE_EMPTY: 'Reaction user id must not be empty',
+  INVALID_REFRESH_TOKEN: 'Invalid refresh token'
 } as const
 
 export const TWEET_MESSAGE = {

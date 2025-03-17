@@ -8,6 +8,7 @@ config({
 })
 
 export const envConfig = {
+  valkey_url: process.env.VALKEY_URL,
   port: process.env.PORT,
   host: process.env.HOST,
   db_username: process.env.DB_USERNAME,
@@ -44,5 +45,6 @@ export const envConfig = {
   client_id: process.env.GOOGLE_CLIENT_ID,
   client_secret: process.env.GOOGLE_CLIENT_SECRET,
   redirect_uri: process.env.GOOGLE_REDIRECT_URI,
-  client_url: process.env.CLIENT_URL
+  client_url: process.env.CLIENT_URL,
+  token_expiry_seconds: parseInt(process.env.DB_REFRESH_TOKENS_COLLECTION || '604800')
 }

@@ -14,6 +14,8 @@ import axios from 'axios'
 import { config } from 'dotenv'
 import { verifyEmail as sendVerifyEmail, verifyEmail, verifyForgotPassword } from 'sendmail'
 import { envConfig } from '~/constants/config'
+import valkeyService from './valkey.services'
+
 config()
 class UserService {
   private signAccessToken({ user_id, verify }: { user_id: string; verify: UserVerifyStatus }) {
@@ -97,9 +99,9 @@ class UserService {
       user_id: user_id.toString(),
       verify: UserVerifyStatus.Unverified
     })
-    await databaseService.refreshToken.insertOne(
-      new RefreshToken({ user_id: new ObjectId(user_id), token: refresh_token })
-    )
+
+    const expiryInSeconds = envConfig.token_expiry_seconds || 604800
+    await valkeyService.storeRefreshToken(user_id.toString(), refresh_token, expiryInSeconds)
 
     await sendVerifyEmail(payload.email, email_verify_token)
 
@@ -111,14 +113,14 @@ class UserService {
   async refreshToken(user_id: string, verify: UserVerifyStatus, refresh_token: string) {
     const [new_access_token, new_refresh_token] = await Promise.all([
       this.signAccessToken({ user_id, verify }),
-      this.signRefreshToken({ user_id, verify }),
-      databaseService.refreshToken.deleteOne({
-        token: refresh_token
-      })
+      this.signRefreshToken({ user_id, verify })
     ])
-    await databaseService.refreshToken.insertOne(
-      new RefreshToken({ user_id: new ObjectId(user_id), token: new_refresh_token })
-    )
+
+    await valkeyService.deleteRefreshToken(refresh_token)
+
+    const expiryInSeconds = envConfig.token_expiry_seconds || 604800
+    await valkeyService.storeRefreshToken(user_id, new_refresh_token, expiryInSeconds)
+
     return {
       access_token: new_access_token,
       refresh_token: new_refresh_token
@@ -179,17 +181,16 @@ class UserService {
       })
     }
 
-    // kiểm tra đã tồn tại trong db hay chưa (đăng kí hay chưa)
     const user = await databaseService.users.findOne({ email: userInfo.email })
-    //nếu tồn tạo cho login vào
     if (user) {
       const [access_token, refresh_token] = await this.signAccessAndRefreshToken({
         user_id: user._id.toString(),
         verify: user.verify
       })
-      await databaseService.refreshToken.insertOne(
-        new RefreshToken({ user_id: new ObjectId(user._id), token: refresh_token })
-      )
+
+      const expiryInSeconds = envConfig.token_expiry_seconds || 604800
+      await valkeyService.storeRefreshToken(user._id.toString(), refresh_token, expiryInSeconds)
+
       return {
         access_token,
         refresh_token,
@@ -198,7 +199,6 @@ class UserService {
       }
     } else {
       const password = crypto.randomUUID()
-      //ko thì đăng ký
       const data = await this.register({
         email: userInfo.email,
         name: userInfo.name,
@@ -219,16 +219,17 @@ class UserService {
       user_id,
       verify: verify
     })
-    await databaseService.refreshToken.insertOne(
-      new RefreshToken({ user_id: new ObjectId(user_id), token: refresh_token })
-    )
+
+    const expiryInSeconds = envConfig.token_expiry_seconds || 604800
+    await valkeyService.storeRefreshToken(user_id, refresh_token, expiryInSeconds)
+
     return {
       access_token,
       refresh_token
     }
   }
   async logout(refresh_token: string) {
-    await databaseService.refreshToken.deleteOne({ token: refresh_token })
+    await valkeyService.deleteRefreshToken(refresh_token)
 
     return {
       message: USERS_MESSAGES.LOGOUT_SUCCESS
@@ -236,7 +237,6 @@ class UserService {
   }
 
   async verifyEmail(user_id: string) {
-    //cật nhật giá trị có thể dùng $$NOW => ném vào [] mới sử dụng được hoặc $curentDate
     await databaseService.users.updateOne(
       { _id: new ObjectId(user_id) },
       {
@@ -253,11 +253,16 @@ class UserService {
       user_id,
       verify: UserVerifyStatus.Verified
     })
+
+    const expiryInSeconds = envConfig.token_expiry_seconds || 604800
+    await valkeyService.storeRefreshToken(user_id, refresh_token, expiryInSeconds)
+
     return {
       access_token,
       refresh_token
     }
   }
+
   async resendVerifyEmail(user_id: string) {
     const email_verify_token = await this.signEmailVerifyToken({ user_id, verify: UserVerifyStatus.Unverified })
 
