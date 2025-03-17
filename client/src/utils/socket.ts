@@ -9,7 +9,6 @@ const socket = io('http://localhost:5000', {
   timeout: 20000
 })
 
-// Add error handling
 socket.on('connect_error', (error) => {
   console.error('Socket connection error:', error)
 })
