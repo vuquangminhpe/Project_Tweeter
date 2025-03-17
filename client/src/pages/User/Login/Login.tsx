@@ -5,12 +5,10 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { useMutation } from '@tanstack/react-query'
 import { toast } from 'react-toastify'
 import apiUser from '@/apis/users.api'
-import { AppContext } from '@/Contexts/app.context'
 import path from '@/constants/path'
 
 export default function Login() {
   const [params] = useSearchParams()
-  const { isAuthenticated } = useContext(AppContext)
   const [data, setData] = useState([{ email: '', password: '', remember: false }])
   const [focused, setFocused] = useState({
     email: false,
@@ -63,9 +61,8 @@ export default function Login() {
     if (code) {
       exchangeCodeForToken(code)
         .then((res) => {
-          const { access_token, refresh_token } = res
+          const { access_token } = res
           localStorage.setItem('access_token', access_token)
-          localStorage.setItem('refresh_token', refresh_token)
           navigate('/')
         })
         .catch((error) => {
@@ -109,9 +106,8 @@ export default function Login() {
       { email: data[0].email, password: data[0].password },
       {
         onSuccess: (res) => {
-          const { access_token, refresh_token } = res.data.result
+          const { access_token } = res.data.result
           localStorage.setItem('access_token', access_token as string)
-          localStorage.setItem('refresh_token', refresh_token as string)
           setTimeout(() => {
             window.location.href = '/'
           }, 0)
