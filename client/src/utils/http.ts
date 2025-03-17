@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import axios, { AxiosError, AxiosInstance, HttpStatusCode } from 'axios'
 import configBase from '../constants/config'
 import { clearLocalStorage, getAccessTokenFromLS, saveAccessTokenToLS, setProfileFromLS } from './auth'
@@ -48,8 +49,8 @@ class Http {
         if (error.response?.status !== HttpStatusCode.UnprocessableEntity) {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const data: any | undefined = error.response?.data
-          const message = data.message || error.message
-          toast.error(message)
+          // const message = data.message || error.message
+          // toast.error(message)
         }
         if (error.response?.status === HttpStatusCode.Unauthorized) {
           clearLocalStorage()

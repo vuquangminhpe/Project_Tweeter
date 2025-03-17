@@ -4,9 +4,10 @@ import { useContext, useEffect } from 'react'
 import useRouteElement from './useRouteElement'
 import { HelmetProvider } from 'react-helmet-async'
 import { AppContext } from './Contexts/app.context'
-import { localStorageEventTarget } from './utils/auth'
+import { getProfileFormLS, localStorageEventTarget } from './utils/auth'
 import ThemeProvider from './components/ThemeProvider'
 import { Toaster } from 'sonner'
+import socket from './utils/socket'
 
 function App() {
   const { reset } = useContext(AppContext)
@@ -16,6 +17,16 @@ function App() {
 
     return () => localStorageEventTarget.removeEventListener('clearLocalStorage', () => reset())
   }, [reset])
+  useEffect(() => {
+    if (getProfileFormLS()) {
+      socket.connect()
+      socket.auth = {
+        Authorization: `Bearer ${localStorage.getItem('access_token')}`,
+        _id: getProfileFormLS()._id
+      }
+    }
+  }, [])
+
   const useRouterElement = useRouteElement()
   return (
     <HelmetProvider>

@@ -35,13 +35,8 @@ function Chat() {
   const [totalPages, setTotalPages] = useState<number | undefined>()
   const [receiver, setReceiver] = useState<string>('')
   const [initialScrollSet, setInitialScrollSet] = useState<boolean>(false)
-  const [onlineUsers, setOnlineUsers] = useState<{ [key: string]: UserStatus }>({
-    [profile?._id]: {
-      user_id: profile?._id,
-      is_online: true,
-      last_active: new Date()
-    }
-  })
+  const [isLoading, setIsLoading] = useState<boolean>(true)
+  const [onlineUsers, setOnlineUsers] = useState<{ [key: string]: UserStatus }>({})
 
   // Trong component Chat, thêm state
   const [editingMessageId, setEditingMessageId] = useState<string | number | null>(null)
@@ -76,8 +71,36 @@ function Chat() {
     socket.connect()
     if (profile._id) {
       setReceiver(profile._id)
+      socket.auth = {
+        Authorization: `Bearer ${localStorage.getItem('access_token')}`,
+        _id: profile._id
+      }
     }
-    console.log(socket)
+    console.log('Socket connection:', socket)
+
+    // Handle receiving updated online user statuses
+    socket.on('all_online_users_response', (users) => {
+      console.log('Received online users:', users)
+      setOnlineUsers(users)
+      setIsLoading(false)
+    })
+
+    // Handle individual user status updates
+    socket.on('user_status_response', (status: UserStatus) => {
+      console.log('User status update:', status)
+      setOnlineUsers((prev) => ({
+        ...prev,
+        [status.user_id]: status
+      }))
+    })
+
+    socket.on('user_status_change', (status: UserStatus) => {
+      console.log('User status change:', status)
+      setOnlineUsers((prev) => ({
+        ...prev,
+        [status.user_id]: status
+      }))
+    })
 
     socket.on('receive_conversation', (data: { payload: Conversation }) => {
       const { payload } = data
@@ -87,29 +110,38 @@ function Chat() {
       }
     })
 
+    // Request all online users when the component mounts
+    socket.emit('get_all_online_users')
+
     return () => {
       socket.off('receive_conversation')
+      socket.off('all_online_users_response')
+      socket.off('user_status_response')
+      socket.off('user_status_change')
     }
   }, [profile?._id])
 
   useEffect(() => {
-    if (receiver) {
+    if (receiver && receiver !== profile._id) {
       socket.emit('get_user_status', receiver)
-      socket.on('user_status_response', (status: UserStatus) => {
-        setOnlineUsers((prev) => ({
-          ...prev,
-          [status.user_id]: status
-        }))
-      })
     }
-  }, [receiver])
+  }, [receiver, profile._id])
 
   useEffect(() => {
     async function fetchData() {
-      const response = await conversationsApi.getChatWithFriend(receiver, 10, 1)
-      setTotalPages(response.data.result.total_pages)
+      setIsLoading(true)
+      try {
+        const response = await conversationsApi.getChatWithFriend(receiver, 10, 1)
+        setTotalPages(response.data.result.total_pages)
+      } catch (error) {
+        console.error('Error fetching chat data:', error)
+      } finally {
+        setIsLoading(false)
+      }
     }
-    fetchData()
+    if (receiver) {
+      fetchData()
+    }
   }, [receiver])
 
   const {
@@ -136,7 +168,8 @@ function Chat() {
     select: (data) => ({
       pages: [...data.pages],
       pageParams: [...data.pageParams]
-    })
+    }),
+    enabled: !!receiver && !!totalPages // Only run the query when receiver and totalPages are available
   })
 
   const handleObserver = useCallback(
@@ -225,13 +258,29 @@ function Chat() {
     return emojiEntry ? emojiEntry[1].split('.')[0] : undefined
   }
 
+  if (isLoading) {
+    return <div className='flex h-screen items-center justify-center'>Loading chat data...</div>
+  }
+
   return (
     <div ref={messagesEndRef} className='flex h-screen bg-gray-100'>
+      {/* Optional Debug Panel */}
+      {/*
+      <div className="fixed top-0 right-0 bg-white p-2 text-xs z-50 max-h-40 overflow-auto">
+        <div>Debug - Online Users:</div>
+        {Object.entries(onlineUsers).map(([id, status]) => (
+          <div key={id}>
+            {id.substring(0, 6)}: {status.is_online ? '🟢' : '🔴'}
+          </div>
+        ))}
+      </div>
+      */}
+
       <div className='w-[320px] min-w-[280px] border-r border-gray-200 bg-white overflow-hidden'>
         <StatusWithChat
           onReceiverChange={setReceiver}
           onlineUsers={onlineUsers}
-          statusOnline={onlineUsers[receiver]?.is_online}
+          statusOnline={onlineUsers[receiver]?.is_online || false}
         />
       </div>
 
@@ -239,7 +288,7 @@ function Chat() {
         <div ref={loadPreviousRef} className='w-full py-4 text-center'>
           <HeaderChat
             receiverId={receiver}
-            onlineReceiver={onlineUsers[receiver]?.is_online}
+            onlineReceiver={onlineUsers[receiver]?.is_online || false}
             onlineUsers={onlineUsers}
             setOnlineUsers={setOnlineUsers}
           />
@@ -299,7 +348,7 @@ function Chat() {
                       receiver={receiver}
                       totalPages={totalPages as number}
                       isOwnMessage={true}
-                      onStartEditing={handleStartEditing} // thêm prop onStartEditing
+                      onStartEditing={handleStartEditing}
                     />
                   </div>
                   <div className='max-w-[70%] px-3 py-2 sm:px-4 sm:py-2 rounded-2xl bg-blue-500 text-white rounded-br-none'>
