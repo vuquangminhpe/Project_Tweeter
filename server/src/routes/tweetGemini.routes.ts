@@ -5,6 +5,7 @@ import {
   getConversationInAIControllers
 } from '~/controllers/tweet.controllers'
 import { messageUploadValidator } from '~/middlewares/conversations.middlewares'
+import { paginationValidator } from '~/middlewares/tweets.middlewares'
 import { AccessTokenValidator, premiumUserValidator, verifiedUserValidator } from '~/middlewares/users.middlewares'
 import { wrapAsync } from '~/utils/handler'
 
@@ -45,10 +46,11 @@ tweetGeminiRoutes.post(
 //  * Path: /conversation/chat
 //  * Method: GET
 //  * header: {Authorization:Bearer <access_token> }
-tweetGeminiRoutes.post(
+tweetGeminiRoutes.get(
   '/conversation/chat',
   AccessTokenValidator,
   verifiedUserValidator,
+  paginationValidator,
   wrapAsync(getConversationInAIControllers)
 )
 export default tweetGeminiRoutes

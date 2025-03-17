@@ -128,7 +128,11 @@ export const chatWithGeminiController = async (req: Request<ParamsDictionary, an
 }
 export const getConversationInAIControllers = async (req: Request, res: Response) => {
   const { user_id } = req.decode_authorization as TokenPayload
-  const result = await tweetsService.getConversationInAI(user_id)
+
+  const page = Number(req.query.page) || 1
+  const limit = Number(req.query.limit) || 10
+
+  const result = await tweetsService.getConversationInAI(user_id, page, limit)
   res.json({
     message: TWEET_MESSAGE.GET_CONVERSATION_IN_AI_SUCCESS,
     data: result
