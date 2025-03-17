@@ -81,18 +81,14 @@ export default function HeaderChat({ onlineReceiver, setOnlineUsers, onlineUsers
             className='w-full p-2 hover:bg-gray-100 transition-colors flex items-center space-x-3'
           >
             <div className='relative inline-block'>
-              {/* Border animation container */}
               <div
                 className={`absolute inset-0 rounded-full ${
                   onlineReceiver ? 'bg-gradient-to-r from-[#3F5EFB] to-[#FC466B] animate-spin-slow' : 'bg-gray-300'
                 }`}
               ></div>
 
-              {/* Padding container for border effect */}
               <div className='relative p-[2px]'>
                 {' '}
-                {/* Adjust padding to control border thickness */}
-                {/* Avatar container */}
                 <div className='relative rounded-full bg-white p-[2px]'>
                   <Avatar className='h-10 w-10 rounded-full overflow-hidden'>
                     <AvatarImage src={data?.avatar || data?.cover_photo} className='rounded-full object-cover' />

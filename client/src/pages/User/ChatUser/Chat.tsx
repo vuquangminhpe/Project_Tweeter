@@ -264,17 +264,14 @@ function Chat() {
 
   return (
     <div ref={messagesEndRef} className='flex h-screen bg-gray-100'>
-      {/* Optional Debug Panel */}
-      {/*
-      <div className="fixed top-0 right-0 bg-white p-2 text-xs z-50 max-h-40 overflow-auto">
+      {/* <div className='fixed top-0 right-0 bg-white p-2 text-xs z-50 max-h-40 overflow-auto'>
         <div>Debug - Online Users:</div>
         {Object.entries(onlineUsers).map(([id, status]) => (
           <div key={id}>
             {id.substring(0, 6)}: {status.is_online ? '🟢' : '🔴'}
           </div>
         ))}
-      </div>
-      */}
+      </div> */}
 
       <div className='w-[320px] min-w-[280px] border-r border-gray-200 bg-white overflow-hidden'>
         <StatusWithChat
@@ -403,6 +400,7 @@ function Chat() {
             </div>
           ))}
         </div>
+
         <ChatInput value={value} setValue={setValue} send={send} inputRef={inputRef} refetchChatData={handleRefetch} />
       </div>
     </div>

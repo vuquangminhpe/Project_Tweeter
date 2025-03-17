@@ -8,12 +8,10 @@ import { deleteFileFromS3, deleteS3Folder } from '~/utils/s3'
 import { convertS3Url, extractGeminiData } from '~/utils/utils'
 import { GoogleGenerativeAI } from '@google/generative-ai'
 
-import fs from 'fs'
-import { pipeline } from 'stream/promises'
 import * as nodeFetch from 'node-fetch'
 import { config } from 'dotenv'
 import { PROMPT_CHAT, PROMPT_TWEET_FREE, PROMPT_TWEET_PREMIUM } from '~/constants/prompt'
-import User from '~/models/schemas/User.schema'
+
 config()
 if (!globalThis.fetch) {
   ;(globalThis as any).fetch = nodeFetch.default
@@ -705,8 +703,9 @@ class TweetService {
 
     const apiKey = process.env.GERMINI_API_KEY
     const genAI = new GoogleGenerativeAI(apiKey as string)
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' })
+    const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' })
     const result = await model.generateContent([PROMPT_CHAT, message])
+
     const response = await result.response
     const aiResponseText = response.text()
     await databaseService.conversations.insertOne({
@@ -718,6 +717,38 @@ class TweetService {
     return {
       result: aiResponseText
     }
+  }
+  async getConversationInAI(user_id: string) {
+    const conversations = await databaseService.conversations
+      .aggregate([
+        {
+          $match: {
+            $or: [
+              {
+                receive_id: new ObjectId(user_id),
+                sender_id: new ObjectId('60f3b3b3b3b3b3b3b3b3b3')
+              },
+              {
+                receive_id: new ObjectId('60f3b3b3b3b3b3b3b3b3b3'),
+                sender_id: new ObjectId(user_id)
+              }
+            ]
+          }
+        },
+        {
+          $project: {
+            _id: 1,
+            sender_id: 1,
+            receive_id: 1,
+            content: 1,
+            created_at: 1,
+            'sender_info.username': 1
+          }
+        }
+      ])
+      .toArray()
+
+    return conversations
   }
 }
 const tweetsService = new TweetService()

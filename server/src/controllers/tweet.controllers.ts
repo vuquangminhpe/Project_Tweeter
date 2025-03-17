@@ -119,11 +119,18 @@ export const generateTweetTextGeminiController = async (
 export const chatWithGeminiController = async (req: Request<ParamsDictionary, any, any, any>, res: Response) => {
   const { user_id } = req.decode_authorization as TokenPayload
   const { message } = req.body
-  console.log('message', message)
 
   const result = await tweetsService.chatWithGemini(user_id, message)
   res.json({
     message: TWEET_MESSAGE.CHAT_WITH_GEMINI_SUCCESS,
+    data: result
+  })
+}
+export const getConversationInAIControllers = async (req: Request, res: Response) => {
+  const { user_id } = req.decode_authorization as TokenPayload
+  const result = await tweetsService.getConversationInAI(user_id)
+  res.json({
+    message: TWEET_MESSAGE.GET_CONVERSATION_IN_AI_SUCCESS,
     data: result
   })
 }
