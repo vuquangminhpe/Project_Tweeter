@@ -1,42 +1,15 @@
-import { IoMdHome } from 'react-icons/io'
-import { FaSearch } from 'react-icons/fa'
-import { IoMdNotifications } from 'react-icons/io'
-import { CiMail } from 'react-icons/ci'
-import { MdPerson } from 'react-icons/md'
-import { CiCircleMore } from 'react-icons/ci'
-import path from '@/constants/path'
+import { BiHomeAlt, BiUser, BiMessageSquareDetail, BiCompass, BiBookmark, BiCog } from 'react-icons/bi'
+import { HiOutlineBell, HiOutlineChartBar } from 'react-icons/hi'
 
 const NavigationMenu = [
-  {
-    title: 'Home',
-    icon: <IoMdHome />,
-    path: path.home
-  },
-  {
-    title: 'Explore',
-    icon: <FaSearch />,
-    path: '/explore'
-  },
-  {
-    title: 'Notifications',
-    icon: <IoMdNotifications />,
-    path: '/notification'
-  },
-  {
-    title: 'Messages',
-    icon: <CiMail />,
-    path: '/messages'
-  },
-  {
-    title: 'Profile',
-    icon: <MdPerson />,
-    path: path.profile
-  },
-  {
-    title: 'More',
-    icon: <CiCircleMore />,
-    path: '/more'
-  }
+  { title: 'Home', icon: <BiHomeAlt />, path: '/' },
+  { title: 'Explore', icon: <BiCompass />, path: '/explore' },
+  { title: 'Notifications', icon: <HiOutlineBell />, path: '/notifications' },
+  { title: 'Messages', icon: <BiMessageSquareDetail />, path: '/messages' },
+  { title: 'Bookmarks', icon: <BiBookmark />, path: '/bookmarks' },
+  { title: 'Analytics', icon: <HiOutlineChartBar />, path: '/analytics' },
+  { title: 'Profile', icon: <BiUser />, path: '/profile' },
+  { title: 'Settings', icon: <BiCog />, path: '/settings' }
 ]
 
 export default NavigationMenu

@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import React, { useState, useRef, useEffect, useContext } from 'react'
-import { GoVerified } from 'react-icons/go'
-import { FaEllipsisH } from 'react-icons/fa'
+import { HiOutlineBadgeCheck } from 'react-icons/hi'
+import { BiDotsHorizontalRounded, BiTrendingUp, BiSearch } from 'react-icons/bi'
 import SearchGrowing from '../Customs/SearchGrowing'
 import Notification from '../Customs/Notification'
 import { AppContext } from '@/Contexts/app.context'
@@ -9,6 +9,7 @@ import { AppContext } from '@/Contexts/app.context'
 const RightPart: React.FC = () => {
   const { profile } = useContext(AppContext)
   const [isModalOpen, setIsModalOpen] = useState<number | null>(null)
+  const [searchQuery, setSearchQuery] = useState<string>('')
   const modalRefs = useRef<(HTMLDivElement | null)[]>([])
   const ellipsisRefs = useRef<(HTMLDivElement | null)[]>([])
 
@@ -18,11 +19,9 @@ const RightPart: React.FC = () => {
       setIsModalOpen(null)
       return
     }
-
-    // Mở modal cho item được chọn
     setIsModalOpen(index)
   }
-  // Đóng modal khi click ra ngoài
+
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const isOutside = ellipsisRefs.current.every(
@@ -47,93 +46,210 @@ const RightPart: React.FC = () => {
   const handleRemoveTrend = (option: string) => {
     setIsModalOpen(null)
   }
+
+  const trendingTopics = [
+    { name: 'Technology', category: 'Trending in Tech', count: '5.2K posts' },
+    { name: 'Science', category: 'Trending in Education', count: '3.8K posts' },
+    { name: 'Health', category: 'Trending in Wellness', count: '2.9K posts' },
+    { name: 'Art', category: 'Trending in Culture', count: '1.7K posts' }
+  ]
+
+  const suggestedAccounts = [
+    { name: 'Innovation Hub', handle: '@InnovationHub', avatar: '/avatars/hub.jpg', verified: true },
+    { name: 'Tech Times', handle: '@TechTimes', avatar: '/avatars/tech.jpg', verified: true },
+    { name: 'Design World', handle: '@DesignWorld', avatar: '/avatars/design.jpg', verified: false }
+  ]
+
   return (
-    <div className='w-full max-w-xs px-4 space-y-5'>
+    <div className='space-y-6 py-4'>
       <Notification userId={profile?._id as string} />
-      
-      {/* Added a container with proper styling for SearchGrowing */}
-      <div className='bg-black text-white rounded-lg p-4 border border-white/20'>
-        <SearchGrowing />
-      </div>
 
-      {/* Expiring Section */}
-      <div className='bg-blue-800 text-white rounded-xl p-4 space-y-2 '>
-        <p className='font-bold'>Expiring soon!</p>
-        <p className='text-sm'>Get 40% off X Premium. Unlock the best of X.</p>
-        <button className='bg-white text-blue-800 font-semibold px-4 py-2 rounded-full'>Subscribe</button>
-      </div>
+     <SearchGrowing />
+  
 
-      {/* What's Happening Section */}
-      <div className='bg-black text-white rounded-lg p-4 space-y-3 border border-white/20'>
-        <h2 className='font-bold text-lg'>What's happening</h2>
-        <div className='space-y-3 relative'>
-          {['allegra mccrain', 'sharita sandrowicz', 'elton flockhart', 'petrina boursaw'].map((trend, index) => (
-            <div
-              key={index}
-              className='flex justify-between items-center text-sm hover:bg-gray-700 rounded-lg p-2 relative'
-            >
-              <div>
-                <p className='text-gray-400'>Trending in Vietnam</p>
-                <p>{trend}</p>
-              </div>
-              <div ref={(el) => (ellipsisRefs.current[index] = el)} className='relative'>
-                <FaEllipsisH
-                  className='ml-2 text-gray-500 text-lg cursor-pointer hover:text-gray-400'
-                  onClick={(e) => handleOptionClick(index, e)}
-                />
-
-                {/* Modal cho từng item */}
-                {isModalOpen === index && (
-                  <div
-                    ref={(el) => (modalRefs.current[index] = el)}
-                    className='absolute z-50 top-full right-0 mt-2 bg-black border border-gray-700 rounded-lg shadow-lg w-52'
-                  >
-                    <ul className='py-1'>
-                      <li
-                        className='px-4 py-2 text-sm hover:bg-gray-800 cursor-pointer'
-                        onClick={() => handleRemoveTrend('duplicate')}
-                      >
-                        This trend is duplicate
-                      </li>
-                      <li
-                        className='px-4 py-2 text-sm hover:bg-gray-800 cursor-pointer'
-                        onClick={() => handleRemoveTrend('harmful')}
-                      >
-                        This trend is harmful
-                      </li>
-                    </ul>
-                  </div>
-                )}
-              </div>
-            </div>
-          ))}
+      <div className='bg-gradient-to-br from-indigo-600 to-violet-700 rounded-xl p-5 text-white shadow-md'>
+        <h2 className='font-bold text-lg mb-2'>Unlock Premium Features</h2>
+        <p className='text-indigo-100 text-sm mb-4'>Get exclusive tools, analytics, and customization options.</p>
+        <div className='space-y-2 mb-4'>
+          <div className='flex items-center gap-2 text-sm'>
+            <svg className='h-5 w-5 text-indigo-200' viewBox='0 0 20 20' fill='currentColor'>
+              <path
+                fillRule='evenodd'
+                d='M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z'
+                clipRule='evenodd'
+              />
+            </svg>
+            <span>Ad-free experience</span>
+          </div>
+          <div className='flex items-center gap-2 text-sm'>
+            <svg className='h-5 w-5 text-indigo-200' viewBox='0 0 20 20' fill='currentColor'>
+              <path
+                fillRule='evenodd'
+                d='M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z'
+                clipRule='evenodd'
+              />
+            </svg>
+            <span>Enhanced analytics</span>
+          </div>
+          <div className='flex items-center gap-2 text-sm'>
+            <svg className='h-5 w-5 text-indigo-200' viewBox='0 0 20 20' fill='currentColor'>
+              <path
+                fillRule='evenodd'
+                d='M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z'
+                clipRule='evenodd'
+              />
+            </svg>
+            <span>Priority support</span>
+          </div>
         </div>
-        <button className='text-blue-400 hover:underline'>Show more</button>
+        <button className='w-full bg-white text-indigo-700 font-medium px-4 py-2 rounded-lg hover:bg-indigo-50 transition-colors'>
+          Upgrade Now
+        </button>
       </div>
 
-      {/* Who to Follow Section */}
-      <div className='bg-black text-white rounded-lg p-4 space-y-3 border border-white/20'>
-        <h2 className='font-bold text-lg'>Who to follow</h2>
-        <div className='space-y-3'>
-          {[
-            { name: 'Viet Nam Government', handle: '@VNGovtPortal' },
-            { name: 'Viet Nam Diplomacy', handle: '@MOFAVietNam' },
-            { name: 'UK in Viet Nam', handle: '@UKinVietNam' }
-          ].map((user, index) => (
-            <div key={index} className='flex justify-between items-center text-sm'>
-              <div className='flex items-center space-x-2'>
-                <div className='w-10 h-10 bg-gray-700 rounded-full'></div>
+      <div className='bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden'>
+        <div className='p-4 border-b border-gray-100'>
+          <div className='flex items-center justify-between'>
+            <h2 className='font-bold text-gray-800 flex items-center gap-2'>
+              <BiTrendingUp className='text-indigo-500' />
+              Trending Now
+            </h2>
+            <button className='text-xs text-indigo-600 font-medium hover:underline'>View All</button>
+          </div>
+        </div>
+
+        <div className='divide-y divide-gray-100'>
+          {trendingTopics.map((trend, index) => (
+            <div key={index} className='p-4 hover:bg-gray-50 transition-colors duration-150 relative'>
+              <div className='flex justify-between items-start'>
                 <div>
-                  <p className='text-white hover:text-blue-400 cursor-pointer'>{user.name}</p>
-                  <p className='text-gray-400'>{user.handle}</p>
+                  <p className='text-xs text-gray-500 mb-1'>{trend.category}</p>
+                  <p className='font-medium text-gray-800 mb-1'>{trend.name}</p>
+                  <p className='text-xs text-gray-500'>{trend.count}</p>
                 </div>
-                <GoVerified className='text-blue-500 text-lg' />
+                <div ref={(el) => (ellipsisRefs.current[index] = el)} className='relative'>
+                  <button
+                    className='p-1 rounded-full hover:bg-gray-200 transition-colors'
+                    onClick={(e) => handleOptionClick(index, e)}
+                  >
+                    <BiDotsHorizontalRounded className='text-gray-500' />
+                  </button>
+
+                  {isModalOpen === index && (
+                    <div
+                      ref={(el) => (modalRefs.current[index] = el)}
+                      className='absolute z-50 top-full right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg w-56 overflow-hidden'
+                    >
+                      <div className='py-1'>
+                        <button
+                          className='w-full px-4 py-2 text-sm text-left hover:bg-gray-100 text-gray-700 flex items-center gap-2'
+                          onClick={() => handleRemoveTrend('not-interested')}
+                        >
+                          <svg
+                            xmlns='http://www.w3.org/2000/svg'
+                            className='h-4 w-4'
+                            fill='none'
+                            viewBox='0 0 24 24'
+                            stroke='currentColor'
+                          >
+                            <path
+                              strokeLinecap='round'
+                              strokeLinejoin='round'
+                              strokeWidth={2}
+                              d='M6 18L18 6M6 6l12 12'
+                            />
+                          </svg>
+                          Not interested
+                        </button>
+                        <button
+                          className='w-full px-4 py-2 text-sm text-left hover:bg-gray-100 text-gray-700 flex items-center gap-2'
+                          onClick={() => handleRemoveTrend('report')}
+                        >
+                          <svg
+                            xmlns='http://www.w3.org/2000/svg'
+                            className='h-4 w-4'
+                            fill='none'
+                            viewBox='0 0 24 24'
+                            stroke='currentColor'
+                          >
+                            <path
+                              strokeLinecap='round'
+                              strokeLinejoin='round'
+                              strokeWidth={2}
+                              d='M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z'
+                            />
+                          </svg>
+                          Report this trend
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
-              <button className='bg-white text-black font-semibold px-4 py-1 rounded-full'>Follow</button>
             </div>
           ))}
         </div>
-        <button className='text-blue-400 hover:underline'>Show more</button>
+      </div>
+
+      <div className='bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden'>
+        <div className='p-4 border-b border-gray-100'>
+          <h2 className='font-bold text-gray-800'>Suggested Connections</h2>
+        </div>
+
+        <div className='divide-y divide-gray-100'>
+          {suggestedAccounts.map((user, index) => (
+            <div key={index} className='p-4 hover:bg-gray-50 transition-colors duration-150'>
+              <div className='flex items-center justify-between'>
+                <div className='flex items-center space-x-3'>
+                  <div className='w-10 h-10 rounded-full bg-gray-200 flex-shrink-0 overflow-hidden'>
+                    <div className='w-full h-full bg-gradient-to-br from-indigo-200 to-violet-200 flex items-center justify-center text-indigo-500'>
+                      {user.name.charAt(0)}
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className='flex items-center gap-1'>
+                      <p className='font-medium text-gray-900'>{user.name}</p>
+                      {user.verified && <HiOutlineBadgeCheck className='text-indigo-500 h-4 w-4' />}
+                    </div>
+                    <p className='text-sm text-gray-500'>{user.handle}</p>
+                  </div>
+                </div>
+
+                <button className='px-3 py-1 text-sm font-medium rounded-full border border-indigo-600 text-indigo-600 hover:bg-indigo-50 transition-colors'>
+                  Follow
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div className='p-3 bg-gray-50 border-t border-gray-100'>
+          <button className='w-full text-center text-sm text-indigo-600 font-medium hover:underline py-1'>
+            Show more suggestions
+          </button>
+        </div>
+      </div>
+
+      <div className='text-xs text-gray-500'>
+        <div className='flex flex-wrap gap-x-3 gap-y-1 mb-2'>
+          <a href='#' className='hover:underline'>
+            Terms
+          </a>
+          <a href='#' className='hover:underline'>
+            Privacy
+          </a>
+          <a href='#' className='hover:underline'>
+            Cookies
+          </a>
+          <a href='#' className='hover:underline'>
+            Accessibility
+          </a>
+          <a href='#' className='hover:underline'>
+            Advertising
+          </a>
+        </div>
+        <p>© 2025 Flow Friend, Inc.</p>
       </div>
     </div>
   )
