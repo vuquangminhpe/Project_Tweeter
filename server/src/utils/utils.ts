@@ -116,11 +116,12 @@ export function extractGeminiData(geminiResponse: string | object): GeminiRespon
   }
 }
 
-export async function extractContentAndInsertToDB(user_id: string, aiResponseText: string) {
+export async function extractContentAndInsertToDB(user_id: string, aiResponseText: string, message: string) {
   try {
     let content = extractContentFromResponse(aiResponseText)
 
     const _id = new ObjectId()
+    const _id2 = new ObjectId()
     const sender_id_gemini = new ObjectId('60f3b3b3b3b3b3b3b3b3b3b3')
 
     await databaseService.conversations.insertOne({
@@ -129,7 +130,12 @@ export async function extractContentAndInsertToDB(user_id: string, aiResponseTex
       receive_id: new ObjectId(user_id),
       content: content
     })
-
+    await databaseService.conversations.insertOne({
+      _id: _id2,
+      sender_id: new ObjectId(user_id),
+      receive_id: sender_id_gemini,
+      content: message
+    })
     return {
       result: content
     }

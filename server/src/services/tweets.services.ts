@@ -706,7 +706,7 @@ class TweetService {
     const response = await result.response
     const aiResponseText = response.text()
 
-    return await extractContentAndInsertToDB(user_id, aiResponseText)
+    return await extractContentAndInsertToDB(user_id, aiResponseText, message)
   }
   async getConversationInAI(user_id: string, page: number = 1, limit: number = 10) {
     const sender_id_gemini = new ObjectId('60f3b3b3b3b3b3b3b3b3b3b3')
