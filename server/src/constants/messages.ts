@@ -130,7 +130,9 @@ export const SEARCH_MESSAGE = {
   MEDIA_TYPE_MUST_BE_ONE_OF_MEDIA_TYPE_QUERY: `Media type must be one of ${Object.values(MediaTypeQuery).join(', ')}`,
   LIMIT_IS_GREATER_THAN_1_AND_SMALL_20: 'Limit is greater than 1 and small 20',
   PAGE_IS_GREATER_THAN_1_AND_SMALL_TOTAL_PAGES: 'Page is greater than 1 and small total pages',
-  FOLLOW_USER_IS_TRUE_OR_FALSE: 'Follow user is true or false'
+  FOLLOW_USER_IS_TRUE_OR_FALSE: 'Follow user is true or false',
+  SEARCH_PEOPLE_SUCCESS: 'Search people success',
+  SEARCH_TWEETS_SUCCESS: 'Search tweets success'
 }
 
 export const CONVERSATIONS_MESSAGE = {
