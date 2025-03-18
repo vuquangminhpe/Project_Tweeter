@@ -4,6 +4,7 @@ import React, { useEffect } from 'react'
 import { UserStatus } from '../Chat'
 import apiUser from '@/apis/users.api'
 import { useQuery } from '@tanstack/react-query'
+
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { motion } from 'framer-motion'
 
@@ -102,7 +103,6 @@ export default function HeaderChat({
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3 }}
           >
-            {/* Mobile sidebar toggle button */}
             {isMobile && toggleSidebar && (
               <button onClick={toggleSidebar} className='p-2 rounded-full hover:bg-[#24292f] mr-1'>
                 <svg

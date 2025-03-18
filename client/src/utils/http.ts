@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import axios, { AxiosError, AxiosInstance, HttpStatusCode } from 'axios'
 import configBase from '../constants/config'
 import { clearLocalStorage, getAccessTokenFromLS, saveAccessTokenToLS, setProfileFromLS } from './auth'
@@ -46,16 +45,25 @@ class Http {
         return response
       },
       function (error: AxiosError) {
+        console.error('[HTTP Client Error]', error)
+        
+        // Create a safe error object that won't cause 'cannot read properties' errors
+        const safeError = {
+          message: error?.message || 'Unknown error',
+          status: error?.response?.status || 500,
+          data: error?.response?.data || { message: 'No response data available' }
+        }
+        
         if (error.response?.status !== HttpStatusCode.UnprocessableEntity) {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const data: any | undefined = error.response?.data
-          // const message = data.message || error.message
-          // toast.error(message)
+          const message = data.message || error.message
+          toast.error(message)
         }
         if (error.response?.status === HttpStatusCode.Unauthorized) {
-          clearLocalStorage()
+          // clearLocalStorage()
         }
-        return Promise.reject(error)
+        return Promise.reject(safeError)
       }
     )
   }

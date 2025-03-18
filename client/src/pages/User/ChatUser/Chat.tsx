@@ -297,7 +297,6 @@ function Chat() {
 
   return (
     <div ref={messagesEndRef} className='flex h-screen bg-[#0d1117] text-gray-200 overflow-hidden relative'>
-      {/* Mobile sidebar toggle */}
       {isMobile && (
         <button
           onClick={toggleSidebar}
@@ -320,7 +319,6 @@ function Chat() {
         </button>
       )}
 
-      {/* Sidebar */}
       <AnimatePresence>
         {sidebarVisible && (
           <motion.div
@@ -353,128 +351,114 @@ function Chat() {
           </div>
         </div>
 
-        {/* Chat messages */}
-        <div
-          ref={chatContainerRef}
-          className='flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-[#30363d] scrollbar-track-transparent px-2 sm:px-4'
-          onWheel={handleWheel}
-          style={{
-            backgroundImage:
-              'radial-gradient(circle at 50% 0%, rgba(124, 58, 237, 0.03) 0%, transparent 70%), radial-gradient(circle at 50% 100%, rgba(79, 70, 229, 0.03) 0%, transparent 70%)',
-            backgroundSize: '100% 100%',
-            backgroundPosition: 'center',
-            backgroundRepeat: 'no-repeat'
-          }}
-        >
-          <div className='my-4 py-4 max-w-4xl mx-auto w-full'>
-            {conversation?.map((msg) => (
-              <div
-                key={msg._id}
-                className={`flex mb-3 ${msg.sender_id === profile._id ? 'justify-end' : 'justify-start'}`}
-              >
-                {msg.sender_id !== profile._id ? (
-                  <div className='flex items-center group'>
-                    <div className='relative shrink-0 ml-2 mr-3'>
-                      <Avatar className='h-8 w-8 sm:h-9 sm:w-9 border-2 border-[#1f252e] bg-[#0d1117]'>
-                        <AvatarImage src='https://github.com/shadcn.png' />
-                        <AvatarFallback className='bg-indigo-900 text-indigo-100'>CN</AvatarFallback>
-                      </Avatar>
-                      {onlineUsers[msg.sender_id]?.is_online && (
-                        <span className='absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-400 rounded-full border-2 border-[#0d1117]'></span>
-                      )}
-                    </div>
-                    <div className='max-w-[75%] sm:max-w-[70%] items-center px-3 py-2 sm:px-4 sm:py-2 rounded-2xl relative bg-[#1b222c] text-gray-100 rounded-bl-none shadow-sm'>
-                      <HoverCard>
-                        <HoverCardTrigger className='flex items-center justify-between'>
-                          <div className='break-words'>{msg.content}</div>
-                          <div className='absolute right-0 bottom-0 translate-y-2 text-sm'>
-                            {getEmojiByNumber(msg.emoji as unknown as number)}
-                          </div>
-                        </HoverCardTrigger>
-                        <HoverCardContent className='bg-[#161b22] translate-y-6 p-3 rounded-xl shadow-xl z-50 text-gray-100 border border-[#30363d]'>
-                          {new Date(msg.created_at).toISOString() !== new Date(msg.updated_at).toISOString()
-                            ? new Date(msg.updated_at).toLocaleString() + ' (edited)'
-                            : new Date(msg.created_at).toLocaleString()}
-                        </HoverCardContent>
-                      </HoverCard>
-                    </div>
-                    <div className='ml-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200'>
-                      <EventWithMessage
-                        refetchChatData={handleRefetch}
-                        message_id={msg._id}
-                        content={msg.content}
-                        receiver={receiver}
-                        totalPages={totalPages as number}
-                        isOwnMessage={false}
-                        onStartEditing={handleStartEditing}
-                      />
-                    </div>
+        <div ref={chatContainerRef} className='flex-1 bg-white overflow-y-auto px-4' onWheel={handleWheel}>
+          {conversation?.map((msg) => (
+            <div
+              key={msg._id}
+              className={`flex mb-3 ${msg.sender_id === profile._id ? 'justify-end' : 'justify-start'}`}
+            >
+              {msg.sender_id !== profile._id ? (
+                <div className='flex items-center group'>
+                  <div className='relative shrink-0 ml-2 mr-3'>
+                    <Avatar className='h-8 w-8 sm:h-10 sm:w-10'>
+                      <AvatarImage src='https://github.com/shadcn.png' />
+                      <AvatarFallback>CN</AvatarFallback>
+                    </Avatar>
+                    {onlineUsers[msg.sender_id]?.is_online && (
+                      <span className='absolute bottom-0 left-0 w-2 h-2 sm:w-3 sm:h-3 bg-green-500 rounded-full border-2 border-white'></span>
+                    )}
                   </div>
-                ) : (
-                  <div className='flex items-center group'>
-                    <div className='mr-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200'>
-                      <EventWithMessage
-                        refetchChatData={handleRefetch}
-                        message_id={msg._id}
-                        content={msg.content}
-                        receiver={receiver}
-                        totalPages={totalPages as number}
-                        isOwnMessage={true}
-                        onStartEditing={handleStartEditing}
-                      />
-                    </div>
-                    <div className='max-w-[75%] sm:max-w-[70%] px-3 py-2 sm:px-4 sm:py-2 rounded-2xl text-white rounded-br-none shadow-sm bg-[#224a80] bg-gradient-to-br from-[#224a80] to-[#183763]'>
-                      {editingMessageId === msg._id ? (
-                        <div className='flex items-center gap-2'>
-                          <input
-                            type='text'
-                            value={editingContent}
-                            onChange={(e) => setEditingContent(e.target.value)}
-                            onKeyDown={(e) => {
-                              if (e.key === 'Enter') {
-                                handleFinishEditing(msg._id)
-                              } else if (e.key === 'Escape') {
-                                setEditingMessageId(null)
-                                setEditingContent('')
-                              }
-                            }}
-                            className='w-full bg-[#1f2937] text-gray-100 px-2 py-1 rounded focus:outline-none focus:ring-1 focus:ring-indigo-500 border border-[#30363d] text-sm'
-                            autoFocus
-                          />
-                          <button
-                            onClick={() => handleFinishEditing(msg._id)}
-                            className='text-xs bg-emerald-700 hover:bg-emerald-800 text-white px-2 py-1 rounded'
-                          >
-                            ✓
-                          </button>
-                          <button
-                            onClick={() => {
+                  <div className='max-w-[70%] items-center px-3 py-2 sm:px-4 sm:py-2 rounded-2xl relative bg-gray-200 text-black rounded-bl-none'>
+                    <HoverCard>
+                      <HoverCardTrigger className='flex items-center justify-between'>
+                        <div className='break-words'>{msg.content}</div>
+                        <div className='absolute right-0 bottom-0 translate-y-2 text-sm'>
+                          {getEmojiByNumber(msg.emoji as unknown as number)}
+                        </div>
+                      </HoverCardTrigger>
+                      <HoverCardContent className='bg-gray-300 translate-y-6 p-3 rounded-xl shadow-xl z-50'>
+                        {new Date(msg.created_at).toISOString() !== new Date(msg.updated_at).toISOString()
+                          ? new Date(msg.updated_at).toLocaleString() + ' (đã chỉnh sửa)'
+                          : new Date(msg.created_at).toLocaleString()}
+                      </HoverCardContent>
+                    </HoverCard>
+                  </div>
+                  <div className='ml-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200'>
+                    <EventWithMessage
+                      refetchChatData={handleRefetch}
+                      message_id={msg._id}
+                      content={msg.content}
+                      receiver={receiver}
+                      totalPages={totalPages as number}
+                      isOwnMessage={false}
+                      onStartEditing={handleStartEditing}
+                    />
+                  </div>
+                </div>
+              ) : (
+                <div className='flex items-center group'>
+                  <div className='mr-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200'>
+                    <EventWithMessage
+                      refetchChatData={handleRefetch}
+                      message_id={msg._id}
+                      content={msg.content}
+                      receiver={receiver}
+                      totalPages={totalPages as number}
+                      isOwnMessage={true}
+                      onStartEditing={handleStartEditing}
+                    />
+                  </div>
+                  <div className='max-w-[70%] px-3 py-2 sm:px-4 sm:py-2 rounded-2xl bg-blue-500 text-white rounded-br-none'>
+                    {editingMessageId === msg._id ? (
+                      <div className='flex items-center gap-2'>
+                        <input
+                          type='text'
+                          value={editingContent}
+                          onChange={(e) => setEditingContent(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              handleFinishEditing(msg._id)
+                            } else if (e.key === 'Escape') {
                               setEditingMessageId(null)
                               setEditingContent('')
-                            }}
-                            className='text-xs bg-rose-700 hover:bg-rose-800 text-white px-2 py-1 rounded'
-                          >
-                            ✕
-                          </button>
-                        </div>
-                      ) : (
-                        <div className='break-words'>{msg.content}</div>
-                      )}
-                    </div>
-                    <div className='relative shrink-0 ml-3'>
-                      <Avatar className='h-8 w-8 sm:h-9 sm:w-9 border-2 border-[#1f252e] bg-[#0d1117]'>
-                        <AvatarImage src='https://github.com/shadcn.png' />
-                        <AvatarFallback className='bg-blue-800 text-blue-100'>CN</AvatarFallback>
-                      </Avatar>
-                      {onlineUsers[msg.sender_id]?.is_online && (
-                        <span className='absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-400 rounded-full border-2 border-[#0d1117]'></span>
-                      )}
-                    </div>
+                            }
+                          }}
+                          className='w-full bg-white text-black px-2 py-1 rounded focus:outline-none'
+                          autoFocus
+                        />
+                        <button
+                          onClick={() => handleFinishEditing(msg._id)}
+                          className='text-xs bg-green-600 hover:bg-green-700 text-white px-2 py-1 rounded'
+                        >
+                          ✓
+                        </button>
+                        <button
+                          onClick={() => {
+                            setEditingMessageId(null)
+                            setEditingContent('')
+                          }}
+                          className='text-xs bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded'
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    ) : (
+                      <div className='break-words'>{msg.content}</div>
+                    )}
                   </div>
-                )}
-              </div>
-            ))}
-          </div>
+                  <div className='relative shrink-0 ml-3'>
+                    <Avatar className='h-8 w-8 sm:h-10 sm:w-10'>
+                      <AvatarImage src='https://github.com/shadcn.png' />
+                      <AvatarFallback>CN</AvatarFallback>
+                    </Avatar>
+                    {onlineUsers[msg.sender_id]?.is_online && (
+                      <span className='absolute bottom-0 right-0 w-2 h-2 sm:w-3 sm:h-3 bg-green-500 rounded-full border-2 border-white'></span>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          ))}
         </div>
 
         <ChatInput value={value} setValue={setValue} send={send} inputRef={inputRef} refetchChatData={handleRefetch} />

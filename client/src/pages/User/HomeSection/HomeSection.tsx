@@ -20,6 +20,7 @@ import { createdTweet, TweetFormValues, Tweets } from '@/types/Tweet.type'
 import { toast } from 'sonner'
 import useNotifications from '@/components/Customs/Notification/useNotifications/useNotifications'
 import { ActionType } from '@/types/Notifications.types'
+import Orb from '@/components/ui/orb'
 
 const validationSchema = Yup.object().shape({
   content: Yup.string().required('Post text is required'),
@@ -425,6 +426,16 @@ const HomeSection = ({ setEdit, isPendingTweet = true, isTitleName = 'Share', cu
                       onChange={handleImageSelect}
                     />
                   </label>
+
+                  <div className='relative flex items-center justify-center w-8 h-8 flex-shrink-0'>
+          <Orb
+            hoverIntensity={0.3} // Giảm intensity để phù hợp kích thước nhỏ
+            rotateOnHover={true}
+            hue={120} // Màu mặc định
+            forceHoverState={false}
+          
+          />
+        </div>
 
                   <Popover>
                     <PopoverTrigger className='flex items-center gap-1 text-gray-600 hover:text-indigo-600 transition'>
