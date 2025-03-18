@@ -197,3 +197,13 @@ export const STORIES_MESSAGE = {
   HIDE_USER_STORIES_SUCCESS: 'Hide user stories success',
   STORY_IS_NOT_YOURS_SELF_YOU_CANNOT_DELETE_IT: 'Story is not yours self you cannot delete it'
 }
+
+export const PAYMENT_MESSAGE = {
+  INVALID_SUBSCRIPTION_TYPE: 'Invalid subscription type',
+  PAYMENT_SUCCESSFULLY: 'Payment successfully',
+  PAYMENT_FAILED: 'Payment failed',
+  INTERNAL_SERVER_ERROR: 'Internal server error',
+  CONFIRM_SUCCESS: 'Confirm success',
+  UNKNOW_ERROR: 'Unknow error',
+  PAYMENT_NOT_FOUND: 'Payment not found'
+}

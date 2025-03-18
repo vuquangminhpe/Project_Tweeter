@@ -26,6 +26,7 @@ import { Server } from 'socket.io'
 import { Server as HttpServer } from 'http'
 import autoDeleteSystem from './services/System/AutoDeleteStoriesSystem.system'
 import initSocket from './utils/socket'
+import paymentRouter from './routes/payment.routes'
 
 config()
 databaseService
@@ -72,6 +73,7 @@ app.use('/conversations', conversationsRouter)
 app.use('/comments', commentsRouter)
 app.use('/geminiTweet', tweetGeminiRoutes)
 app.use('/stories', storiesRouter)
+app.use('/payments', paymentRouter)
 // app.use('/static/video-hls', express.static(UPLOAD_VIDEO_HLS_DIR))
 
 app.use(defaultErrorHandler)

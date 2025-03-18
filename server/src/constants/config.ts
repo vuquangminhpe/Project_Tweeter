@@ -46,5 +46,12 @@ export const envConfig = {
   client_secret: process.env.GOOGLE_CLIENT_SECRET,
   redirect_uri: process.env.GOOGLE_REDIRECT_URI,
   client_url: process.env.CLIENT_URL,
-  token_expiry_seconds: parseInt(process.env.DB_REFRESH_TOKENS_COLLECTION || '604800')
+  token_expiry_seconds: parseInt(process.env.DB_REFRESH_TOKENS_COLLECTION || '604800'),
+  paymentCollection: process.env.DB_PAYMENT_COLLECTION as string,
+  vnpay_tmn_code: process.env.VNPAY_TMN_CODE,
+  vnpay_hash_secret: process.env.VNPAY_HASH_SECRET,
+  vnpay_url: process.env.VNPAY_URL,
+  vnpay_api_url: process.env.VNPAY_API_URL,
+  vnpay_return_url: process.env.VNPAY_RETURN_URL,
+  payment_notify_url: process.env.PAYMENT_NOTIFY_URL
 }
