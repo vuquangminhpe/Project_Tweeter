@@ -14,6 +14,13 @@ interface UserStatus {
   heartbeatTimeout?: NodeJS.Timeout
 }
 
+// Simple interface for user status data sent to clients
+interface UserStatusResponse {
+  user_id: string
+  is_online: boolean
+  last_active: Date
+}
+
 const HEARTBEAT_INTERVAL = 30000
 const CLEANUP_TIMEOUT = 3600000
 
@@ -45,10 +52,13 @@ const initSocket = (httpServer: ServerHttp) => {
       )
 
       if (broadcast) {
-        io.emit('user_status_change', {
+        // Send only the required data
+        const statusResponse: UserStatusResponse = {
           user_id,
-          ...status
-        })
+          is_online: status.is_online,
+          last_active: status.last_active
+        }
+        io.emit('user_status_change', statusResponse)
       }
     } catch (error) {
       console.error('Error updating user status:', error)
@@ -100,11 +110,13 @@ const initSocket = (httpServer: ServerHttp) => {
         console.log(`User ${userData.userId} authenticated and joined room`)
 
         io.emit('user_status_change', {
-          userId: userData.userId,
-          status: 'online'
+          user_id: userData.userId,
+          is_online: true,
+          last_active: new Date()
         })
       }
     })
+
     socket.on('get_all_notifications', async (data: { userId: string; page?: number; limit?: number }, callback) => {
       try {
         const { userId } = data
@@ -128,12 +140,20 @@ const initSocket = (httpServer: ServerHttp) => {
           .limit(limit)
           .toArray()
 
+        // Convert ObjectIds to strings to avoid circular reference issues
+        const notificationsForClient = notifications.map((notification) => ({
+          ...notification,
+          _id: notification._id.toString(),
+          userId: notification.userId.toString(),
+          senderId: notification.senderId.toString()
+        }))
+
         const totalCount = await databaseService.notification.countDocuments({ targetId: { $in: [userId] } })
 
         callback({
           success: true,
           data: {
-            notifications,
+            notifications: notificationsForClient,
             pagination: {
               total: totalCount,
               page,
@@ -147,8 +167,6 @@ const initSocket = (httpServer: ServerHttp) => {
           { userId: new ObjectId(userId), status: NotificationStatus.Unread },
           { $set: { status: NotificationStatus.Read } }
         )
-
-        // io.to(userId).emit('notification_count_updated', { count: 0 })
       } catch (error: any) {
         console.error('Error getting notifications:', error)
         callback({
@@ -265,13 +283,28 @@ const initSocket = (httpServer: ServerHttp) => {
             { projection: { name: 1, username: 1, avatar: 1 } }
           )
 
-          const notificationWithSender = {
-            ...notification,
-            sender
+          // Convert ObjectId to string to avoid circular reference
+          const senderForClient = sender
+            ? {
+                ...sender,
+                _id: sender._id.toString()
+              }
+            : null
+
+          const notificationForClient = {
+            _id: notification?._id?.toString() ?? '',
+            userId: notification.userId.toString(),
+            senderId: notification.senderId.toString(),
+            actionType: notification.actionType,
+            targetId: notification.targetId,
+            content: notification.content,
+            timestamp: notification.timestamp,
+            status: notification.status,
+            sender: senderForClient
           }
 
           for (const targetUserId of targetId) {
-            io.to(targetUserId).emit('new_notification', notificationWithSender)
+            io.to(targetUserId).emit('new_notification', notificationForClient)
 
             const unreadCount = await databaseService.notification.countDocuments({
               targetId: { $in: [targetUserId] },
@@ -283,7 +316,7 @@ const initSocket = (httpServer: ServerHttp) => {
 
           callback({
             success: true,
-            data: notification
+            data: notificationForClient
           })
         } catch (error: any) {
           console.error('Error creating notification:', error)
@@ -295,49 +328,62 @@ const initSocket = (httpServer: ServerHttp) => {
         }
       }
     )
+
     const user_id = socket.handshake.auth._id
-    // if (!user_id) {
-    //   console.error('User ID not provided')
-    //   socket.disconnect()
-    //   return
-    // }
 
-    console.log(`User ${user_id} connected with socket ${socket.id}`)
+    if (!user_id) {
+      console.log('User ID not provided, continuing without user association')
+    } else {
+      console.log(`User ${user_id} connected with socket ${socket.id}`)
 
-    if (users[user_id]) {
-      if (users[user_id].timeoutId) clearTimeout(users[user_id].timeoutId)
-      if (users[user_id].heartbeatTimeout) clearInterval(users[user_id].heartbeatTimeout)
+      if (users[user_id]) {
+        if (users[user_id].timeoutId) clearTimeout(users[user_id].timeoutId)
+        if (users[user_id].heartbeatTimeout) clearInterval(users[user_id].heartbeatTimeout)
+      }
+
+      users[user_id] = {
+        socket_id: socket.id,
+        is_online: true,
+        last_active: new Date()
+      }
+
+      setupHeartbeat(socket, user_id)
+
+      await updateUserStatus(user_id, {
+        is_online: true,
+        last_active: new Date()
+      })
     }
-
-    users[user_id] = {
-      socket_id: socket.id,
-      is_online: true,
-      last_active: new Date()
-    }
-
-    setupHeartbeat(socket, user_id)
-
-    await updateUserStatus(user_id, {
-      is_online: true,
-      last_active: new Date()
-    })
 
     socket.on('send_conversation', async (data) => {
-      const { sender_id, receive_id, content } = data.payload
-      const receiver_socket_id = users[receive_id]?.socket_id
+      try {
+        const { sender_id, receive_id, content } = data.payload
+        const receiver_socket_id = users[receive_id]?.socket_id
 
-      const conversations = new Conversations({
-        sender_id: new ObjectId(sender_id as string),
-        receive_id: new ObjectId(receive_id as string),
-        content: content
-      })
-      const result = await databaseService.conversations.insertOne(conversations)
-      conversations._id = result.insertedId
-
-      if (receiver_socket_id) {
-        socket.to(receiver_socket_id).emit('receive_conversation', {
-          payload: conversations
+        const conversations = new Conversations({
+          sender_id: new ObjectId(sender_id as string),
+          receive_id: new ObjectId(receive_id as string),
+          content: content
         })
+        const result = await databaseService.conversations.insertOne(conversations)
+
+        // Create a safe conversation object for the client
+        const conversationForClient = {
+          _id: result.insertedId.toString(),
+          sender_id: sender_id.toString(),
+          receive_id: receive_id.toString(),
+          content: content,
+          created_at: conversations.created_at,
+          updated_at: conversations.updated_at
+        }
+
+        if (receiver_socket_id) {
+          socket.to(receiver_socket_id).emit('receive_conversation', {
+            payload: conversationForClient
+          })
+        }
+      } catch (error) {
+        console.error('Error sending conversation:', error)
       }
     })
 
@@ -348,7 +394,8 @@ const initSocket = (httpServer: ServerHttp) => {
         const result = await databaseService.users.findOne({ _id: new ObjectId(target_user_id) })
         const memoryStatus = users[target_user_id]
 
-        const user_status = {
+        // Create a safe status object
+        const user_status: UserStatusResponse = {
           user_id: target_user_id,
           is_online: memoryStatus?.is_online || false,
           last_active: memoryStatus?.last_active || result?.last_active || new Date()
@@ -366,20 +413,26 @@ const initSocket = (httpServer: ServerHttp) => {
     })
 
     socket.on('get_all_online_users', () => {
-      const online_users = Object.entries(users).reduce(
-        (acc, [id, status]) => {
-          if (status.is_online) {
-            acc[id] = status
-          }
-          return acc
-        },
-        {} as typeof users
-      )
+      // Create a safe copy of online users
+      const online_users: Record<string, UserStatusResponse> = {}
+
+      // Only include the essential status information to avoid circular references
+      Object.entries(users).forEach(([id, status]) => {
+        online_users[id] = {
+          user_id: id,
+          is_online: status.is_online,
+          last_active: status.last_active
+        }
+      })
 
       socket.emit('all_online_users_response', online_users)
     })
 
-    socket.on('disconnect', () => handleDisconnect(socket, user_id))
+    socket.on('disconnect', () => {
+      if (user_id) {
+        handleDisconnect(socket, user_id)
+      }
+    })
   })
 
   return io

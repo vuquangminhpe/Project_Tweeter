@@ -100,7 +100,8 @@ export const TWEET_MESSAGE = {
   TWEET_ID_MUST_BE_A_STRING: 'Tweet id must be a string',
   UNAUTHORIZED: 'Unauthorized',
   NEW_CONTENT_MUST_BE_A_NON_EMPTY_STRING: 'New content must be a non empty string',
-
+  GET_CONVERSATION_IN_AI_SUCCESS: 'Get conversation in AI success',
+  GET_CONVERSATION_IN_AI_FAILED: 'Get conversation in AI failed',
   EDIT_TWEET_SUCCESS: 'Edit tweet success',
   DELETE_TWEET_SUCCESS: 'Delete tweet success',
   INVALID_CONTENT: 'Invalid content',

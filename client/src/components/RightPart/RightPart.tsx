@@ -63,9 +63,21 @@ const RightPart: React.FC = () => {
   return (
     <div className='space-y-6 py-4'>
       <Notification userId={profile?._id as string} />
-
-     <SearchGrowing />
-  
+      <SearchGrowing />
+      <div className='relative group'>
+        <div className='absolute inset-y-0 left-3 flex items-center pointer-events-none'>
+          <BiSearch className='h-5 w-5 text-gray-400' />
+        </div>
+        <input
+          type='text'
+          placeholder='Search PulseVibe'
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className='bg-gray-100 w-full pl-10 pr-4 py-3 rounded-xl text-sm border-transparent
+          focus:bg-white focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50
+          transition-all duration-200'
+        />
+      </div>
 
       <div className='bg-gradient-to-br from-indigo-600 to-violet-700 rounded-xl p-5 text-white shadow-md'>
         <h2 className='font-bold text-lg mb-2'>Unlock Premium Features</h2>
