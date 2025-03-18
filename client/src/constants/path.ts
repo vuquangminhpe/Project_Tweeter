@@ -15,7 +15,8 @@ const path = {
   no: '',
   asHome: '/',
   auth: '/auth',
-  story: '/user/story'
+  story: '/user/story',
+  search: 'search'
   
 } as const
 export default path

@@ -1,6 +1,7 @@
 import { SearchRequest } from '@/types/Search.type'
 import { Tweets } from '@/types/Tweet.type'
 import { SuccessResponse } from '@/types/Utils.type'
+import { MediaType } from '@/constants/enum'
 import http from '@/utils/http'
 
 export interface SearchResponse {
@@ -21,14 +22,14 @@ const searchApis = {
       page: params.page || 1
     }
     
-    // Only add media_type if it has a valid value
-    if (params.media_type) {
-      searchParams.media_type = params.media_type
-    }
-    
-    // Only add people_follow if it's true (default is false)
-    if (params.people_follow) {
-      searchParams.people_follow = params.people_follow
+    // Only add media_type if it has a valid value, and convert enum to string
+    if (params.media_type !== undefined) {
+      // Make sure we're sending the exact string values expected by the API
+      if (params.media_type === MediaType.Image) {
+        searchParams.media_type = 'image'
+      } else if (params.media_type === MediaType.Video) {
+        searchParams.media_type = 'video'
+      }
     }
     
     return http.get<SuccessResponse<SearchResponse>>('/search', { params: searchParams })
