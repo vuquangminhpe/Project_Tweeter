@@ -38,17 +38,24 @@ export const createPaymentController = async (
 export const paymentCallbackController = async (req: Request, res: Response) => {
   try {
     const data = req.query
-
     console.log('Payment callback received:', JSON.stringify(data))
+
+    if (!data.vnp_TxnRef || !data.vnp_ResponseCode) {
+      console.error('Missing required fields in callback data')
+      return res.redirect(`${process.env.CLIENT_URL}/user/payment/result?status=ERROR`)
+    }
 
     const result = await paymentService.verifyVnpayPayment(data)
 
-    const redirectUrl = `${process.env.CLIENT_URL}/payment/result?orderId=${data.vnp_TxnRef}&status=${result.success ? 'SUCCESS' : 'FAILED'}`
+    console.log('Payment verification result:', result)
 
+    const redirectUrl = `${process.env.CLIENT_URL}/user/payment/result?orderId=${data.vnp_TxnRef}&status=${result.success ? 'SUCCESS' : 'FAILED'}`
+
+    console.log('Redirecting to:', redirectUrl)
     res.redirect(redirectUrl)
   } catch (error) {
     console.error('Payment callback error:', error)
-    res.redirect(`${process.env.CLIENT_URL}/payment/result?status=ERROR`)
+    res.redirect(`${process.env.CLIENT_URL}/user/payment/result?status=ERROR`)
   }
 }
 

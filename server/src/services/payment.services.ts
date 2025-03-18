@@ -1,10 +1,9 @@
 import crypto from 'crypto'
-import qs from 'qs'
+import { ObjectId } from 'mongodb'
 import { AccountStatus } from '~/constants/enums'
 import databaseService from './database.services'
-import { ObjectId } from 'mongodb'
 import { envConfig } from '~/constants/config'
-import dayjs from 'dayjs'
+import moment from 'moment'
 
 const PRICES = {
   [AccountStatus.PREMIUM]: 50000,
@@ -17,23 +16,42 @@ const SUBSCRIPTION_DURATION = {
 }
 
 class PaymentService {
-  private createVnpaySignature(data: string, secretKey: string): string {
-    return crypto.createHmac('sha512', secretKey).update(data).digest('hex')
+  // Hàm sắp xếp object theo thứ tự alphabet (chính xác theo yêu cầu VNPAY)
+  private sortObject(obj: Record<string, any>): Record<string, any> {
+    return Object.keys(obj)
+      .sort()
+      .reduce((sorted: Record<string, any>, key) => {
+        if (obj[key] !== null && obj[key] !== undefined && obj[key] !== '') {
+          sorted[key] = obj[key]
+        }
+        return sorted
+      }, {})
   }
 
-  private generateRandomOrderId(): string {
-    return `ORDER_${Date.now()}_${Math.floor(Math.random() * 1000)}`
+  // Hàm tạo chuỗi ký (chắc chắn đúng format)
+  private createSignatureString(params: Record<string, any>): string {
+    return Object.keys(params)
+      .map((key) => `${key}=${params[key]}`)
+      .join('&')
   }
 
+  // Hàm tạo chữ ký HMAC-SHA512
+  private generateHmacSignature(data: string, secret: string): string {
+    return crypto.createHmac('sha512', secret).update(data, 'utf-8').digest('hex')
+  }
+
+  // Tạo thanh toán VNPAY
   async createVnpayPayment(user_id: string, subscription_type: AccountStatus) {
     try {
       if (subscription_type === AccountStatus.FREE) {
         throw new Error('Cannot create payment for free subscription')
       }
 
+      const date = new Date()
       const amount = PRICES[subscription_type]
-      const orderId = this.generateRandomOrderId()
+      const orderId = moment(date).format('YYYYMMDDHHmmss')
 
+      // Lưu đơn hàng vào database
       await databaseService.payments.insertOne({
         user_id: new ObjectId(user_id),
         order_id: orderId,
@@ -43,158 +61,128 @@ class PaymentService {
         created_at: new Date()
       })
 
-      const tmnCode = envConfig.vnpay_tmn_code
-      const secretKey = envConfig.vnpay_hash_secret
-      const returnUrl = envConfig.vnpay_return_url
+      // Lấy config VNPAY
+      const { vnpay_tmn_code, vnpay_hash_secret, vnpay_url, vnpay_return_url } = envConfig
 
-      const date = new Date()
-      const createDate = dayjs(date).format('YYYYMMDDHHmmss')
+      // Format ngày giờ theo yêu cầu VNPAY
+      const createDate = moment().format('YYYYMMDDHHmmss')
 
-      const extraData = Buffer.from(
-        JSON.stringify({
-          user_id,
-          subscription_type
-        })
-      ).toString('base64')
-
-      const orderInfo = `Thanh toan don hang: ${orderId}`
-      const orderType = 'billpayment'
-      const locale = 'vn'
-      const currCode = 'VND'
-
-      let vnpParams: Record<string, string | number> = {
+      // Tạo danh sách tham số
+      const vnpParams: Record<string, any> = {
         vnp_Version: '2.1.0',
         vnp_Command: 'pay',
-        vnp_TmnCode: tmnCode as string,
-        vnp_Locale: locale,
-        vnp_CurrCode: currCode,
+        vnp_TmnCode: vnpay_tmn_code,
+        vnp_Locale: 'vn',
+        vnp_CurrCode: 'VND',
         vnp_TxnRef: orderId,
-        vnp_OrderInfo: orderInfo,
-        vnp_OrderType: orderType,
-        vnp_Amount: amount * 100,
-        vnp_ReturnUrl: returnUrl as string,
+        vnp_OrderInfo: `Thanhtoan${orderId}`,
+        vnp_OrderType: 'billpayment',
+        vnp_Amount: parseInt((amount * 100).toFixed(0), 10), // Fix kiểu số
+        vnp_ReturnUrl: vnpay_return_url,
         vnp_IpAddr: '127.0.0.1',
-        vnp_CreateDate: createDate,
-        vnp_ExpireDate: dayjs(date).add(15, 'minute').format('YYYYMMDDHHmmss'), // Payment expires in 15 minutes
-        vnp_BankCode: '',
-        vnp_Inv_Email: 'customer@email.com',
-        vnp_Inv_Phone: '0123456789',
-        vnp_Inv_Type: 'billpayment',
-        vnp_Inv_Company: 'Your Company',
-        vnp_Inv_TaxCode: '0123456789',
-        vnp_Inv_Customer: 'Customer',
-        vnp_Inv_Address: 'Address',
-        vnp_Inv_Description: `Subscribe to ${AccountStatus[subscription_type]} plan`
+        vnp_CreateDate: createDate
       }
+      console.log('Secret Key HEX:', Buffer.from(vnpay_hash_secret as string, 'utf-8').toString('hex'))
 
       const sortedParams = this.sortObject(vnpParams)
-      const signData = qs.stringify(sortedParams, { encode: false })
-      const hmac = this.createVnpaySignature(signData, secretKey as string)
 
-      const vnpUrl = `${envConfig.vnpay_url}?${signData}&vnp_SecureHash=${hmac}`
+      console.log(
+        'Encoded URL:',
+        Object.entries(sortedParams)
+          .map(([key, val]) => `${key}=${encodeURIComponent(val)}`)
+          .join('&')
+      )
+      const signData = this.createSignatureString(sortedParams)
+      const secureHash = this.generateHmacSignature(signData, vnpay_hash_secret as string)
+
+      // Debug để kiểm tra lỗi sai chữ ký
+      console.log('=== VNPAY PAYMENT DEBUG ===')
+      console.log('Sorted Params:', JSON.stringify(sortedParams))
+      console.log('Sign Data:', signData)
+      console.log('Generated Signature:', secureHash)
+
+      // Tạo URL thanh toán
+      const paymentUrl =
+        `${vnpay_url}?` +
+        Object.entries(sortedParams)
+          .map(([key, val]) => `${key}=${encodeURIComponent(val)}`)
+          .join('&') +
+        `&vnp_SecureHash=${secureHash}`
 
       return {
         success: true,
-        payUrl: vnpUrl,
+        payUrl: paymentUrl,
         orderId
       }
     } catch (error) {
-      console.error('Create VNPAY payment error:', error)
+      console.error('VNPAY payment creation error:', error)
       throw error
     }
   }
-  private sortObject(obj: Record<string, any>): Record<string, any> {
-    const sorted: Record<string, any> = {}
-    const keys = Object.keys(obj).sort()
 
-    for (const key of keys) {
-      if (obj[key] !== null && obj[key] !== undefined) {
-        sorted[key] = obj[key]
-      }
-    }
-
-    return sorted
-  }
-
-  async verifyVnpayPayment(data: any) {
+  // Xác thực thanh toán từ VNPAY
+  async verifyVnpayPayment(queryParams: any) {
     try {
-      const vnp_SecureHash = data.vnp_SecureHash
-      delete data.vnp_SecureHash
-      delete data.vnp_SecureHashType
-      const sortedData = this.sortObject(data)
+      console.log('=== VNPAY VERIFICATION ===')
+      console.log('Received Params:', JSON.stringify(queryParams))
 
-      const signData = qs.stringify(sortedData, { encode: false })
-      const hmac = this.createVnpaySignature(signData, envConfig.vnpay_hash_secret as string)
+      // Lấy chữ ký từ query
+      const secureHash = queryParams.vnp_SecureHash
 
-      if (hmac !== vnp_SecureHash) {
-        throw new Error('Invalid signature')
+      // Xóa các tham số không cần kiểm tra chữ ký
+      const vnpParams = { ...queryParams }
+      delete vnpParams.vnp_SecureHash
+      delete vnpParams.vnp_SecureHashType
+
+      // Sắp xếp tham số & tạo chữ ký kiểm tra
+      const sortedParams = this.sortObject(vnpParams)
+      const signData = this.createSignatureString(sortedParams)
+      const calculatedHash = this.generateHmacSignature(signData, envConfig.vnpay_hash_secret as string)
+
+      console.log('Calculated Signature:', calculatedHash)
+      console.log('Received Signature:', secureHash)
+
+      // Kiểm tra chữ ký
+      if (secureHash !== calculatedHash) {
+        console.error('Invalid VNPAY signature')
+        await databaseService.payments.updateOne(
+          { order_id: vnpParams.vnp_TxnRef },
+          { $set: { status: 'FAILED', error: 'Invalid signature', updated_at: new Date() } }
+        )
+        return { success: false, message: 'Invalid signature' }
       }
 
-      if (data.vnp_ResponseCode !== '00' || data.vnp_TransactionStatus !== '00') {
+      // Kiểm tra mã phản hồi từ VNPAY
+      if (vnpParams.vnp_ResponseCode !== '00') {
         await databaseService.payments.updateOne(
-          { order_id: data.vnp_TxnRef },
+          { order_id: vnpParams.vnp_TxnRef },
           {
             $set: {
               status: 'FAILED',
-              error: `Payment failed with code: ${data.vnp_ResponseCode}`,
-              transaction_id: data.vnp_TransactionNo,
+              error: `Payment failed with code: ${vnpParams.vnp_ResponseCode}`,
               updated_at: new Date()
             }
           }
         )
-        return {
-          success: false,
-          message: `Payment failed with code: ${data.vnp_ResponseCode}`
-        }
+        return { success: false, message: `Payment failed with code: ${vnpParams.vnp_ResponseCode}` }
       }
 
-      const payment = await databaseService.payments.findOne({ order_id: data.vnp_TxnRef })
-      if (!payment) {
-        throw new Error('Payment not found')
-      }
-
+      // Cập nhật trạng thái thanh toán
       await databaseService.payments.updateOne(
-        { order_id: data.vnp_TxnRef },
-        {
-          $set: {
-            status: 'SUCCESS',
-            transaction_id: data.vnp_TransactionNo,
-            bank_code: data.vnp_BankCode,
-            card_type: data.vnp_CardType,
-            updated_at: new Date()
-          }
-        }
+        { order_id: vnpParams.vnp_TxnRef },
+        { $set: { status: 'SUCCESS', updated_at: new Date() } }
       )
 
-      const now = new Date()
-      const subscriptionEndDate = new Date(now)
-      subscriptionEndDate.setMonth(
-        now.getMonth() + SUBSCRIPTION_DURATION[payment.subscription_type as keyof typeof SUBSCRIPTION_DURATION]
-      )
-
-      await databaseService.users.updateOne(
-        { _id: payment.user_id },
-        {
-          $set: {
-            typeAccount: payment.subscription_type,
-            count_type_account: 0,
-            subscription_end_date: subscriptionEndDate,
-            updated_at: new Date()
-          }
-        }
-      )
-
-      return {
-        success: true,
-        message: 'Payment successful'
-      }
+      return { success: true, message: 'Payment successful' }
     } catch (error) {
-      console.error('Verify VNPAY payment error:', error)
+      console.error('VNPAY payment verification error:', error)
       throw error
     }
   }
 
+  // Keep existing methods
   async checkSubscriptionStatus(user_id: string) {
+    // Existing implementation...
     try {
       const user = await databaseService.users.findOne({ _id: new ObjectId(user_id) })
       if (!user) {
