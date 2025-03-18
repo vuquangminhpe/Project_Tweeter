@@ -81,22 +81,24 @@ const ChatMessage = memo(({ message }: { message: conversations }) => {
       }
     >
       {!isUser && (
-        <Avatar className='h-8 w-8 mt-1'>
+        <Avatar className='h-8 w-8 mt-1 border-2 border-[#30363d] bg-[#0d1117]'>
           <AvatarImage src='/ai-avatar.png' />
-          <AvatarFallback className='bg-indigo-600 text-white'>FL</AvatarFallback>
+          <AvatarFallback className='bg-[#1d2432] text-indigo-300'>AI</AvatarFallback>
         </Avatar>
       )}
       <div
-        className={`p-3 rounded-xl shadow-sm max-w-[80%] ${
-          isUser ? 'bg-blue-500 text-white rounded-tr-none' : 'bg-white rounded-tl-none'
+        className={`p-3 rounded-xl shadow-md max-w-[80%] ${
+          isUser
+            ? 'bg-[#224a80] text-white rounded-tr-none'
+            : 'bg-[#1b222c] text-gray-100 rounded-tl-none border border-[#30363d]'
         }`}
       >
         <p className='text-sm'>{isUser ? message.content : <AnimatedText text={message.content} />}</p>
       </div>
       {isUser && (
-        <Avatar className='h-8 w-8 mt-1'>
+        <Avatar className='h-8 w-8 mt-1 border-2 border-[#30363d] bg-[#0d1117]'>
           <AvatarImage src='https://github.com/shadcn.png' />
-          <AvatarFallback>U</AvatarFallback>
+          <AvatarFallback className='bg-[#1d2432] text-indigo-300'>U</AvatarFallback>
         </Avatar>
       )}
     </motion.div>
@@ -199,14 +201,15 @@ const AIChatPanel = ({ isOpen, onClose }: AIChatPanelProps) => {
     <AnimatePresence>
       {isOpen && (
         <motion.div
-          className='fixed bottom-16 right-16 w-80 h-96 bg-white rounded-xl shadow-2xl flex flex-col z-50 overflow-hidden border border-gray-200'
+          className='fixed bottom-16 right-4 md:right-16 w-[calc(100%-2rem)] sm:w-[350px] h-[450px] bg-[#161b22] rounded-xl shadow-2xl flex flex-col z-50 overflow-hidden border border-[#30363d] backdrop-blur-sm'
           initial='hidden'
           animate='visible'
           exit='exit'
           variants={panelVariants}
         >
+          {/* Header */}
           <motion.div
-            className='p-3 border-b border-gray-200 bg-gradient-to-r from-blue-500 to-purple-600 text-white'
+            className='p-3 border-b border-[#30363d] bg-gradient-to-r from-[#1a1f29] to-[#161b22]'
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.1 }}
@@ -223,19 +226,25 @@ const AIChatPanel = ({ isOpen, onClose }: AIChatPanelProps) => {
                     delay: 0.2
                   }}
                 >
-                  <Avatar className='h-8 w-8 bg-white/10'>
-                    <AvatarImage src='/ai-avatar.png' />
-                    <AvatarFallback className='bg-indigo-600 text-white'>FL</AvatarFallback>
-                  </Avatar>
+                  <div className='relative'>
+                    <Avatar className='h-8 w-8 border-2 border-[#30363d] bg-[#0d1117]'>
+                      <AvatarImage src='/ai-avatar.png' />
+                      <AvatarFallback className='bg-[#1d2432] text-indigo-300'>AI</AvatarFallback>
+                    </Avatar>
+                    <span className='absolute bottom-0 right-0 h-2.5 w-2.5'>
+                      <span className='absolute inset-0 rounded-full bg-cyan-500 opacity-50 animate-ping-slow'></span>
+                      <span className='relative inline-flex h-full w-full rounded-full bg-cyan-500 border-2 border-[#161b22]'></span>
+                    </span>
+                  </div>
                 </motion.div>
                 <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3 }}>
-                  <h3 className='font-semibold'>Flow Friend Assistant</h3>
-                  <p className='text-xs text-white/80'>Always here to help</p>
+                  <h3 className='font-semibold text-gray-100'>Flow AI</h3>
+                  <p className='text-xs text-gray-400'>Smart neural interface</p>
                 </motion.div>
               </div>
               <motion.button
                 onClick={onClose}
-                className='p-1 rounded-full hover:bg-white/20 transition-colors'
+                className='p-1.5 rounded-full hover:bg-[#24292f] bg-black text-gray-400 hover:text-gray-300'
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
               >
@@ -245,7 +254,7 @@ const AIChatPanel = ({ isOpen, onClose }: AIChatPanelProps) => {
                   viewBox='0 0 24 24'
                   strokeWidth={2}
                   stroke='currentColor'
-                  className='w-5 h-5'
+                  className='w-4 h-4'
                 >
                   <path strokeLinecap='round' strokeLinejoin='round' d='M6 18L18 6M6 6l12 12' />
                 </svg>
@@ -253,7 +262,18 @@ const AIChatPanel = ({ isOpen, onClose }: AIChatPanelProps) => {
             </div>
           </motion.div>
 
-          <div ref={chatContainerRef} className='flex-1 p-3 overflow-y-auto bg-gray-50 flex flex-col gap-3'>
+          {/* Messages */}
+          <div
+            ref={chatContainerRef}
+            className='flex-1 p-3 overflow-y-auto bg-[#0d1117] flex flex-col gap-3 scrollbar-thin scrollbar-thumb-[#30363d] scrollbar-track-transparent'
+            style={{
+              backgroundImage:
+                'radial-gradient(circle at 50% 0%, rgba(124, 58, 237, 0.03) 0%, transparent 70%), radial-gradient(circle at 50% 100%, rgba(79, 70, 229, 0.03) 0%, transparent 70%)',
+              backgroundSize: '100% 100%',
+              backgroundPosition: 'center',
+              backgroundRepeat: 'no-repeat'
+            }}
+          >
             <motion.div
               className='flex items-start gap-2'
               initial='hidden'
@@ -272,13 +292,13 @@ const AIChatPanel = ({ isOpen, onClose }: AIChatPanelProps) => {
                 }
               }}
             >
-              <Avatar className='h-8 w-8 mt-1'>
+              <Avatar className='h-8 w-8 mt-1 border-2 border-[#30363d] bg-[#0d1117]'>
                 <AvatarImage src='/ai-avatar.png' />
-                <AvatarFallback className='bg-indigo-600 text-white'>AI</AvatarFallback>
+                <AvatarFallback className='bg-[#1d2432] text-indigo-300'>AI</AvatarFallback>
               </Avatar>
-              <div className='bg-white p-3 rounded-xl rounded-tl-none shadow-sm max-w-[80%]'>
-                <p className='text-sm'>
-                  <AnimatedText text="Hi there! I'm your AI assistant. How can I help you today?" />
+              <div className='bg-[#1b222c] p-3 rounded-xl rounded-tl-none shadow-sm max-w-[80%] border border-[#30363d]'>
+                <p className='text-sm text-gray-100'>
+                  <AnimatedText text="Hello! I'm your AI assistant with advanced capabilities. How may I assist you today?" />
                 </p>
               </div>
             </motion.div>
@@ -296,14 +316,14 @@ const AIChatPanel = ({ isOpen, onClose }: AIChatPanelProps) => {
                   exit={{ opacity: 0, y: 10 }}
                   transition={{ duration: 0.2 }}
                 >
-                  <Avatar className='h-8 w-8 mt-1'>
+                  <Avatar className='h-8 w-8 mt-1 border-2 border-[#30363d] bg-[#0d1117]'>
                     <AvatarImage src='/ai-avatar.png' />
-                    <AvatarFallback className='bg-indigo-600 text-white'>AI</AvatarFallback>
+                    <AvatarFallback className='bg-[#1d2432] text-indigo-300'>AI</AvatarFallback>
                   </Avatar>
-                  <div className='bg-white p-3 rounded-xl rounded-tl-none shadow-sm'>
+                  <div className='bg-[#1b222c] p-3 rounded-xl rounded-tl-none shadow-sm border border-[#30363d]'>
                     <div className='flex gap-1'>
                       <motion.div
-                        className='w-2 h-2 bg-gray-400 rounded-full'
+                        className='w-2 h-2 bg-indigo-500 rounded-full'
                         animate={{ y: [0, -5, 0] }}
                         transition={{
                           repeat: Infinity,
@@ -312,7 +332,7 @@ const AIChatPanel = ({ isOpen, onClose }: AIChatPanelProps) => {
                         }}
                       />
                       <motion.div
-                        className='w-2 h-2 bg-gray-400 rounded-full'
+                        className='w-2 h-2 bg-blue-500 rounded-full'
                         animate={{ y: [0, -5, 0] }}
                         transition={{
                           repeat: Infinity,
@@ -321,7 +341,7 @@ const AIChatPanel = ({ isOpen, onClose }: AIChatPanelProps) => {
                         }}
                       />
                       <motion.div
-                        className='w-2 h-2 bg-gray-400 rounded-full'
+                        className='w-2 h-2 bg-cyan-500 rounded-full'
                         animate={{ y: [0, -5, 0] }}
                         transition={{
                           repeat: Infinity,
@@ -336,8 +356,9 @@ const AIChatPanel = ({ isOpen, onClose }: AIChatPanelProps) => {
             </AnimatePresence>
           </div>
 
+          {/* Input area */}
           <motion.div
-            className='p-3 border-t border-gray-200 bg-white'
+            className='p-3 border-t border-[#30363d] bg-[#161b22]'
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.5 }}
@@ -350,12 +371,12 @@ const AIChatPanel = ({ isOpen, onClose }: AIChatPanelProps) => {
                 onChange={(e) => setMessage(e.target.value)}
                 onKeyPress={handleKeyPress}
                 placeholder='Ask me anything...'
-                className='flex-1 p-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm'
+                className='flex-1 p-2.5 bg-[#0d1117] border border-[#30363d] text-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 text-sm placeholder-gray-500'
               />
               <motion.button
                 onClick={handleSendMessage}
                 disabled={!message.trim() || sendMessageMutation.isPending}
-                className='p-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed'
+                className='p-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed'
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
@@ -365,7 +386,7 @@ const AIChatPanel = ({ isOpen, onClose }: AIChatPanelProps) => {
                   viewBox='0 0 24 24'
                   strokeWidth={2}
                   stroke='currentColor'
-                  className='w-5 h-5'
+                  className='w-4 h-4'
                 >
                   <path
                     strokeLinecap='round'

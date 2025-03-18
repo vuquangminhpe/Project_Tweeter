@@ -34,7 +34,7 @@ function Home() {
         <div className='max-w-7xl mx-auto flex justify-between items-center'>
           <h1 className='text-2xl font-extrabold tracking-tight'>Flow Friend</h1>
           <div className='flex items-center space-x-4'>
-            <button className='bg-white text-violet-700 px-3 py-1 rounded-full text-sm font-medium hover:bg-violet-100 transition-colors'>
+            <button className='bg-white text-violet-700 px-3 py-1 rounded-full text-sm font-medium hover:bg-violet-100 bg-black'>
               New Features
             </button>
           </div>
@@ -51,7 +51,7 @@ function Home() {
             <div className='bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 rounded-xl p-6 text-white shadow-md'>
               <h2 className='text-xl font-bold mb-2'>Welcome to Flow Friend</h2>
               <p className='mb-4'>Share your thoughts, connect with friends, and discover what's trending today.</p>
-              <button className='bg-white text-purple-700 px-4 py-2 rounded-lg font-medium hover:bg-purple-50 transition-colors'>
+              <button className='bg-white text-purple-700 px-4 py-2 rounded-lg font-medium hover:bg-purple-50 bg-black'>
                 Explore
               </button>
             </div>
