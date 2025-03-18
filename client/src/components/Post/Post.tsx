@@ -17,7 +17,7 @@ export default function Post() {
       <div className='flex flex-col space-y-2 w-full'>
         <div className='flex'>
           <img
-            src='https://yt3.ggpht.com/yti/ANjgQV_PS6nh-jE1ckvLMMhwg-P2yP8rzh7X3zLOavPLADaEGdI=s88-c-k-c0x00ffffff-no-rj'
+            src='https://scontent.fhan2-3.fna.fbcdn.net/v/t39.30808-1/473154466_979086704107116_7574509830723731215_n.jpg?stp=dst-jpg_s200x200_tt6&_nc_cat=101&ccb=1-7&_nc_sid=e99d92&_nc_eui2=AeEnmGyrNUllTEMusBO8X7SZ-hQSDhG-_976FBIOEb7_3pViTrIB8TvTxGE6kIUqWupO5vSDPP4FNKKEhNh24Kwh&_nc_ohc=szVBnl8kWOgQ7kNvgGxUPW4&_nc_oc=Adg8CyR9cQpzsPz4-kGcOrdXJdevQkhkZ5jIVXILD5Aw0hLsYm4mA57o166_rmfEozg&_nc_zt=24&_nc_ht=scontent.fhan2-3.fna&_nc_gid=Bg9rAD3bk_O9VScnTvDVww&oh=00_AYGmwCK0hy_V_aQWwUkVkIJqzRMUZAbrxXbJkMvCStFAGg&oe=67DEEA1E'
             alt=''
             className='h-11 w-11 rounded-full mr-4'
           />

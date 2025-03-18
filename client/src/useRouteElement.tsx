@@ -17,7 +17,8 @@ import ResetPassword from './pages/User/ResetPassword'
 import Chat from './pages/User/ChatUser'
 import Home from './components/Home'
 import OAuthCallback from './components/Customs/OAuthCallback'
-import Story from './pages/User/Story'
+import Story from './pages/User/Story/StoryList'
+import SearchPage from './pages/User/SearchPage/SearchPage'
 
 function ProtectedRoute() {
   const { isAuthenticated } = useContext(AppContext)
@@ -95,6 +96,10 @@ export default function useRouteElement() {
         {
           path: path.story, 
           element: <Story />
+        },
+        {
+          path: path.search,
+          element: <SearchPage />
         },
       ]
     },

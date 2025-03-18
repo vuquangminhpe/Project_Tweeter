@@ -1,6 +1,11 @@
 import { Router } from 'express'
-import { chatWithGeminiController, generateTweetTextGeminiController } from '~/controllers/tweet.controllers'
+import {
+  chatWithGeminiController,
+  generateTweetTextGeminiController,
+  getConversationInAIControllers
+} from '~/controllers/tweet.controllers'
 import { messageUploadValidator } from '~/middlewares/conversations.middlewares'
+import { paginationValidator } from '~/middlewares/tweets.middlewares'
 import { AccessTokenValidator, premiumUserValidator, verifiedUserValidator } from '~/middlewares/users.middlewares'
 import { wrapAsync } from '~/utils/handler'
 
@@ -37,4 +42,15 @@ tweetGeminiRoutes.post(
   wrapAsync(chatWithGeminiController)
 )
 
+//  * Description: get with gemini
+//  * Path: /conversation/chat
+//  * Method: GET
+//  * header: {Authorization:Bearer <access_token> }
+tweetGeminiRoutes.get(
+  '/conversation/chat',
+  AccessTokenValidator,
+  verifiedUserValidator,
+  paginationValidator,
+  wrapAsync(getConversationInAIControllers)
+)
 export default tweetGeminiRoutes

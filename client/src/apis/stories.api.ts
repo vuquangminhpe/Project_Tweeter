@@ -10,12 +10,32 @@ export type NewsFeedStory = Pick<
   user: StoryType["user"];
 }
 
+// Types for story interactions
+export interface StoryReactionRequest {
+  story_id: string;
+  reaction: string;
+}
+
+export interface StoryCommentRequest {
+  story_id: string;
+  content: string;
+}
+
 const storiesApi = {
   getNewsFeedStories: (limit: number = 5, page: number = 1 )=>
     http.get<SuccessResponse<{ result: NewsFeedStory[]; page: number; total_pages: number }>>(
       `/stories/get-news-feed-stories?limit=${limit}&page=${page}`
-    )
+    ),
     
+  // New methods for story interactions
+  getStoryById: (id: string) => 
+    http.get<SuccessResponse<NewsFeedStory>>(`/stories/${id}`),
+    
+  addStoryReaction: (body: StoryReactionRequest) =>
+    http.post<SuccessResponse<{ message: string }>>('/stories/reaction', body),
+    
+  addStoryComment: (body: StoryCommentRequest) =>
+    http.post<SuccessResponse<{ message: string }>>('/stories/comment', body)
 }
 
 export default storiesApi

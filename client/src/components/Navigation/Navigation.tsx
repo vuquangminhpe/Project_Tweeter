@@ -1,13 +1,5 @@
 import { useState, useEffect, useContext } from 'react'
 import NavigationMenu from './NavigationMenu'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger
-} from '@/components/ui/dropdown-menu'
 import { Link, useNavigate } from 'react-router-dom'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { clearLocalStorage } from '@/utils/auth'
@@ -86,7 +78,7 @@ const Navigation = () => {
         ))}
       </div>
       <button className='hidden xl:inline ml-auto bg-[#1d9bf0] text-white rounded-full w-56 h-[52px] text-lg font-bold shadow-md hover:bg-[#1a8cd8]'>
-        Tweet
+        Post
       </button>
 
       <div

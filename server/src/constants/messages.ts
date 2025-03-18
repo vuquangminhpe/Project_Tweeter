@@ -76,7 +76,8 @@ export const USERS_MESSAGES = {
   S3_LINK_MUST_BE_A_STRING: 'S3 link must be a string',
   LINK_IS_REQUIRED: 'Link is required',
   LINK_MUST_BE_A_STRING: 'Link must be a string',
-  REACTION_USER_ID_MUST_NOT_BE_EMPTY: 'Reaction user id must not be empty'
+  REACTION_USER_ID_MUST_NOT_BE_EMPTY: 'Reaction user id must not be empty',
+  INVALID_REFRESH_TOKEN: 'Invalid refresh token'
 } as const
 
 export const TWEET_MESSAGE = {
@@ -99,7 +100,8 @@ export const TWEET_MESSAGE = {
   TWEET_ID_MUST_BE_A_STRING: 'Tweet id must be a string',
   UNAUTHORIZED: 'Unauthorized',
   NEW_CONTENT_MUST_BE_A_NON_EMPTY_STRING: 'New content must be a non empty string',
-
+  GET_CONVERSATION_IN_AI_SUCCESS: 'Get conversation in AI success',
+  GET_CONVERSATION_IN_AI_FAILED: 'Get conversation in AI failed',
   EDIT_TWEET_SUCCESS: 'Edit tweet success',
   DELETE_TWEET_SUCCESS: 'Delete tweet success',
   INVALID_CONTENT: 'Invalid content',
@@ -128,7 +130,9 @@ export const SEARCH_MESSAGE = {
   MEDIA_TYPE_MUST_BE_ONE_OF_MEDIA_TYPE_QUERY: `Media type must be one of ${Object.values(MediaTypeQuery).join(', ')}`,
   LIMIT_IS_GREATER_THAN_1_AND_SMALL_20: 'Limit is greater than 1 and small 20',
   PAGE_IS_GREATER_THAN_1_AND_SMALL_TOTAL_PAGES: 'Page is greater than 1 and small total pages',
-  FOLLOW_USER_IS_TRUE_OR_FALSE: 'Follow user is true or false'
+  FOLLOW_USER_IS_TRUE_OR_FALSE: 'Follow user is true or false',
+  SEARCH_PEOPLE_SUCCESS: 'Search people success',
+  SEARCH_TWEETS_SUCCESS: 'Search tweets success'
 }
 
 export const CONVERSATIONS_MESSAGE = {

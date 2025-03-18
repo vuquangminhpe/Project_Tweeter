@@ -13,6 +13,7 @@ import { Event_Message_Status } from '@/types/Emoji.types'
 import conversationsApi from '@/apis/conversation.api'
 import ChatInput from './ChatInput'
 import HeaderChat from './HeaderChat'
+import { AnimatePresence, motion } from 'framer-motion'
 
 export interface UserStatus {
   user_id: string
@@ -28,6 +29,9 @@ function Chat() {
   const inputRef = useRef<HTMLInputElement>(null)
   const isLoadingRef = useRef<boolean>(false)
 
+  const [isMobile, setIsMobile] = useState(false)
+  const [sidebarVisible, setSidebarVisible] = useState(true)
+
   const profile = JSON.parse(localStorage.getItem('profile') as string) as Profile
   const [click, setClick] = useState<boolean>(false)
   const [value, setValue] = useState<string>('')
@@ -35,19 +39,27 @@ function Chat() {
   const [totalPages, setTotalPages] = useState<number | undefined>()
   const [receiver, setReceiver] = useState<string>('')
   const [initialScrollSet, setInitialScrollSet] = useState<boolean>(false)
-  const [onlineUsers, setOnlineUsers] = useState<{ [key: string]: UserStatus }>({
-    [profile?._id]: {
-      user_id: profile?._id,
-      is_online: true,
-      last_active: new Date()
-    }
-  })
+  const [isLoading, setIsLoading] = useState<boolean>(true)
+  const [onlineUsers, setOnlineUsers] = useState<{ [key: string]: UserStatus }>({})
 
-  // Trong component Chat, thêm state
   const [editingMessageId, setEditingMessageId] = useState<string | number | null>(null)
   const [editingContent, setEditingContent] = useState<string>('')
 
-  // Thêm hàm xử lý edit
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768)
+      if (window.innerWidth >= 1024) {
+        setSidebarVisible(true)
+      } else if (window.innerWidth < 768 && receiver) {
+        setSidebarVisible(false)
+      }
+    }
+
+    handleResize()
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [receiver])
+
   const handleStartEditing = (messageId: string | number, content: string) => {
     setEditingMessageId(messageId)
     setEditingContent(content)
@@ -72,12 +84,45 @@ function Chat() {
     }
   }
 
+  const handleReceiverSelect = (receiverId: string) => {
+    setReceiver(receiverId)
+    if (isMobile) {
+      setSidebarVisible(false)
+    }
+  }
+
+  const toggleSidebar = () => {
+    setSidebarVisible((prev) => !prev)
+  }
+
   useEffect(() => {
     socket.connect()
     if (profile._id) {
       setReceiver(profile._id)
+      socket.auth = {
+        Authorization: `Bearer ${localStorage.getItem('access_token')}`,
+        _id: profile._id
+      }
     }
-    console.log(socket)
+
+    socket.on('all_online_users_response', (users) => {
+      setOnlineUsers(users)
+      setIsLoading(false)
+    })
+
+    socket.on('user_status_response', (status: UserStatus) => {
+      setOnlineUsers((prev) => ({
+        ...prev,
+        [status.user_id]: status
+      }))
+    })
+
+    socket.on('user_status_change', (status: UserStatus) => {
+      setOnlineUsers((prev) => ({
+        ...prev,
+        [status.user_id]: status
+      }))
+    })
 
     socket.on('receive_conversation', (data: { payload: Conversation }) => {
       const { payload } = data
@@ -87,29 +132,37 @@ function Chat() {
       }
     })
 
+    socket.emit('get_all_online_users')
+
     return () => {
       socket.off('receive_conversation')
+      socket.off('all_online_users_response')
+      socket.off('user_status_response')
+      socket.off('user_status_change')
     }
   }, [profile?._id])
 
   useEffect(() => {
-    if (receiver) {
+    if (receiver && receiver !== profile._id) {
       socket.emit('get_user_status', receiver)
-      socket.on('user_status_response', (status: UserStatus) => {
-        setOnlineUsers((prev) => ({
-          ...prev,
-          [status.user_id]: status
-        }))
-      })
     }
-  }, [receiver])
+  }, [receiver, profile._id])
 
   useEffect(() => {
     async function fetchData() {
-      const response = await conversationsApi.getChatWithFriend(receiver, 10, 1)
-      setTotalPages(response.data.result.total_pages)
+      setIsLoading(true)
+      try {
+        const response = await conversationsApi.getChatWithFriend(receiver, 10, 1)
+        setTotalPages(response.data.result.total_pages)
+      } catch (error) {
+        console.error('Error fetching chat data:', error)
+      } finally {
+        setIsLoading(false)
+      }
     }
-    fetchData()
+    if (receiver) {
+      fetchData()
+    }
   }, [receiver])
 
   const {
@@ -136,7 +189,8 @@ function Chat() {
     select: (data) => ({
       pages: [...data.pages],
       pageParams: [...data.pageParams]
-    })
+    }),
+    enabled: !!receiver && !!totalPages
   })
 
   const handleObserver = useCallback(
@@ -225,24 +279,76 @@ function Chat() {
     return emojiEntry ? emojiEntry[1].split('.')[0] : undefined
   }
 
-  return (
-    <div ref={messagesEndRef} className='flex h-screen bg-gray-100'>
-      <div className='w-[320px] min-w-[280px] border-r border-gray-200 bg-white overflow-hidden'>
-        <StatusWithChat
-          onReceiverChange={setReceiver}
-          onlineUsers={onlineUsers}
-          statusOnline={onlineUsers[receiver]?.is_online}
-        />
+  if (isLoading) {
+    return (
+      <div className='flex h-screen items-center justify-center bg-[#0d1117] text-indigo-300'>
+        <div className='flex flex-col items-center space-y-4'>
+          <div className='relative w-12 h-12'>
+            <div className='absolute inset-0 rounded-full border-2 border-transparent border-t-indigo-500 animate-spin'></div>
+            <div className='absolute inset-1 rounded-full border-2 border-transparent border-r-violet-500 animate-spin animation-delay-150'></div>
+          </div>
+          <p className='text-lg font-medium bg-gradient-to-r from-indigo-300 to-violet-300 bg-clip-text text-transparent'>
+            Loading chat data...
+          </p>
+        </div>
       </div>
+    )
+  }
 
-      <div className='flex-1 flex flex-col min-w-0'>
-        <div ref={loadPreviousRef} className='w-full py-4 text-center'>
-          <HeaderChat
-            receiverId={receiver}
-            onlineReceiver={onlineUsers[receiver]?.is_online}
-            onlineUsers={onlineUsers}
-            setOnlineUsers={setOnlineUsers}
-          />
+  return (
+    <div ref={messagesEndRef} className='flex h-screen bg-[#0d1117] text-gray-200 overflow-hidden relative'>
+      {isMobile && (
+        <button
+          onClick={toggleSidebar}
+          className={`absolute top-4 ${sidebarVisible ? 'left-64' : 'left-4'} z-30 p-2 rounded-full bg-[#161b22] shadow-lg`}
+        >
+          <svg
+            xmlns='http://www.w3.org/2000/svg'
+            viewBox='0 0 24 24'
+            className='w-5 h-5 text-indigo-400'
+            fill='none'
+            stroke='currentColor'
+            strokeWidth='2'
+          >
+            {sidebarVisible ? (
+              <path strokeLinecap='round' strokeLinejoin='round' d='M15 19l-7-7 7-7' />
+            ) : (
+              <path strokeLinecap='round' strokeLinejoin='round' d='M9 5l7 7-7 7' />
+            )}
+          </svg>
+        </button>
+      )}
+
+      <AnimatePresence>
+        {sidebarVisible && (
+          <motion.div
+            initial={isMobile ? { x: -320 } : { x: 0 }}
+            animate={{ x: 0 }}
+            exit={{ x: -320 }}
+            transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+            className='w-80 min-w-80 h-full border-r border-[#1f252e] bg-[#161b22] overflow-hidden shadow-xl absolute md:relative z-20'
+          >
+            <StatusWithChat
+              onReceiverChange={handleReceiverSelect}
+              onlineUsers={onlineUsers}
+              statusOnline={onlineUsers[receiver]?.is_online || false}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <div className='flex-1 flex flex-col h-full bg-[#0d1117] overflow-hidden'>
+        <div className='z-10 relative'>
+          <div ref={loadPreviousRef} className='w-full bg-[#161b22] shadow-md'>
+            <HeaderChat
+              receiverId={receiver}
+              onlineReceiver={onlineUsers[receiver]?.is_online || false}
+              onlineUsers={onlineUsers}
+              setOnlineUsers={setOnlineUsers}
+              toggleSidebar={toggleSidebar}
+              isMobile={isMobile}
+            />
+          </div>
         </div>
 
         <div ref={chatContainerRef} className='flex-1 bg-white overflow-y-auto px-4' onWheel={handleWheel}>
@@ -299,7 +405,7 @@ function Chat() {
                       receiver={receiver}
                       totalPages={totalPages as number}
                       isOwnMessage={true}
-                      onStartEditing={handleStartEditing} // thêm prop onStartEditing
+                      onStartEditing={handleStartEditing}
                     />
                   </div>
                   <div className='max-w-[70%] px-3 py-2 sm:px-4 sm:py-2 rounded-2xl bg-blue-500 text-white rounded-br-none'>
@@ -354,6 +460,7 @@ function Chat() {
             </div>
           ))}
         </div>
+
         <ChatInput value={value} setValue={setValue} send={send} inputRef={inputRef} refetchChatData={handleRefetch} />
       </div>
     </div>

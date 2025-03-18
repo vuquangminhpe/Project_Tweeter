@@ -8,7 +8,6 @@ export const saveAccessTokenToLS = (access_token: string) => {
 export const clearLocalStorage = () => {
   localStorage.removeItem('access_token')
   localStorage.removeItem('profile')
-  localStorage.removeItem('refresh_token')
   const clearLSEvent = new Event('clearLocalStorage')
   localStorageEventTarget.dispatchEvent(clearLSEvent)
 }

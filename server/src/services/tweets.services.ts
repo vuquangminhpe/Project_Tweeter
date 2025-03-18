@@ -5,15 +5,13 @@ import { ObjectId, WithId } from 'mongodb'
 import Hashtag from '~/models/schemas/Hashtag.schema'
 import { AccountStatus, MediaType, TweetType } from '~/constants/enums'
 import { deleteFileFromS3, deleteS3Folder } from '~/utils/s3'
-import { convertS3Url, extractGeminiData } from '~/utils/utils'
+import { convertS3Url, extractContentAndInsertToDB, extractGeminiData } from '~/utils/utils'
 import { GoogleGenerativeAI } from '@google/generative-ai'
 
-import fs from 'fs'
-import { pipeline } from 'stream/promises'
 import * as nodeFetch from 'node-fetch'
 import { config } from 'dotenv'
 import { PROMPT_CHAT, PROMPT_TWEET_FREE, PROMPT_TWEET_PREMIUM } from '~/constants/prompt'
-import User from '~/models/schemas/User.schema'
+
 config()
 if (!globalThis.fetch) {
   ;(globalThis as any).fetch = nodeFetch.default
@@ -700,23 +698,73 @@ class TweetService {
     }
   }
   async chatWithGemini(user_id: string, message: string) {
-    const _id = new ObjectId()
-    const sender_id_gemini = new ObjectId('60f3b3b3b3b3b3b3b3b3b3b3')
-
     const apiKey = process.env.GERMINI_API_KEY
     const genAI = new GoogleGenerativeAI(apiKey as string)
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' })
+    const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' })
     const result = await model.generateContent([PROMPT_CHAT, message])
+
     const response = await result.response
     const aiResponseText = response.text()
-    await databaseService.conversations.insertOne({
-      _id,
-      sender_id: sender_id_gemini,
-      receive_id: new ObjectId(user_id),
-      content: aiResponseText
+
+    return await extractContentAndInsertToDB(user_id, aiResponseText, message)
+  }
+  async getConversationInAI(user_id: string, page: number = 1, limit: number = 10) {
+    const sender_id_gemini = new ObjectId('60f3b3b3b3b3b3b3b3b3b3b3')
+    const skip = (page - 1) * limit
+
+    const total = await databaseService.conversations.countDocuments({
+      $or: [
+        {
+          receive_id: new ObjectId(user_id),
+          sender_id: sender_id_gemini
+        },
+        {
+          receive_id: sender_id_gemini,
+          sender_id: new ObjectId(user_id)
+        }
+      ]
     })
+
+    const conversations = await databaseService.conversations
+      .aggregate([
+        {
+          $match: {
+            $or: [
+              {
+                receive_id: new ObjectId(user_id),
+                sender_id: sender_id_gemini
+              },
+              {
+                receive_id: sender_id_gemini,
+                sender_id: new ObjectId(user_id)
+              }
+            ]
+          }
+        },
+        { $sort: { created_at: -1 } },
+        { $skip: skip },
+        { $limit: limit },
+        {
+          $project: {
+            _id: 1,
+            sender_id: 1,
+            receive_id: 1,
+            content: 1,
+            created_at: 1,
+            'sender_info.username': 1
+          }
+        }
+      ])
+      .toArray()
+
     return {
-      result: aiResponseText
+      conversations,
+      pagination: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit)
+      }
     }
   }
 }

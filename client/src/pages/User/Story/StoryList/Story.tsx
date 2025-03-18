@@ -1,26 +1,36 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { useInfiniteQuery } from '@tanstack/react-query'
 import storiesApi, { NewsFeedStory } from '@/apis/stories.api'
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import StoryDetail from '../StoryDetail/StoryDetail'
 
 interface StoryCardProps {
-  item: NewsFeedStory
+  item: NewsFeedStory;
+  onClick: () => void;
+  isActive: boolean;
 }
 
-const StoryCard: React.FC<StoryCardProps> = ({ item }) => {
+const StoryCard: React.FC<StoryCardProps> = ({ item, onClick, isActive }) => {
   const avatarBorderColor = item.user.is_online ? 'border-blue-600' : 'border-gray-800'
   return (
-    <div className='w-36 h-52 rounded-xl overflow-hidden flex flex-col relative group cursor-pointer'>
+    <div 
+      className={`w-36 h-52 rounded-xl overflow-hidden flex flex-col relative group cursor-pointer ${isActive ? 'ring-2 ring-blue-500' : ''}`}
+      onClick={onClick}
+    >
       <img
         className='w-full h-full object-cover transition duration-300 ease-in-out transform group-hover:scale-105'
         src={item.media_url}
         alt={item.content}
       />
       {item.user?.avatar && (
-        <div
-          className={`w-8 h-8 border-4 box-content ${avatarBorderColor} rounded-full overflow-hidden absolute left-2.5 top-3`}
-        >
-          <img className='w-full h-full object-cover' src={item.user.avatar} alt={item.content} />
-        </div> 
+       <div>
+          <Avatar className={`absolute top-2 left-2 ${avatarBorderColor}`}>
+            <AvatarImage src={item.user.avatar} alt={item.user.username} />
+            <AvatarFallback className='bg-gray-800 text-gray-400'>
+              {(item.user.name || '?')[0].toUpperCase()}
+            </AvatarFallback>
+          </Avatar>
+       </div>
       )}
       <div className='absolute inset-x-3 bottom-1'>
         <p className='text-white font-semibold'>{item.content}</p>
@@ -32,6 +42,8 @@ const StoryCard: React.FC<StoryCardProps> = ({ item }) => {
 
 const Story: React.FC = () => {
   const [startIndex, setStartIndex] = useState(0)
+  const [selectedStoryId, setSelectedStoryId] = useState<string | null>(null)
+  const [showStoryDetail, setShowStoryDetail] = useState(false)
   const storiesPerPage = 5
   const shouldFetchMoreRef = useRef(false)
 
@@ -60,6 +72,17 @@ const Story: React.FC = () => {
 
   // Gom tất cả các trang thành 1 mảng duy nhất
   const stories = data?.pages.flat() || []
+
+  // Handle story selection
+  const handleStoryClick = (storyId: string) => {
+    setSelectedStoryId(storyId)
+    setShowStoryDetail(true)
+  }
+
+  // Close story detail view
+  const handleCloseStoryDetail = () => {
+    setShowStoryDetail(false)
+  }
 
   // Effect để xử lý việc fetch data khi cần thiết
   useEffect(() => {
@@ -97,6 +120,20 @@ const Story: React.FC = () => {
   const visibleStories = stories.slice(startIndex, startIndex + storiesPerPage)
   const hasMoreStories = startIndex < stories.length - storiesPerPage || hasNextPage
 
+  // Show story detail if a story is selected
+  if (showStoryDetail && selectedStoryId) {
+    const initialStoryIndex = stories.findIndex(story => story._id === selectedStoryId)
+    return (
+      <StoryDetail 
+        stories={stories}
+        initialStoryIndex={initialStoryIndex >= 0 ? initialStoryIndex : 0}
+        onClose={handleCloseStoryDetail}
+        hasNextPage={hasNextPage}
+        fetchNextPage={fetchNextPage}
+      />
+    )
+  }
+
   console.log('Debug info:', {
     totalStories: stories.length,
     startIndex,
@@ -111,7 +148,12 @@ const Story: React.FC = () => {
         <div className='px-12'>
           <div className='flex space-x-2 justify-center'>
             {visibleStories.map((item) => (
-              <StoryCard key={item._id} item={item} />
+              <StoryCard 
+                key={item._id} 
+                item={item} 
+                onClick={() => handleStoryClick(item._id)}
+                isActive={item._id === selectedStoryId}
+              />
             ))}
           </div>
         </div>
