@@ -50,23 +50,46 @@ const SubscriptionPage = () => {
   const { data: pricingData, isLoading: isPricingLoading } = useQuery({
     queryKey: ['pricing-info'],
     queryFn: async () => {
-      const response = await apiPayment.getPricingInfo()
-      return response.data.data
+      try {
+        const response = await apiPayment.getPricingInfo()
+        return response.data.data
+      } catch (error) {
+        console.error('Error fetching pricing info:', error)
+        return defaultPricing
+      }
     }
   })
 
   const { data: subscriptionData, isLoading: isSubscriptionLoading } = useQuery({
     queryKey: ['subscription-status'],
     queryFn: async () => {
-      const response = await apiPayment.getSubscriptionStatus()
-      return response.data.data
+      try {
+        const response = await apiPayment.getSubscriptionStatus()
+        return response.data.data
+      } catch (error) {
+        console.error('Error fetching subscription status:', error)
+        return {
+          isActive: false,
+          subscriptionType: 'FREE',
+          expiryDate: null
+        }
+      }
     }
   })
 
   const createPaymentMutation = useMutation({
     mutationFn: (subscription_type: number) => apiPayment.createPayment({ subscription_type }),
     onSuccess: (response) => {
-      window.location.href = response.data.data.payUrl
+      console.log('Payment response:', response.data)
+
+      if (response.data?.data?.payUrl) {
+        window.location.href = response.data.data.payUrl
+      } else if (response.data?.payUrl) {
+        window.location.href = response.data.payUrl as unknown as string
+      } else {
+        setError('Invalid response format from payment API')
+        console.error('Invalid payment response format:', response)
+      }
     },
     onError: (error) => {
       setError('Failed to initiate payment process. Please try again.')

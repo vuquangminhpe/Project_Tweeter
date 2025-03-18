@@ -12,7 +12,7 @@ import { envConfig } from '../constants/config'
 import Comment from '~/models/schemas/Comment.schema'
 import Stories from '~/models/schemas/Stories.schema'
 import { Notification } from '~/models/schemas/Notification.shema'
-import { Payment } from '~/models/request/Payment.schema'
+import { Payment } from '~/models/schemas/Payment.schema'
 
 const uri = `mongodb+srv://${envConfig.db_username}:${envConfig.db_password}@minhdevmongo.hzvnp.mongodb.net/?retryWrites=true&w=majority&appName=minhdevMongo`
 

@@ -23,8 +23,19 @@ const PaymentResultPage = () => {
       if (!orderId) {
         throw new Error('Missing payment information')
       }
-      const response = await apiPayment.getPaymentStatus(orderId)
-      return response.data.data
+      try {
+        const response = await apiPayment.getPaymentStatus(orderId)
+        if (response.data?.data) {
+          return response.data.data
+        } else if (response.data) {
+          return response.data
+        } else {
+          throw new Error('Invalid API response structure')
+        }
+      } catch (error) {
+        console.error('Error fetching payment status:', error)
+        throw error
+      }
     },
     enabled: !!orderId,
     retry: 3
@@ -41,7 +52,7 @@ const PaymentResultPage = () => {
   }
 
   const handleViewSubscription = () => {
-    navigate('/subscription')
+    navigate('/user/subscription')
   }
 
   if (isLoading) {

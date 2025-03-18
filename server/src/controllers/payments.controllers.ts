@@ -3,7 +3,7 @@ import { ParamsDictionary } from 'express-serve-static-core'
 import { TokenPayload } from '~/models/request/User.request'
 import HTTP_STATUS from '~/constants/httpStatus'
 import { AccountStatus } from '~/constants/enums'
-import paymentService from '~/services/Payment.schema'
+import paymentService from '~/services/payment.services'
 import { PAYMENT_MESSAGE } from '~/constants/messages'
 import { CreatePaymentResBody } from '~/models/request/Payment.request'
 

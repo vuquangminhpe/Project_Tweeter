@@ -19,6 +19,10 @@ import Home from './components/Home'
 import OAuthCallback from './components/Customs/OAuthCallback'
 import Story from './pages/User/Story/StoryList'
 import SearchPage from './pages/User/SearchPage/SearchPage'
+import SubscriptionPage from './pages/User/Subscription'
+import PaymentResultPage from './pages/User/Payment/PaymentResultPage'
+import PaymentHistoryPage from './pages/User/Payment/PaymentHistoryPage'
+import PaymentDetailPage from './pages/User/Payment/PaymentDetailPage'
 
 function ProtectedRoute() {
   const { isAuthenticated } = useContext(AppContext)
@@ -82,7 +86,6 @@ export default function useRouteElement() {
               path: path.changePassword,
               element: <ChangePassword />
             },
-
             {
               path: path.verifyEmail,
               element: <VerifyEmail />
@@ -94,13 +97,29 @@ export default function useRouteElement() {
           element: <Chat />
         },
         {
-          path: path.story, 
+          path: path.story,
           element: <Story />
         },
         {
           path: path.search,
           element: <SearchPage />
         },
+        {
+          path: 'payment/result',
+          element: <PaymentResultPage />
+        },
+        {
+          path: 'payment/history',
+          element: <PaymentHistoryPage />
+        },
+        {
+          path: 'payment/detail/:orderId',
+          element: <PaymentDetailPage />
+        },
+        {
+          path: 'subscription',
+          element: <SubscriptionPage />
+        }
       ]
     },
     {

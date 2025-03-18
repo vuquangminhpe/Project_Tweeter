@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   CreatePaymentResponse,
   PaymentDetail,
@@ -9,9 +11,13 @@ import {
 } from '@/types/Payment.types'
 import { SuccessResponse } from '@/types/Utils.type'
 import http from '@/utils/http'
-
+interface DirectApiResponse<T> {
+  message: string
+  [key: string]: any
+}
 const apiPayment = {
-  createPayment: (params: PaymentParams) => http.post<SuccessResponse<CreatePaymentResponse>>('/payments', params),
+  createPayment: (params: PaymentParams) =>
+    http.post<SuccessResponse<CreatePaymentResponse> | DirectApiResponse<CreatePaymentResponse>>('/payments', params),
 
   getPaymentStatus: (orderId: string) => http.get<SuccessResponse<PaymentDetail>>(`/payments/${orderId}`),
 
