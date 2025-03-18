@@ -62,7 +62,7 @@ const RightPart: React.FC = () => {
 
   return (
     <div className='sticky hidden sm:flex flex-col p-2 h-full gap-3 xl:w-[340px]'>
-      <Notification userId={profile?._id as string} />
+      {/* <Notification userId={profile?._id as string} /> */}
       {/* <SearchGrowing /> */}
       <div className='relative group mt-3 border-gray-300'>
         <div className='absolute inset-y-0 left-3 flex items-center pointer-events-none'>

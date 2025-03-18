@@ -14,12 +14,6 @@ export default function Post() {
   const [bookmarked, setBookmarked] = useState(false)
   return (
     <div className='p-3 flex cursor-pointer border-b border-gray-700'>
-      {/* <img
-        className='h-11 w-11 rounded-full mr-4'
-        src='https://yt3.ggpht.com/yti/ANjgQV_PS6nh-jE1ckvLMMhwg-P2yP8rzh7X3zLOavPLADaEGdI=s88-c-k-c0x00ffffff-no-rj'
-        alt=''
-      /> */}
-
       <div className='flex flex-col space-y-2 w-full'>
         <div className='flex'>
           <img
@@ -44,7 +38,7 @@ export default function Post() {
         </div>
         <img
           className='rounded-2xl max-h-[700px] object-cover mr-2'
-          src='https://scontent.fhan15-2.fna.fbcdn.net/v/t39.30808-6/481223404_574787885608960_396293595374777721_n.jpg?_nc_cat=110&ccb=1-7&_nc_sid=127cfc&_nc_eui2=AeGAc6WiFEY44g-mZQQxwDN5UevGYgU6TIVR68ZiBTpMhXy0EeZxEj9D6o37JtJ5c3gPjzsO9vRjMYMJ5CHgpW7A&_nc_ohc=7UBIix14KZEQ7kNvgHGYp6I&_nc_oc=AdgzxSdJMJLqqB5U74BBXmyf4FTSZiFxilNhe8a9x1MxqD3QolZkVoGT8eYRIAeU6DIfa6jKXWfGIiZtawZKSzjw&_nc_zt=23&_nc_ht=scontent.fhan15-2.fna&_nc_gid=IpaGzkbgdsgfKjlqv5ysdg&oh=00_AYElD4gMXhpm9oLAUm7kVtmy-xuAvM8uU-fFE8EjZPQ2bg&oe=67DE24B7'
+          src='https://scontent.fhan2-5.fna.fbcdn.net/v/t39.30808-6/484148525_122192061512252867_3726314799013185370_n.jpg?_nc_cat=107&ccb=1-7&_nc_sid=127cfc&_nc_eui2=AeFrxIeB7EJpjh9fTVFEvfjcV3pSSzvRdWFXelJLO9F1YZrbaiF-9RDajRKCOn_Q6yzlJ8IrYFmcjQmLdQvtx2xW&_nc_ohc=esQxRkhr-t0Q7kNvgE6932j&_nc_oc=Adh0H_dOw4rTC4iyz84S2fAd8-k4wm9o-Yw31QrjVeJ0y4uUC18RlPrRY9luSkWsI7s&_nc_zt=23&_nc_ht=scontent.fhan2-5.fna&_nc_gid=l70-Eu7z7STUiV-qCpol9A&oh=00_AYGZHN-nUBR9qjwvM-xqsjBhn2WlTh-MhIXsAMtyojE7rw&oe=67DE814B'
           alt=''
         />
         <div className='text-[#6e767d] flex justify-between w-10/12 mx-auto'>

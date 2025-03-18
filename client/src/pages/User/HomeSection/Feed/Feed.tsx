@@ -1,7 +1,7 @@
 import { IoSparkles } from 'react-icons/io5'
 import Input from './Input'
 import { useState } from 'react'
-import Post from '../Post'
+import Post from '../../../../components/Post'
 function Feed() {
   const [activeTab, setActiveTab] = useState('For you')
   return (

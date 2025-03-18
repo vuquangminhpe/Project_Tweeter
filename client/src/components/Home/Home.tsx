@@ -1,11 +1,10 @@
 import { useEffect } from 'react'
 import '@vidstack/react/player/styles/default/theme.css'
 import '@vidstack/react/player/styles/default/layouts/video.css'
-import HomeSection from '@/pages/User/HomeSection'
 import Navigation from '../Navigation/Navigation'
 import axios from 'axios'
 import RightPart from '../RightPart/RightPart'
-import Feed from '../Feed'
+import Feed from '../../pages/User/HomeSection/Feed'
 
 function Home() {
   useEffect(() => {
