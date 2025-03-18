@@ -32,6 +32,8 @@ class SearchService {
     page: number
     people_follow?: boolean
   }) {
+    console.log('Search:', { content, user_id, media_type, people_follow, limit, page })
+
     const startTime = performance.now()
 
     const safeLimit = Math.min(limit || 10, this.MAX_PAGE_SIZE)
@@ -518,7 +520,17 @@ class SearchService {
       await databaseService.likes.createIndex({ tweet_id: 1, user_id: 1 }, { unique: true })
       await databaseService.bookmarks.createIndex({ tweet_id: 1, user_id: 1 }, { unique: true })
       await databaseService.followers.createIndex({ user_id: 1, followed_user_id: 1 }, { unique: true })
-
+      await databaseService.users.createIndex({ name: 1 })
+      await databaseService.users.createIndex({ username: 1 })
+      await databaseService.users.createIndex(
+        { name: 'text', username: 'text' },
+        {
+          weights: {
+            username: 10,
+            name: 5
+          }
+        }
+      )
       console.log('All search indexes created successfully')
 
       this.cache.del('tweets:textindex:exists')
@@ -543,6 +555,153 @@ class SearchService {
     } else {
       this.cache.flushAll()
       console.log('Cleared all cache entries')
+    }
+  }
+  async searchUsers({
+    limit,
+    page,
+    content,
+    user_id
+  }: {
+    user_id?: string
+    content: string
+    limit: number
+    page: number
+  }) {
+    const startTime = performance.now()
+
+    const safeLimit = Math.min(limit || 10, this.MAX_PAGE_SIZE)
+    const safePage = Math.max(page || 1, 1)
+
+    const cacheKey = `searchUsers:${content || ''}:${user_id || 'guest'}:${safePage}:${safeLimit}`
+
+    const cachedResult = this.cache.get(cacheKey)
+    if (cachedResult) {
+      console.log(`Search users cache hit: ${cacheKey}`)
+      return cachedResult
+    }
+
+    const $match: any = {}
+
+    if (content && content.trim()) {
+      const trimmedContent = content.trim()
+      $match['$or'] = [
+        { name: { $regex: trimmedContent, $options: 'i' } },
+        { username: { $regex: trimmedContent, $options: 'i' } }
+      ]
+    }
+
+    const skip = safeLimit * (safePage - 1)
+
+    const pipeline = [
+      { $match },
+      { $sort: { name: 1 } },
+      {
+        $project: {
+          _id: 1,
+          name: 1,
+          username: 1,
+          avatar: 1,
+          bio: 1,
+          location: 1,
+          website: 1,
+          created_at: 1
+        }
+      },
+      ...(user_id
+        ? [
+            {
+              $lookup: {
+                from: 'followers',
+                let: { user_id_to_check: '$_id' },
+                pipeline: [
+                  {
+                    $match: {
+                      $expr: {
+                        $and: [
+                          { $eq: ['$user_id', new ObjectId(user_id)] },
+                          { $eq: ['$followed_user_id', '$$user_id_to_check'] }
+                        ]
+                      }
+                    }
+                  }
+                ],
+                as: 'follower_info'
+              }
+            },
+            {
+              $addFields: {
+                is_followed: { $gt: [{ $size: '$follower_info' }, 0] }
+              }
+            },
+            {
+              $project: {
+                follower_info: 0
+              }
+            }
+          ]
+        : []),
+      { $skip: skip },
+      { $limit: safeLimit }
+    ]
+
+    try {
+      const [users, total] = await Promise.all([
+        databaseService.users.aggregate(pipeline).toArray(),
+        this.getUsersCount({ content })
+      ])
+
+      const result = {
+        users,
+        total_pages: Math.ceil(total / safeLimit) || 0,
+        total_users: total,
+        limit: safeLimit,
+        page: safePage,
+        execution_time_ms: Math.round(performance.now() - startTime)
+      }
+
+      if (users.length > 0 && safePage <= 10) {
+        this.cache.set(cacheKey, result, this.CACHE_TTL_SECONDS)
+      }
+
+      return result
+    } catch (error) {
+      console.error('Search users error:', error)
+      throw error
+    }
+  }
+  private async getUsersCount({ content }: { content: string }): Promise<number> {
+    const countCacheKey = `countUsers:${content || ''}`
+
+    const cachedCount = this.cache.get(countCacheKey)
+    if (cachedCount !== undefined) {
+      return cachedCount as number
+    }
+
+    const $match: any = {}
+
+    if (content && content.trim()) {
+      const trimmedContent = content.trim()
+      $match['$or'] = [
+        { name: { $regex: trimmedContent, $options: 'i' } },
+        { username: { $regex: trimmedContent, $options: 'i' } }
+      ]
+    }
+
+    try {
+      const count = await databaseService.users.countDocuments($match)
+      this.cache.set(countCacheKey, count, this.CACHE_TTL_SECONDS)
+      return count
+    } catch (error) {
+      console.error('Error counting users:', error)
+      return 0
+    }
+  }
+  clearUserSearchCache() {
+    const keys = this.cache.keys().filter((key) => key.startsWith('searchUsers:') || key.startsWith('countUsers:'))
+    if (keys.length > 0) {
+      this.cache.del(keys)
+      console.log(`Cleared ${keys.length} user search cache entries`)
     }
   }
 }
