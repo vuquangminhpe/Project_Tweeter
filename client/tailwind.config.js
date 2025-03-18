@@ -1,8 +1,12 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable no-undef */
 /** @type {import('tailwindcss').Config} */
-const { Container } = require('postcss')
-const plugin = require('tailwindcss/plugin')
+// const { Container } = require('postcss')
+// const plugin = require('tailwindcss/plugin')
+
+import { Container } from 'postcss'
+import plugin from 'tailwindcss/plugin'
+
 module.exports = {
   darkMode: ['false'],
   content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
