@@ -205,5 +205,6 @@ export const PAYMENT_MESSAGE = {
   INTERNAL_SERVER_ERROR: 'Internal server error',
   CONFIRM_SUCCESS: 'Confirm success',
   UNKNOW_ERROR: 'Unknow error',
-  PAYMENT_NOT_FOUND: 'Payment not found'
+  PAYMENT_NOT_FOUND: 'Payment not found',
+  CANNOT_CREATE_FREE_PAYMENT: 'Cannot create payment for free subscription'
 }
