@@ -24,13 +24,7 @@ export const viewAndStatusStoryController = async (
   res: Response
 ) => {
   const { user_id } = req.decode_authorization as TokenPayload
-  const checkUser = await databaseService.stories.findOne({ user_id: new ObjectId(user_id) })
-  if (checkUser) {
-    throw new ErrorWithStatus({
-      message: STORIES_MESSAGE.CANNOT_VIEW_AND_STATUS_YOURSELF_STORY,
-      status: HTTP_STATUS.BAD_REQUEST
-    })
-  }
+
   const result = await storiesService.viewAndStatusStory({ payload: req.body, user_id })
   res.json({
     message: STORIES_MESSAGE.VIEW_AND_STATUS_STORY_SUCCESS,

@@ -5,6 +5,7 @@ import { validate } from '~/utils/validation'
 import { ErrorWithStatus } from '~/models/Errors'
 import HTTP_STATUS from '~/constants/httpStatus'
 import { STORIES_MESSAGE, USERS_MESSAGES } from '~/constants/messages'
+import { TokenPayload } from '~/models/request/User.request'
 export const createNewStoryValidator = validate(
   checkSchema(
     {
@@ -80,6 +81,8 @@ export const viewAndStatusStoryValidator = validate(
       },
       custom: {
         options: async (value, { req }) => {
+          const { user_id } = req.decode_authorization as TokenPayload
+
           const story = await databaseService.stories.findOne({
             _id: new ObjectId(value as string)
           })
@@ -90,7 +93,14 @@ export const viewAndStatusStoryValidator = validate(
               status: HTTP_STATUS.NOT_FOUND
             })
           }
+          const checkUser = await databaseService.stories.findOne({ _id: new ObjectId(req.body.story_id) })
 
+          if (checkUser?.user_id.toString() === user_id) {
+            throw new ErrorWithStatus({
+              message: STORIES_MESSAGE.CANNOT_VIEW_AND_STATUS_YOURSELF_STORY,
+              status: HTTP_STATUS.BAD_REQUEST
+            })
+          }
           return true
         }
       }
