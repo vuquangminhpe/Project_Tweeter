@@ -32,7 +32,7 @@ const StoryArchiveViewer = ({ userId, onClose }: StoryArchiveViewerProps) => {
     enabled: !!userId
   })
 
-  const archivedStories = archiveData?.data?.result?.result
+  const archivedStories = archiveData?.data?.result?.result || []
   const selectedStory = (archivedStories as NewsFeedStory[])[selectedIndex]
 
   const deleteStoryMutation = useMutation({
@@ -68,7 +68,7 @@ const StoryArchiveViewer = ({ userId, onClose }: StoryArchiveViewerProps) => {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className='fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4'
+      className='fixed inset-0 z-[99999999999999999] bg-black/80 flex items-center justify-center p-4'
       onClick={onClose}
     >
       <motion.div

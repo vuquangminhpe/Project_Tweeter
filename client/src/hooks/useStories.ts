@@ -1,102 +1,91 @@
 import { useState, useEffect, useCallback, useContext } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { toast } from 'sonner'
-import { AppContext } from '@/Contexts/app.context'
 import storiesApi, { NewsFeedStory } from '@/apis/stories.api'
-import { ViewerType } from '@/types/Stories.types'
+import { AppContext } from '@/Contexts/app.context'
 
 interface UseStoriesOptions {
   limit?: number
+  page?: number
   autoRefresh?: boolean
+  refreshInterval?: number
 }
 
 const useStories = (options: UseStoriesOptions = {}) => {
-  const { limit = 10, autoRefresh = true } = options
-  const { profile } = useContext(AppContext)
-  const queryClient = useQueryClient()
-  const [activeStoryIndex, setActiveStoryIndex] = useState<number | null>(null)
-
   const {
-    data: storiesData,
-    isLoading,
-    isError,
-    error,
-    refetch
-  } = useQuery({
-    queryKey: ['news-feed-stories', limit],
-    queryFn: () => storiesApi.getNewsFeedStories(limit, 1),
-    enabled: !!profile?._id,
-    staleTime: 1000 * 60 * 2
+    limit = 10,
+    page = 1,
+    autoRefresh = false,
+    refreshInterval = 60000 // 1 minute by default
+  } = options
+
+  const queryClient = useQueryClient()
+  const { profile } = useContext(AppContext)
+
+  const [activeStoryIndex, setActiveStoryIndex] = useState<number | null>(null)
+  const [viewedStories, setViewedStories] = useState<Set<string>>(new Set())
+
+  const { data, isLoading, error, refetch } = useQuery({
+    queryKey: ['news-feed-stories', limit, page],
+    queryFn: () => storiesApi.getNewsFeedStories(limit, page),
+    refetchOnWindowFocus: true,
+    refetchInterval: autoRefresh ? refreshInterval : undefined,
+    enabled: !!profile?._id // Only fetch if user is logged in
   })
 
-  useEffect(() => {
-    if (!autoRefresh) return
-
-    const interval = setInterval(
-      () => {
-        refetch()
-      },
-      1000 * 60 * 2
-    )
-
-    return () => clearInterval(interval)
-  }, [autoRefresh, refetch])
-
-  const stories = storiesData?.data?.result.result
-  const totalPages = storiesData?.data?.total_pages || 0
-
-  const isStoryViewed = useCallback(
-    (story: NewsFeedStory) => {
-      if (!profile?._id || !story.viewer) return false
-
-      return story.viewer.some((view: ViewerType) => view.viewer_id.includes(profile?._id as string))
-    },
-    [profile?._id]
-  )
+  const stories = data?.data?.result?.result || []
 
   const viewStoryMutation = useMutation({
-    mutationFn: (data: { story_id: string; view_status: string; content: string }) => storiesApi.viewStory(data),
+    mutationFn: storiesApi.viewStory,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['news-feed-stories'] })
+      refetch()
     }
   })
 
   const reactStoryMutation = useMutation({
-    mutationFn: (data: { story_id: string; reaction: string }) => storiesApi.addStoryReaction(data),
+    mutationFn: storiesApi.addStoryReaction,
     onSuccess: () => {
-      toast.success('Reaction sent!')
       queryClient.invalidateQueries({ queryKey: ['news-feed-stories'] })
-    },
-    onError: () => {
-      toast.error('Failed to send reaction')
+      refetch()
     }
   })
 
-  const commentStoryMutation = useMutation({
-    mutationFn: (data: { story_id: string; content: string }) => storiesApi.addStoryComment(data),
+  const createStoryMutation = useMutation({
+    mutationFn: storiesApi.createStory,
     onSuccess: () => {
-      toast.success('Comment sent!')
       queryClient.invalidateQueries({ queryKey: ['news-feed-stories'] })
-    },
-    onError: () => {
-      toast.error('Failed to send comment')
+      refetch()
     }
   })
 
-  const deleteStoryMutation = useMutation({
-    mutationFn: (storyId: string) => storiesApi.deleteStory(storyId),
-    onSuccess: () => {
-      toast.success('Story deleted')
-      queryClient.invalidateQueries({ queryKey: ['news-feed-stories'] })
-    },
-    onError: () => {
-      toast.error('Failed to delete story')
-    }
-  })
+  const isStoryViewed = useCallback(
+    (story: NewsFeedStory) => {
+      if (!story?._id) return false
 
-  const viewStory = useCallback(
+      if (viewedStories.has(story._id)) return true
+
+      return story.viewer?.some((view) => view.view_status === 'seen') || false
+    },
+    [viewedStories]
+  )
+
+  const openViewer = useCallback((index: number) => {
+    setActiveStoryIndex(index)
+  }, [])
+
+  const closeViewer = useCallback(() => {
+    setActiveStoryIndex(null)
+  }, [])
+
+  const markStoryAsViewed = useCallback(
     (storyId: string) => {
-      if (!profile?._id) return
+      if (!storyId) return
+
+      setViewedStories((prev) => {
+        const newSet = new Set(prev)
+        newSet.add(storyId)
+        return newSet
+      })
 
       viewStoryMutation.mutate({
         story_id: storyId,
@@ -104,93 +93,37 @@ const useStories = (options: UseStoriesOptions = {}) => {
         content: ''
       })
     },
-    [profile?._id, viewStoryMutation]
+    [viewStoryMutation]
   )
 
-  const reactToStory = useCallback(
-    (storyId: string, reaction: string) => {
-      if (!profile?._id) return
+  const refreshStories = useCallback(() => {
+    refetch()
+  }, [refetch])
 
-      reactStoryMutation.mutate({
-        story_id: storyId,
-        reaction
-      })
-    },
-    [profile?._id, reactStoryMutation]
-  )
+  // Auto-refresh setup
+  useEffect(() => {
+    if (!autoRefresh) return
 
-  const commentOnStory = useCallback(
-    (storyId: string, content: string) => {
-      if (!profile?._id || !content.trim()) return
+    const intervalId = setInterval(() => {
+      refetch()
+    }, refreshInterval)
 
-      commentStoryMutation.mutate({
-        story_id: storyId,
-        content: content.trim()
-      })
-    },
-    [profile?._id, commentStoryMutation]
-  )
-
-  const deleteStory = useCallback(
-    (storyId: string) => {
-      if (!profile?._id) return
-
-      deleteStoryMutation.mutate(storyId)
-    },
-    [profile?._id, deleteStoryMutation]
-  )
-
-  const viewNext = useCallback(() => {
-    if (activeStoryIndex === null || !Number(stories?.length)) return
-
-    if (activeStoryIndex < Number(stories?.length) - 1) {
-      setActiveStoryIndex(activeStoryIndex + 1)
-    } else {
-      setActiveStoryIndex(null)
-    }
-  }, [activeStoryIndex, Number(stories?.length)])
-
-  const viewPrevious = useCallback(() => {
-    if (activeStoryIndex === null || !Number(stories?.length)) return
-
-    if (activeStoryIndex > 0) {
-      setActiveStoryIndex(activeStoryIndex - 1)
-    }
-  }, [activeStoryIndex])
-
-  const openViewer = useCallback(
-    (index: number) => {
-      if (index >= 0 && index < Number(Number(stories?.length))) {
-        setActiveStoryIndex(index)
-      }
-    },
-    [Number(stories?.length)]
-  )
-
-  const closeViewer = useCallback(() => {
-    setActiveStoryIndex(null)
-  }, [])
-
-  const hasUnviewedStories = stories?.some((story) => !isStoryViewed(story))
+    return () => clearInterval(intervalId)
+  }, [autoRefresh, refreshInterval, refetch])
 
   return {
     stories,
     isLoading,
-    isError,
     error,
-    refetch,
-    totalPages,
-    activeStoryIndex,
-    hasUnviewedStories,
+    refetch: refreshStories,
     isStoryViewed,
-    viewStory,
-    reactToStory,
-    commentOnStory,
-    deleteStory,
-    viewNext,
-    viewPrevious,
     openViewer,
-    closeViewer
+    closeViewer,
+    activeStoryIndex,
+    markStoryAsViewed,
+    viewStoryMutation,
+    reactStoryMutation,
+    createStoryMutation
   }
 }
 

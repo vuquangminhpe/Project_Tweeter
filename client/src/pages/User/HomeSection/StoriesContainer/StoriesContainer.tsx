@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useState, useContext } from 'react'
+import React, { useState, useContext, useEffect } from 'react'
 import { AnimatePresence } from 'framer-motion'
 import { ChevronLeft, ChevronRight, PlusCircle } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
@@ -15,10 +15,16 @@ const StoriesContainer = () => {
   const [showCreator, setShowCreator] = useState(false)
   const [containerRef, setContainerRef] = useState<HTMLDivElement | null>(null)
 
-  const { stories, isLoading, refetch, isStoryViewed, openViewer, closeViewer, activeStoryIndex } = useStories({
-    limit: 10,
-    autoRefresh: true
-  })
+  const { stories, isLoading, refetch, isStoryViewed, openViewer, closeViewer, activeStoryIndex, markStoryAsViewed } =
+    useStories({
+      limit: 10,
+      autoRefresh: true,
+      refreshInterval: 30000
+    })
+
+  useEffect(() => {
+    console.log('Stories data:', stories)
+  }, [stories])
 
   const scroll = (direction: 'left' | 'right') => {
     if (!containerRef) return
@@ -31,10 +37,23 @@ const StoriesContainer = () => {
     refetch()
   }
 
+  useEffect(() => {
+    if (activeStoryIndex !== null && stories && stories[activeStoryIndex]) {
+      const currentStory = stories[activeStoryIndex]
+      if (currentStory._id) {
+        markStoryAsViewed(currentStory._id)
+      }
+    }
+  }, [activeStoryIndex, stories, markStoryAsViewed])
+
   const userStories = React.useMemo(() => {
+    if (!stories || stories.length === 0) return []
+
     const storyGroups = new Map()
 
-    stories?.forEach((story) => {
+    stories.forEach((story: any) => {
+      if (!story || !story.user || !story.user._id) return
+
       const userId = story.user._id
       if (!storyGroups.has(userId)) {
         storyGroups.set(userId, {
@@ -86,30 +105,38 @@ const StoriesContainer = () => {
             </div>
           </div>
 
-          {isLoading
-            ? Array(5)
-                .fill(0)
-                .map((_, i) => (
-                  <div key={i} className='w-20 flex-shrink-0'>
-                    <div className='w-16 h-16 rounded-full bg-gray-200 dark:bg-gray-800 mx-auto mb-2 animate-pulse'></div>
-                    <div className='h-2 w-12 mx-auto bg-gray-200 dark:bg-gray-800 rounded animate-pulse'></div>
-                  </div>
-                ))
-            : userStories.map((group) => {
-                const startIndex = stories?.findIndex((s) => s.user._id === group.user._id)
-                const isUserStoriesViewed = group.stories.every((story: any) => isStoryViewed(story))
+          {isLoading ? (
+            Array(5)
+              .fill(0)
+              .map((_, i) => (
+                <div key={i} className='w-20 flex-shrink-0'>
+                  <div className='w-16 h-16 rounded-full bg-gray-200 dark:bg-gray-800 mx-auto mb-2 animate-pulse'></div>
+                  <div className='h-2 w-12 mx-auto bg-gray-200 dark:bg-gray-800 rounded animate-pulse'></div>
+                </div>
+              ))
+          ) : userStories && userStories.length > 0 ? (
+            userStories.map((group: any) => {
+              if (!group || !group.user) return null
 
-                return (
-                  <div key={group.user._id} className='flex-shrink-0 mx-2'>
-                    <StoryGroup
-                      user={group.user}
-                      stories={group.stories}
-                      isViewed={isUserStoriesViewed}
-                      onSelect={() => openViewer(startIndex as number)}
-                    />
-                  </div>
-                )
-              })}
+              const startIndex = stories?.findIndex((s: any) => s.user._id === group.user._id) || 0
+              const isUserStoriesViewed = group.stories.every((story: any) => isStoryViewed(story))
+
+              return (
+                <div key={group.user._id} className='flex-shrink-0 mx-2'>
+                  <StoryGroup
+                    user={group.user}
+                    stories={group.stories}
+                    isViewed={isUserStoriesViewed}
+                    onSelect={() => openViewer(startIndex)}
+                  />
+                </div>
+              )
+            })
+          ) : (
+            <div className='flex items-center justify-center w-full py-4'>
+              <p className='text-sm text-gray-500 dark:text-gray-400'>No stories yet</p>
+            </div>
+          )}
         </div>
 
         <button
@@ -121,7 +148,7 @@ const StoriesContainer = () => {
       </div>
 
       <AnimatePresence>
-        {activeStoryIndex !== null && Number(stories?.length) > 0 && (
+        {activeStoryIndex !== null && stories && stories.length > 0 && (
           <StoryViewer
             stories={stories as NewsFeedStory[]}
             initialIndex={activeStoryIndex}

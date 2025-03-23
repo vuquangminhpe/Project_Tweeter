@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
 import { X, MoreHorizontal, ChevronLeft, ChevronRight, Pause, Play } from 'lucide-react'
-import { useMutation } from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { toast } from 'sonner'
 import VideoHLSPlayer from '@/components/Customs/VideoHLSPlayer'
@@ -12,6 +12,7 @@ import { NewsFeedStory } from '@/apis/stories.api'
 import { MediaType } from '@/constants/enum'
 import StoryReactions from '../StoryReactions'
 import StoryProgressBar from '../StoryProgressBar'
+import useStories from '@/hooks/useStories'
 
 interface StoryViewerProps {
   stories: NewsFeedStory[]
@@ -30,34 +31,18 @@ const StoryViewer = ({ stories, initialIndex, onClose, currentUserId }: StoryVie
   const progressIntervalRef = useRef<number | null>(null)
   const videoRef = useRef<HTMLVideoElement | null>(null)
 
+  const queryClient = useQueryClient()
+  const { refetch, viewStoryMutation, reactStoryMutation } = useStories()
+
   const currentStory = stories[currentStoryIndex]
-
-  const viewStoryMutation = useMutation({
-    mutationFn: (data: { story_id: string; view_status: string; content: string }) => storiesApi.viewStory(data),
-    onSuccess: () => {},
-    onError: (error) => {
-      console.error('Failed to mark story as viewed:', error)
-    }
-  })
-
-  const reactStoryMutation = useMutation({
-    mutationFn: (data: { story_id: string; reaction: string }) => storiesApi.addStoryReaction(data),
-    onSuccess: () => {
-      toast.success('Reaction sent!')
-      setIsReacting(false)
-      setReactionType('')
-    },
-    onError: (error) => {
-      console.error('Failed to react to story:', error)
-      toast.error('Failed to send reaction')
-    }
-  })
 
   const commentStoryMutation = useMutation({
     mutationFn: (data: { story_id: string; content: string }) => storiesApi.addStoryComment(data),
     onSuccess: () => {
       toast.success('Comment sent!')
       setComment('')
+      queryClient.invalidateQueries({ queryKey: ['news-feed-stories'] })
+      refetch()
     },
     onError: (error) => {
       console.error('Failed to comment on story:', error)
@@ -96,17 +81,26 @@ const StoryViewer = ({ stories, initialIndex, onClose, currentUserId }: StoryVie
   }
 
   const handleSendReaction = () => {
-    if (!reactionType) return
+    if (!reactionType || !currentStory?._id) return
 
-    reactStoryMutation.mutate({
-      story_id: currentStory._id as string,
-      reaction: reactionType
-    })
+    reactStoryMutation.mutate(
+      {
+        story_id: currentStory._id as string,
+        reaction: reactionType
+      },
+      {
+        onSuccess: () => {
+          toast.success('Reaction sent!')
+          setIsReacting(false)
+          setReactionType('')
+          refetch()
+        }
+      }
+    )
   }
 
-  // Handle sending a comment
   const handleSendComment = () => {
-    if (!comment.trim()) return
+    if (!comment.trim() || !currentStory?._id) return
 
     commentStoryMutation.mutate({
       story_id: currentStory._id as string,
@@ -116,13 +110,20 @@ const StoryViewer = ({ stories, initialIndex, onClose, currentUserId }: StoryVie
 
   useEffect(() => {
     if (currentStory && currentStory._id) {
-      viewStoryMutation.mutate({
-        story_id: currentStory._id,
-        view_status: 'seen',
-        content: ''
-      })
+      viewStoryMutation.mutate(
+        {
+          story_id: currentStory._id,
+          view_status: 'seen',
+          content: ''
+        },
+        {
+          onSuccess: () => {
+            refetch()
+          }
+        }
+      )
     }
-  }, [currentStoryIndex, currentStory, viewStoryMutation])
+  }, [currentStoryIndex, currentStory, viewStoryMutation, refetch])
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -139,7 +140,7 @@ const StoryViewer = ({ stories, initialIndex, onClose, currentUserId }: StoryVie
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [currentStoryIndex, currentSegmentIndex, onClose, navigateStory, togglePause])
+  }, [currentStoryIndex, currentSegmentIndex])
 
   const formatTimeAgo = (dateString: string | Date) => {
     const date = new Date(dateString)
@@ -215,7 +216,7 @@ const StoryViewer = ({ stories, initialIndex, onClose, currentUserId }: StoryVie
           {/* Media content */}
           <div className='w-full h-full flex items-center justify-center bg-black'>
             {currentStory?.media_url ? (
-              currentStory.media_type.includes(MediaType.Video as any) ||
+              currentStory.media_type?.includes(MediaType.Video as any) ||
               currentStory.media_url.endsWith('master.m3u8') ? (
                 <div className='w-full h-full flex items-center justify-center'>
                   <VideoHLSPlayer src={currentStory.media_url} classNames='w-full h-full object-contain' />

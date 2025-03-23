@@ -8,10 +8,10 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { AppContext } from '@/Contexts/app.context'
 import { MediaType } from '@/constants/enum'
 import { toast } from 'sonner'
-import storiesApi from '@/apis/stories.api'
 import mediasApi from '@/apis/medias.api'
 import { Button } from '@/Components/ui/button'
 import { Label } from '@radix-ui/react-dropdown-menu'
+import useStories from '@/hooks/useStories'
 
 interface StoryCreatorProps {
   onClose: () => void
@@ -28,6 +28,8 @@ const StoryCreator = ({ onClose }: StoryCreatorProps) => {
   const [isUploading, setIsUploading] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
+  const { refetch, createStoryMutation } = useStories()
+
   const uploadImageMutation = useMutation({
     mutationFn: mediasApi.uploadImages,
     onSuccess: () => {},
@@ -43,19 +45,6 @@ const StoryCreator = ({ onClose }: StoryCreatorProps) => {
     onError: (error) => {
       console.error('Failed to upload video:', error)
       toast.error('Failed to upload video')
-    }
-  })
-
-  const createStoryMutation = useMutation({
-    mutationFn: (data: any) => storiesApi.createStory(data),
-    onSuccess: () => {
-      toast.success('Story created successfully')
-      onClose()
-    },
-    onError: (error) => {
-      console.error('Failed to create story:', error)
-      toast.error('Failed to create story')
-      setIsUploading(false)
     }
   })
 
@@ -97,7 +86,7 @@ const StoryCreator = ({ onClose }: StoryCreatorProps) => {
   }
 
   const handleCreateStory = async () => {
-    if (!content.trim()) {
+    if (!content.trim() && !mediaFile) {
       toast.error('Please add some content to your story')
       return
     }
@@ -125,13 +114,27 @@ const StoryCreator = ({ onClose }: StoryCreatorProps) => {
 
       const mediaTypeValue = uploadedMediaType ? String(uploadedMediaType) : undefined
 
-      await createStoryMutation.mutateAsync({
-        content,
-        media_url: mediaUrl,
-        media_type: mediaTypeValue,
-        caption: caption || undefined,
-        privacy: isPrivate ? [profile?._id] : []
-      })
+      await createStoryMutation.mutateAsync(
+        {
+          content: content || '',
+          media_url: mediaUrl || '',
+          media_type: mediaTypeValue,
+          caption: caption || undefined,
+          privacy: isPrivate ? [profile?._id || ''] : []
+        },
+        {
+          onSuccess: () => {
+            toast.success('Story created successfully')
+            refetch()
+            onClose()
+          },
+          onError: (error) => {
+            console.error('Error creating story:', error)
+            toast.error('Failed to create story')
+            setIsUploading(false)
+          }
+        }
+      )
     } catch (error) {
       console.error('Error creating story:', error)
       toast.error('Failed to create story')
@@ -259,7 +262,14 @@ const StoryCreator = ({ onClose }: StoryCreatorProps) => {
               <Label className='text-gray-900 dark:text-gray-100 font-medium'>Only visible to me</Label>
               <p className='text-xs text-gray-500 dark:text-gray-400'>If enabled, only you will see this story</p>
             </div>
-            {/* <Switch id='story-privacy' checked={isPrivate} onCheckedChange={setIsPrivate} /> */}
+            <div
+              className={`relative inline-block w-10 h-6 rounded-full cursor-pointer ${isPrivate ? 'bg-indigo-600' : 'bg-gray-300'}`}
+              onClick={() => setIsPrivate(!isPrivate)}
+            >
+              <div
+                className={`absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform ${isPrivate ? 'transform translate-x-4' : ''}`}
+              />
+            </div>
           </div>
         </div>
 
@@ -302,5 +312,4 @@ const StoryCreator = ({ onClose }: StoryCreatorProps) => {
     </motion.div>
   )
 }
-
 export default StoryCreator
