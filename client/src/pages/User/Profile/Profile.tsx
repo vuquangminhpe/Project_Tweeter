@@ -2,18 +2,12 @@ import apiUser from '@/apis/users.api'
 import { useQuery } from '@tanstack/react-query'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel'
-import { useEffect, useState } from 'react'
-import { User } from '@/types/User.type'
 export default function Profile() {
-  const getProfileFromLocalStorage = () => {
-    const data = localStorage.getItem('profile')
-    return data ? JSON.parse(data) : null
-  }
-  const { data: dataProfile, isLoading } = useQuery({
+  const { data: dataProfiles, isLoading } = useQuery({
     queryKey: ['dataProfile'],
-    queryFn: getProfileFromLocalStorage
+    queryFn: () => apiUser.getProfile()
   })
-
+  const dataProfile = dataProfiles?.data.result
   const { data: dataFollowings } = useQuery({
     queryKey: ['dataFollowings'],
     queryFn: () => apiUser.getFollowing()
@@ -88,7 +82,7 @@ export default function Profile() {
         <div className='w-full bg-gray-400/30 h-52'></div>
         <div className='flex justify-between'>
           <img
-            src={dataProfile?.avatar}
+            src={`${dataProfile?.avatar}`}
             alt=''
             className='-translate-y-14 translate-x-3 size-32 rounded-full border-[3px] border-white'
           />
@@ -130,7 +124,7 @@ export default function Profile() {
           </div>
           <div className='mt-5 w-full'>
             <Tabs defaultValue='Posts' className='w-full'>
-              <TabsList className='w-auto'>
+              <TabsList className='w-full'>
                 <TabsTrigger value='Posts'>Posts</TabsTrigger>
                 <TabsTrigger value='Replies'>Replies</TabsTrigger>
                 <TabsTrigger value='Highlights'>Highlights</TabsTrigger>
@@ -147,15 +141,10 @@ export default function Profile() {
             </Tabs>
           </div>
           <div className='mt-5 border-t-[1px] border-gray-500'></div>
-          <div className='mt-5 max-w-full relative'>
+          <div className='mt-5 max-w-full'>
             <div className='text-white font-bold text-2xl'>Let’s get you set up</div>
             <Carousel className='mt-4'>
-              <div className='absolute left-0 top-1/2 -translate-y-1/2 z-10'>
-              
-                <CarouselPrevious className='bg-white hover:bg-white/90 text-black border-0 static' />
-              </div>
               <CarouselContent>
-                
                 <CarouselItem className='md:basis-1/2 lg:basis-1/3'>
                   <img src='https://ton.twimg.com/onboarding/persistent_nux/follow_2x.png' alt='' />
                   <div className='text-white'>Follow 5 accounts</div>
@@ -165,20 +154,16 @@ export default function Profile() {
                   <div className='capitalize text-white'>follow 3 topics</div>
                 </CarouselItem>
                 <CarouselItem className='md:basis-1/2 lg:basis-1/3 relative'>
-                  
                   <img src='https://ton.twimg.com/onboarding/persistent_nux/profile_2x.png' alt='' />
                   <div className='capitalize text-white'>Complete your profile</div>
                   <div className='p-2 text-white font-bold -translate-y-8 translate-x-3 bg-emerald-500 absolute bottom-0 rounded-3xl'>
-                    
                     done
                   </div>
                 </CarouselItem>
                 <CarouselItem className='md:basis-1/2 lg:basis-1/3'>
-                  
                   <img src='https://ton.twimg.com/onboarding/persistent_nux/notifs_2x.png' alt='' />
                   <div className=' text-white'>Turn on notifications</div>
                   <div className='p-2 text-white font-bold -translate-y-8 translate-x-3 bg-emerald-500 absolute bottom-0 rounded-3xl'>
-                    
                     done
                   </div>
                 </CarouselItem>
@@ -187,9 +172,8 @@ export default function Profile() {
                 <CarouselItem className='md:basis-1/2 lg:basis-1/3'>...</CarouselItem>
                 <CarouselItem className='md:basis-1/2 lg:basis-1/3'>...</CarouselItem>
               </CarouselContent>
-              <div className='absolute right-0 top-1/2 -translate-y-1/2 z-10'>
-                <CarouselNext className='bg-white hover:bg-white/90 text-black border-0 static' />
-              </div>
+              <CarouselPrevious className='dark:bg-white' />
+              <CarouselNext className='dark:bg-white' />
             </Carousel>
           </div>
         </div>
