@@ -23,7 +23,9 @@ import SubscriptionPage from './pages/User/Subscription'
 import PaymentResultPage from './pages/User/Payment/PaymentResultPage'
 import PaymentHistoryPage from './pages/User/Payment/PaymentHistoryPage'
 import PaymentDetailPage from './pages/User/Payment/PaymentDetailPage'
-
+import StoriesPage from './pages/User/HomeSection/StoriesPage/StoriesPage'
+import StoryCreator from './pages/User/HomeSection/StoryCreator/StoryCreator'
+import StoryArchiveViewer from './pages/User/HomeSection/StoryArchiveViewer'
 function ProtectedRoute() {
   const { isAuthenticated } = useContext(AppContext)
   return isAuthenticated ? <Outlet /> : <Navigate to={path.login} />
@@ -35,6 +37,7 @@ function RejectedRoute() {
 }
 
 export default function useRouteElement() {
+  const profile = useContext(AppContext).profile
   const routeElements = useRoutes([
     {
       path: path.asHome,
@@ -95,6 +98,22 @@ export default function useRouteElement() {
         {
           path: path.chat,
           element: <Chat />
+        },
+        {
+          path: 'story',
+          element: <StoriesPage />
+        },
+        {
+          path: 'story/:id',
+          element: <StoriesPage />
+        },
+        {
+          path: 'story/create',
+          element: <StoryCreator onClose={() => window.history.back()} />
+        },
+        {
+          path: 'story/archive',
+          element: <StoryArchiveViewer userId={profile?._id || ''} onClose={() => window.history.back()} />
         },
         {
           path: path.story,
