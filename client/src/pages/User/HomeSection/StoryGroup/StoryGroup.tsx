@@ -44,7 +44,7 @@ const StoryGroup = ({ user, stories, isViewed, onSelect }: StoryGroupProps) => {
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 10 }}
+      initial={{ opacity: 0.6, y: 10 }}
       animate={{ opacity: 1, y: 0, ...pulseAnimation }}
       whileHover={{ scale: 1.05 }}
       className='flex flex-col z-[99999] items-center space-y-1 cursor-pointer'

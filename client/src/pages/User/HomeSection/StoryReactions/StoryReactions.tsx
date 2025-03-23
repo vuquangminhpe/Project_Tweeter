@@ -35,9 +35,9 @@ const StoryReactions = ({ onReaction, onComment, disabled = false }: StoryReacti
       <AnimatePresence>
         {showReactions && (
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0.6, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 20 }}
+            exit={{ opacity: 0.6, y: 20 }}
             className='absolute bottom-16 left-0 right-0 bg-white dark:bg-gray-800 rounded-xl shadow-lg p-3 z-10'
           >
             <div className='flex justify-around'>
@@ -60,9 +60,9 @@ const StoryReactions = ({ onReaction, onComment, disabled = false }: StoryReacti
       <AnimatePresence>
         {isCommenting && (
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0.6, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 20 }}
+            exit={{ opacity: 0.6, y: 20 }}
             className='absolute bottom-16 left-0 right-0 bg-white dark:bg-gray-800 rounded-xl shadow-lg p-3 z-10'
           >
             <div className='flex items-center space-x-2'>

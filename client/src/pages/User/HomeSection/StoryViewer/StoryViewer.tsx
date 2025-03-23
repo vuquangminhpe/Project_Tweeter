@@ -165,9 +165,9 @@ const StoryViewer = ({ stories, initialIndex, onClose, currentUserId }: StoryVie
 
   return (
     <motion.div
-      initial={{ opacity: 0 }}
+      initial={{ opacity: 0.6 }}
       animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
+      exit={{ opacity: 0.6 }}
       className='fixed inset-0 z-[99999] bg-black flex items-center justify-center'
     >
       <button

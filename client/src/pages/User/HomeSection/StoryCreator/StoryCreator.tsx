@@ -144,16 +144,16 @@ const StoryCreator = ({ onClose }: StoryCreatorProps) => {
 
   return (
     <motion.div
-      initial={{ opacity: 0 }}
+      initial={{ opacity: 0.6 }}
       animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
+      exit={{ opacity: 0.6 }}
       className='fixed inset-0 z-50 flex items-center justify-center bg-black/70'
       onClick={onClose}
     >
       <motion.div
-        initial={{ scale: 0.9, opacity: 0 }}
+        initial={{ scale: 0.9, opacity: 0.5 }}
         animate={{ scale: 1, opacity: 1 }}
-        exit={{ scale: 0.9, opacity: 0 }}
+        exit={{ scale: 0.9, opacity: 0.5 }}
         transition={{ type: 'spring', damping: 25, stiffness: 300 }}
         className='bg-white dark:bg-gray-900 rounded-2xl max-w-lg w-full max-h-[90vh] overflow-hidden'
         onClick={(e) => e.stopPropagation()}

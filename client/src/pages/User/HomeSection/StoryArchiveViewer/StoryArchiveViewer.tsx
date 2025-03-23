@@ -65,16 +65,16 @@ const StoryArchiveViewer = ({ userId, onClose }: StoryArchiveViewerProps) => {
 
   return (
     <motion.div
-      initial={{ opacity: 0 }}
+      initial={{ opacity: 0.6 }}
       animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
+      exit={{ opacity: 0.6 }}
       className='fixed inset-0 z-[99999999999999999] bg-black/80 flex items-center justify-center p-4'
       onClick={onClose}
     >
       <motion.div
-        initial={{ scale: 0.9, opacity: 0 }}
+        initial={{ scale: 0.9, opacity: 0.5 }}
         animate={{ scale: 1, opacity: 1 }}
-        exit={{ scale: 0.9, opacity: 0 }}
+        exit={{ scale: 0.9, opacity: 0.5 }}
         transition={{ type: 'spring', damping: 25, stiffness: 300 }}
         className='bg-white dark:bg-gray-900 rounded-xl w-full max-w-6xl max-h-[90vh] overflow-hidden flex flex-col'
         onClick={(e) => e.stopPropagation()}
@@ -108,7 +108,6 @@ const StoryArchiveViewer = ({ userId, onClose }: StoryArchiveViewerProps) => {
               </TabsList>
             </Tabs>
 
-            {/* Stories list */}
             <div className='flex-1 overflow-y-auto'>
               {isLoading ? (
                 <div className='flex flex-col space-y-4 p-4'>
@@ -148,7 +147,6 @@ const StoryArchiveViewer = ({ userId, onClose }: StoryArchiveViewerProps) => {
                         }`}
                         onClick={() => setSelectedIndex(index)}
                       >
-                        {/* Story thumbnail */}
                         <div className='w-14 h-14 rounded-lg overflow-hidden bg-gray-200 dark:bg-gray-800 mr-3 flex-shrink-0'>
                           {story.media_url ? (
                             <img src={story.media_url} alt='Story thumbnail' className='w-full h-full object-cover' />
