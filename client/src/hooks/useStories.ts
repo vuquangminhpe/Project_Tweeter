@@ -31,8 +31,9 @@ const useStories = (options: UseStoriesOptions = {}) => {
     refetchInterval: autoRefresh ? refreshInterval : undefined,
     enabled: !!profile?._id // Only fetch if user is logged in
   })
+  console.log(data?.data)
 
-  const stories = data?.data?.result?.result || []
+  const stories = data?.data?.result || []
 
   const viewStoryMutation = useMutation({
     mutationFn: storiesApi.viewStory,

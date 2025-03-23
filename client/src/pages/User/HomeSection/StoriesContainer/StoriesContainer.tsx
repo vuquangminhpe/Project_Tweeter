@@ -47,11 +47,11 @@ const StoriesContainer = () => {
   }, [activeStoryIndex, stories, markStoryAsViewed])
 
   const userStories = React.useMemo(() => {
-    if (!stories || stories.length === 0) return []
+    if (!stories || stories?.length === 0) return []
 
     const storyGroups = new Map()
 
-    stories.forEach((story: any) => {
+    stories?.forEach((story: any) => {
       if (!story || !story.user || !story.user._id) return
 
       const userId = story.user._id
@@ -148,7 +148,7 @@ const StoriesContainer = () => {
       </div>
 
       <AnimatePresence>
-        {activeStoryIndex !== null && stories && stories.length > 0 && (
+        {activeStoryIndex !== null && stories && stories?.length > 0 && (
           <StoryViewer
             stories={stories as NewsFeedStory[]}
             initialIndex={activeStoryIndex}
