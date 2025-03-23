@@ -103,7 +103,7 @@ const Navigation = () => {
       {dropDown && (
         <div className='fixed xl:bottom-14 xl:left-14 bottom-11 left-11 border border-gray-700 shadow-lg bg-gray-800 text-white w-52 rounded-lg py-2 z-50 mb-4'>
           <div className='px-3 py-2 hover:bg-gray-700 text-gray-300 font-bold'>My Account</div>
-          {isAuthenticated ? (
+          {profile ? (
             <>
               <div
                 onClick={() => console.log('View Profile')}
