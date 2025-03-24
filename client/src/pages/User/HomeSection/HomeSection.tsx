@@ -21,6 +21,7 @@ import { toast } from 'sonner'
 import useNotifications from '@/components/Customs/Notification/useNotifications/useNotifications'
 import { ActionType } from '@/types/Notifications.types'
 import Orb from '@/components/ui/orb'
+import { FaTimes } from 'react-icons/fa'
 
 const validationSchema = Yup.object().shape({
   content: Yup.string().required('Post text is required'),
@@ -330,44 +331,51 @@ const HomeSection = ({ setEdit, isPendingTweet = true, isTitleName = 'Share', cu
   }
 
   return (
-    <div className={`${isPendingTweet ? 'container' : 'w-full'} mx-auto bg-white rounded-xl shadow-sm overflow-hidden`}>
+    <div className=' text-white flex-grow border-l border-r border-gray-700 max-w-2xl sm:ml-[73px] xl:ml-[370px]'>
       {isPendingTweet && (
         <div className={`${customClassName}`}>
-          <Tabs defaultValue={activeTab} onValueChange={setActiveTab} className='w-full'>
-            <TabsList className='w-full p-0 h-12 bg-gray-50 rounded-none border-b'>
-              <TabsTrigger
-                value='forYou'
-                className='flex-1 h-full data-[state=active]:bg-white data-[state=active]:shadow-none rounded-none data-[state=active]:border-b-2 data-[state=active]:border-indigo-600'
-              >
-                For You
-              </TabsTrigger>
-              <TabsTrigger
-                value='following'
-                className='flex-1 h-full data-[state=active]:bg-white data-[state=active]:shadow-none rounded-none data-[state=active]:border-b-2 data-[state=active]:border-indigo-600'
-              >
-                Following
-              </TabsTrigger>
-            </TabsList>
-          </Tabs>
+          <div className='flex items-center justify-center sticky top-0 z-50 bg-black border-b border-gray-700'>
+            <div
+              className={`relative flex-1 text-center py-3 cursor-pointer transition duration-300 ${
+                activeTab === 'For you' ? 'text-white' : 'text-gray-500 hover:bg-gray-800 hover:text-white'
+              }`}
+              onClick={() => setActiveTab('For you')}
+            >
+              For you
+              {activeTab === 'For you' && (
+                <div className='absolute bottom-0 left-1/2 transform -translate-x-1/2 w-[80px] border-b-4 border-[#1D9BF0]'></div>
+              )}
+            </div>
+            <div
+              className={`relative flex-1 text-center py-3 cursor-pointer transition duration-300 ${
+                activeTab === 'Following' ? 'text-white' : 'text-gray-500 hover:bg-gray-800 hover:text-white'
+              }`}
+              onClick={() => setActiveTab('Following')}
+            >
+              Following
+              {activeTab === 'Following' && (
+                <div className='absolute bottom-0 left-1/2 transform -translate-x-1/2 w-[80px] border-b-4 border-[#1D9BF0]'></div>
+              )}
+            </div>
+          </div>
         </div>
       )}
 
-      <div className={`p-4 bg-white border-b ${isPendingTweet ? '' : 'w-full'}`}>
-        <div className='flex items-start gap-4'>
-          <Avatar className='w-10 h-10 border border-gray-200'>
+      <div className={`p-4 bg-black border-b ${isPendingTweet ? '' : 'w-full'}`}>
+        <div className='border-b border-gray-700 p-3 flex space-x-3'>
+          <Avatar className='h-11 w-11 rounded-full cursor-pointer'>
             <AvatarImage src={profile?.avatar} alt={profile?.name} />
             <AvatarFallback className='bg-gradient-to-r from-violet-200 to-indigo-200 text-indigo-600'>
               {profile?.name?.charAt(0).toUpperCase()}
             </AvatarFallback>
           </Avatar>
 
-          <div className='flex-1'>
+          <div className='w-full divide-y divide-gray-700'>
             <form onSubmit={formik.handleSubmit}>
               <textarea
                 placeholder="Share what's on your mind..."
-                className='w-full min-h-[100px] p-4 bg-gray-50 border border-gray-200 
-                rounded-lg focus:ring-2 focus:ring-indigo-200 focus:border-indigo-300
-                resize-none transition-all duration-200'
+                className='bg-transparent outline-none 
+            text-[#d9d9d9] text-lg placeholder-gray-500 tracking-wide w-full min-h-[50px] overflow-hidden'
                 {...formik.getFieldProps('content')}
               />
 
@@ -376,11 +384,11 @@ const HomeSection = ({ setEdit, isPendingTweet = true, isTitleName = 'Share', cu
               )}
 
               {imagePreviews.length > 0 && (
-                <div className='grid grid-cols-2 sm:grid-cols-3 gap-3 mt-4'>
+                <div className='flex flex-row overflow-x-auto gap-1'>
                   {imagePreviews.map((preview, index) => (
-                    <div key={index} className='relative rounded-lg overflow-hidden'>
+                    <div key={index} className='relative'>
                       {typeof preview === 'string' && (
-                        <img src={preview} alt={`Preview ${index}`} className='w-full h-36 object-cover' />
+                        <img src={preview} alt={`Preview ${index}`} className='rounded-2xl max-h-80 object-contain' />
                       )}
                       <button
                         type='button'
@@ -393,27 +401,17 @@ const HomeSection = ({ setEdit, isPendingTweet = true, isTitleName = 'Share', cu
                           setSelectItemInTweet(newImages)
                           formik.setFieldValue('images', newImages)
                         }}
-                        className='absolute top-2 right-2 bg-black/50 text-white rounded-full p-1.5 hover:bg-black/70 transition'
+                        className='absolute w-8 h-8 bg-[#15181c] hover:bg-[#272c26] bg-opacity-75 
+        rounded-full flex items-center justify-center top-1 left-1 cursor-pointer'
                       >
-                        <svg
-                          xmlns='http://www.w3.org/2000/svg'
-                          className='h-4 w-4'
-                          viewBox='0 0 20 20'
-                          fill='currentColor'
-                        >
-                          <path
-                            fillRule='evenodd'
-                            d='M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z'
-                            clipRule='evenodd'
-                          />
-                        </svg>
+                        X
                       </button>
                     </div>
                   ))}
                 </div>
               )}
 
-              <div className='flex justify-between items-center mt-4'>
+              <div className='flex items-center justify-between pt-2.5'>
                 <div className='flex space-x-4'>
                   <label className='cursor-pointer text-gray-600 hover:text-indigo-600 transition flex items-center gap-1'>
                     <BiImageAlt className='text-xl' />
@@ -428,21 +426,20 @@ const HomeSection = ({ setEdit, isPendingTweet = true, isTitleName = 'Share', cu
                   </label>
 
                   <div className='relative flex items-center justify-center w-8 h-8 flex-shrink-0'>
-          <Orb
-            hoverIntensity={0.3} // Giảm intensity để phù hợp kích thước nhỏ
-            rotateOnHover={true}
-            hue={120} // Màu mặc định
-            forceHoverState={false}
-          
-          />
-        </div>
+                    <Orb
+                      hoverIntensity={0.3} // Giảm intensity để phù hợp kích thước nhỏ
+                      rotateOnHover={true}
+                      hue={120} // Màu mặc định
+                      forceHoverState={false}
+                    />
+                  </div>
 
                   <Popover>
                     <PopoverTrigger className='flex items-center gap-1 text-gray-600 hover:text-indigo-600 transition'>
                       <BiHash className='text-xl' />
                       <span className='text-sm'>Tags</span>
                     </PopoverTrigger>
-                    <PopoverContent className='w-72 p-4 rounded-lg'>
+                    <PopoverContent className='w-72 p-4 rounded-lg bg-gray-800 text-white shadow-xl'>
                       <h3 className='text-sm font-medium mb-2'>Add tags to your post</h3>
                       <div className='flex gap-2 mb-3'>
                         <input
@@ -451,12 +448,12 @@ const HomeSection = ({ setEdit, isPendingTweet = true, isTitleName = 'Share', cu
                           onChange={formik.handleChange}
                           name='currentHashtag'
                           placeholder='Enter tag name'
-                          className='flex-1 bg-gray-100 rounded-lg px-3 py-2 text-sm'
+                          className='flex-1 bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-400'
                         />
                         <button
                           type='button'
                           onClick={addHashtag}
-                          className='bg-indigo-100 text-indigo-600 px-3 py-2 rounded-lg text-sm font-medium hover:bg-indigo-200 transition'
+                          className='bg-indigo-700 text-white px-3 py-2 rounded-lg text-sm font-medium hover:bg-indigo-600 transition'
                         >
                           Add
                         </button>
@@ -468,7 +465,7 @@ const HomeSection = ({ setEdit, isPendingTweet = true, isTitleName = 'Share', cu
                             {formik?.values?.hashtags?.map((hashtag: any, index: any) => (
                               <span
                                 key={index}
-                                className='bg-indigo-100 text-indigo-600 px-2 py-1 rounded-full text-xs flex items-center'
+                                className='bg-indigo-700 text-white px-2 py-1 rounded-full text-xs flex items-center'
                               >
                                 #{!isPendingTweet ? (hashtag as any).name : hashtag}
                                 <button
@@ -477,7 +474,7 @@ const HomeSection = ({ setEdit, isPendingTweet = true, isTitleName = 'Share', cu
                                     const newHashtags = formik.values.hashtags.filter((_, i) => i !== index)
                                     formik.setFieldValue('hashtags', newHashtags)
                                   }}
-                                  className='ml-1 text-indigo-400 hover:text-indigo-700'
+                                  className='ml-1 text-indigo-300 hover:text-indigo-500'
                                 >
                                   ×
                                 </button>
@@ -494,7 +491,7 @@ const HomeSection = ({ setEdit, isPendingTweet = true, isTitleName = 'Share', cu
                       <BiAt className='text-xl' />
                       <span className='text-sm'>Mention</span>
                     </PopoverTrigger>
-                    <PopoverContent className='w-72 p-4 rounded-lg'>
+                    <PopoverContent className='w-72 p-4 rounded-lg bg-gray-800 text-white shadow-xl'>
                       <h3 className='text-sm font-medium mb-2'>Mention people</h3>
                       <div className='flex gap-2 mb-3'>
                         <input
@@ -503,12 +500,12 @@ const HomeSection = ({ setEdit, isPendingTweet = true, isTitleName = 'Share', cu
                           onChange={formik.handleChange}
                           name='currentMention'
                           placeholder='Enter username'
-                          className='flex-1 bg-gray-100 rounded-lg px-3 py-2 text-sm'
+                          className='flex-1 bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-400'
                         />
                         <button
                           type='button'
                           onClick={addMention}
-                          className='bg-indigo-100 text-indigo-600 px-3 py-2 rounded-lg text-sm font-medium hover:bg-indigo-200 transition'
+                          className='bg-indigo-700 text-white px-3 py-2 rounded-lg text-sm font-medium hover:bg-indigo-600 transition'
                         >
                           Add
                         </button>
@@ -523,7 +520,7 @@ const HomeSection = ({ setEdit, isPendingTweet = true, isTitleName = 'Share', cu
                                 <span
                                   key={index}
                                   className={`px-2 py-1 rounded-full text-xs flex items-center ${
-                                    isValid ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-600'
+                                    isValid ? 'bg-green-700 text-white' : 'bg-gray-700 text-gray-400'
                                   }`}
                                 >
                                   @{!isPendingTweet ? (mention as any).username : mention}
@@ -533,7 +530,11 @@ const HomeSection = ({ setEdit, isPendingTweet = true, isTitleName = 'Share', cu
                                       const newMentions = formik.values.mentions.filter((_, i) => i !== index)
                                       formik.setFieldValue('mentions', newMentions)
                                     }}
-                                    className={`ml-1 ${isValid ? 'text-green-400 hover:text-green-700' : 'text-gray-400 hover:text-gray-700'}`}
+                                    className={`ml-1 ${
+                                      isValid
+                                        ? 'text-green-300 hover:text-green-500'
+                                        : 'text-gray-400 hover:text-gray-500'
+                                    }`}
                                   >
                                     ×
                                   </button>
@@ -551,7 +552,7 @@ const HomeSection = ({ setEdit, isPendingTweet = true, isTitleName = 'Share', cu
                       <BiCog className='text-xl' />
                       <span className='text-sm'>Privacy</span>
                     </PopoverTrigger>
-                    <PopoverContent className='w-64 p-4 rounded-lg'>
+                    <PopoverContent className='w-64 p-4 rounded-lg bg-gray-800 text-white shadow-xl'>
                       <h3 className='text-sm font-medium mb-3'>Who can see this post?</h3>
                       <div className='space-y-3'>
                         <label className='flex items-center gap-2 cursor-pointer'>
@@ -560,12 +561,12 @@ const HomeSection = ({ setEdit, isPendingTweet = true, isTitleName = 'Share', cu
                             value={1}
                             checked={formik.values.audience === 1}
                             name='audience'
-                            className='accent-indigo-600'
+                            className='accent-indigo-500'
                             onChange={() => formik.setFieldValue('audience', 1)}
                           />
                           <div>
                             <div className='text-sm font-medium'>Everyone</div>
-                            <div className='text-xs text-gray-500'>Any user can see this post</div>
+                            <div className='text-xs text-gray-400'>Any user can see this post</div>
                           </div>
                         </label>
                         <label className='flex items-center gap-2 cursor-pointer'>
@@ -574,12 +575,12 @@ const HomeSection = ({ setEdit, isPendingTweet = true, isTitleName = 'Share', cu
                             value={0}
                             checked={formik.values.audience === 0}
                             name='audience'
-                            className='accent-indigo-600'
+                            className='accent-indigo-500'
                             onChange={() => formik.setFieldValue('audience', 0)}
                           />
                           <div>
                             <div className='text-sm font-medium'>Circle Only</div>
-                            <div className='text-xs text-gray-500'>Only people in your circle can see</div>
+                            <div className='text-xs text-gray-400'>Only people in your circle can see</div>
                           </div>
                         </label>
                       </div>
@@ -590,7 +591,7 @@ const HomeSection = ({ setEdit, isPendingTweet = true, isTitleName = 'Share', cu
                 <button
                   type='submit'
                   disabled={uploadingImage}
-                  className='bg-gradient-to-r from-violet-600 to-indigo-600 text-white px-6 py-2 rounded-lg
+                  className='mx-2 bg-gradient-to-r from-violet-600 to-indigo-600 text-white px-6 py-2 rounded-lg
                   font-medium hover:from-violet-700 hover:to-indigo-700 transition-colors duration-200 
                   focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-2 disabled:opacity-70'
                 >

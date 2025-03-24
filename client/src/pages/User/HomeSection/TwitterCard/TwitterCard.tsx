@@ -39,6 +39,7 @@ import {
   AlertDialogTrigger
 } from '@/components/ui/alert-dialog'
 import ImageViewerTweet from '../ImageViewer'
+import { DotsHorizontalIcon } from '@radix-ui/react-icons'
 
 interface Props {
   profile: User | null
@@ -253,20 +254,15 @@ const TwitterCard = ({ profile, data, refetchAllDataTweet, data_length }: Props)
   }
 
   return (
-    <div className='bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300 overflow-hidden'>
-      <div className='p-4 border-b border-gray-100'>
+    <div className='p-3 flex cursor-pointer border-b border-gray-700'>
+      <div className='flex flex-col space-y-2 w-full'>
         <div className='flex space-x-4'>
-          <div
-            className='w-12 h-12 rounded-full overflow-hidden cursor-pointer ring-2 ring-blue-100 hover:ring-blue-300 transition'
-            onClick={() => navigate(`/user/profile/${profile?._id}`)}
-          >
-            <Avatar className='w-full h-full'>
-              <AvatarImage src={profile?.avatar} alt={profile?.name} className='object-cover' />
-              <AvatarFallback className='bg-blue-100 text-blue-600'>
-                {profile?.name?.charAt(0).toUpperCase()}
-              </AvatarFallback>
-            </Avatar>
-          </div>
+          <Avatar className='mx-4 h-11 w-11 rounded-full cursor-pointer'>
+            <AvatarImage src={profile?.avatar} alt={profile?.name} />
+            <AvatarFallback className='bg-gradient-to-r from-violet-200 to-indigo-200 text-indigo-600'>
+              {profile?.name?.charAt(0).toUpperCase()}
+            </AvatarFallback>
+          </Avatar>
 
           <div className='w-full'>
             <div className='flex justify-between items-center'>
@@ -281,19 +277,19 @@ const TwitterCard = ({ profile, data, refetchAllDataTweet, data_length }: Props)
               <Popover>
                 <PopoverTrigger>
                   {data?.user_id === profile?._id && (
-                    <FaEllipsisH className='text-gray-500 text-lg cursor-pointer hover:text-blue-500 transition' />
+                    <DotsHorizontalIcon className='h-5 text-[#6e7677] group-hover:text-[#1d9bf0]' />
                   )}
                 </PopoverTrigger>
-                <PopoverContent className='flex gap-5 justify-around max-w-44 bg-slate-100 rounded-xl shadow-xl'>
+                <PopoverContent className='flex gap-5 justify-around max-w-44 bg-gray-800 text-white rounded-xl shadow-xl'>
                   <div
                     onClick={() => setEdit(true)}
-                    className='cursor-pointer font-semibold hover:bg-gray-600 transition-all px-3 py-1 rounded-xl'
+                    className='cursor-pointer font-semibold hover:bg-gray-700 transition-all px-3 py-1 rounded-xl'
                   >
                     Edit
                   </div>
                   <div
                     onClick={() => handleDeleteTweet(data?._id as string)}
-                    className='cursor-pointer font-semibold hover:bg-gray-600 px-3 py-1 rounded-xl'
+                    className='cursor-pointer font-semibold hover:bg-gray-700 px-3 py-1 rounded-xl'
                   >
                     Delete
                   </div>

@@ -237,22 +237,6 @@ function Feed({ setEdit, isPendingTweet = true, isTitleName = 'Share', customCla
     }
   }
 
-  const addHashtag = () => {
-    const newHashtag = formik.values.currentHashtag.trim()
-    if (newHashtag && !formik.values.hashtags.includes(newHashtag)) {
-      formik.setFieldValue('hashtags', [...formik.values.hashtags, newHashtag])
-      formik.setFieldValue('currentHashtag', '')
-    }
-  }
-
-  const addMention = () => {
-    const newMention = formik.values.currentMention.trim()
-    if (newMention && !formik.values.mentions.includes(newMention)) {
-      formik.setFieldValue('mentions', [...formik.values.mentions, newMention])
-      formik.setFieldValue('currentMention', '')
-    }
-  }
-
   const handleCreatedTweet = useCallback(
     async (data: TweetFormValues, uploadedLinks: Media[]) => {
       await createdTweetMutation.mutateAsync(
@@ -361,8 +345,28 @@ function Feed({ setEdit, isPendingTweet = true, isTitleName = 'Share', customCla
           </div>
         ) : (
           <div>
-            <Post />
-            <Post />
+            {isPendingTweet && (allTweets?.length ?? 0) > 0 && (
+              <div className='divide-y'>
+                {allTweets?.map((data) =>
+                  Array(data).map((element, index) => (
+                    // <PostCard
+                    //   refetchAllDataTweet={refetchAllDataTweet}
+                    //   key={`${element._id}-${index}`}
+                    //   data={element}
+                    //   data_length={data?.medias?.length}
+                    //   profile={profile}
+                    // />
+                    <Post
+                      refetchAllDataTweet={refetchAllDataTweet}
+                      key={`${element._id}-${index}`}
+                      data={element}
+                      data_length={data?.medias?.length}
+                      profile={profile}
+                    />
+                  ))
+                )}
+              </div>
+            )}
           </div>
         )}
       </div>

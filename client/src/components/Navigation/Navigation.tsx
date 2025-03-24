@@ -87,14 +87,14 @@ const Navigation = () => {
       >
         <div className='flex flex-row'>
           <Avatar className='h-10 w-10 rounded-full xl:mr-2.5 xl:ml-0 ml-2'>
-            <AvatarImage src={profile?.avatar} alt={profile?.username || 'User'} />
+            <AvatarImage src={profile?.avatar} alt={profile?.name || 'User'} />
             <AvatarFallback className='bg-gradient-to-r from-violet-200 to-indigo-200 text-indigo-600'>
-              {profile?.username?.[0]?.toUpperCase() || 'U'}
+              {profile?.name?.[0]?.toUpperCase() || 'U'}
             </AvatarFallback>
           </Avatar>
           <div className='hidden xl:inline leading-5 text-left flex-col items-start'>
             <h4 className='font-bold'>{profile?.name || 'User'}</h4>
-            <p className='text-[#6e767d]'>@{profile?.username || 'username'}</p>
+            <p className='text-[#6e767d]'>@{profile?.name || 'username'}</p>
           </div>
         </div>
         <DotsHorizontalIcon className='h-5 hidden xl:inline ml-10' />

@@ -5,6 +5,7 @@ import Navigation from '../Navigation/Navigation'
 import axios from 'axios'
 import RightPart from '../RightPart/RightPart'
 import Feed from '../../pages/User/HomeSection/Feed'
+import HomeSection from '@/pages/User/HomeSection'
 
 function Home() {
   useEffect(() => {
@@ -31,7 +32,8 @@ function Home() {
   return (
     <div className='bg-black flex min-h-screen max-w-[1500px] mx-auto'>
       <Navigation/>
-      <Feed/>
+      <HomeSection/>
+      {/* <Feed/> */}
       <RightPart/>
     </div>
   )
