@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { useState, useEffect, useContext } from 'react'
 import NavigationMenu from './NavigationMenu'
 import { Link, useNavigate } from 'react-router-dom'
@@ -65,6 +66,10 @@ const Navigation = () => {
     navigate('/auth/login')
   }
 
+  const handleViewProfile = () => {
+    navigate('/user/profile')
+  }
+
   const { profile } = useContext(AppContext)
 
   return (
@@ -106,7 +111,7 @@ const Navigation = () => {
           {profile ? (
             <>
               <div
-                onClick={() => console.log('View Profile')}
+                onClick={handleViewProfile}
                 className='cursor-pointer hover:bg-gray-700 text-gray-300 px-3 py-2 rounded-md transition'
               >
                 View Profile

@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { IoSparkles } from 'react-icons/io5'
 import Input from './Input'
 import Post from '../../../../components/Post'
@@ -15,6 +17,7 @@ import { createdTweet, TweetFormValues, Tweets } from '@/types/Tweet.type'
 import { toast } from 'sonner'
 import useNotifications from '@/components/Customs/Notification/useNotifications/useNotifications'
 import { ActionType } from '@/types/Notifications.types'
+import StoriesContainer from '../StoriesContainer'
 
 const validationSchema = Yup.object().shape({
   content: Yup.string().required('Post text is required'),
@@ -306,7 +309,9 @@ function Feed({ setEdit, isPendingTweet = true, isTitleName = 'Share', customCla
           <IoSparkles />
         </div>
       </div>
-
+      <div className='py-2'>
+        <StoriesContainer />
+      </div>
       {/* Tabs */}
       <div className='flex items-center justify-center sticky top-0 z-50 bg-black border-b border-gray-700'>
         <div

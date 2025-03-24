@@ -2,9 +2,10 @@
 import React, { useState, useRef, useEffect, useContext } from 'react'
 import { HiOutlineBadgeCheck } from 'react-icons/hi'
 import { BiDotsHorizontalRounded, BiTrendingUp, BiSearch } from 'react-icons/bi'
-import SearchGrowing from '../Customs/SearchGrowing'
-import Notification from '../Customs/Notification'
 import { AppContext } from '@/Contexts/app.context'
+import { Link } from 'react-router-dom'
+import path from '@/constants/path'
+import SearchGrowing from '../Customs/SearchGrowing'
 
 const RightPart: React.FC = () => {
   const { profile } = useContext(AppContext)
@@ -62,11 +63,9 @@ const RightPart: React.FC = () => {
 
   return (
     <div className='sticky hidden sm:flex flex-col p-2 h-full gap-3 xl:w-[340px]'>
-      {/* <Notification userId={profile?._id as string} /> */}
-      {/* <SearchGrowing /> */}
       <div className='relative group mt-3 border-gray-300'>
         <div className='absolute inset-y-0 left-3 flex items-center pointer-events-none'>
-          <BiSearch className='h-5 w-5 text-gray-400' />
+          <SearchGrowing />
         </div>
         <input
           type='text'
@@ -113,9 +112,11 @@ const RightPart: React.FC = () => {
             <span>Priority support</span>
           </div>
         </div>
-        <button className='w-full bg-indigo-600 text-white font-medium px-4 py-2 rounded-lg hover:bg-indigo-500 transition-colors'>
-          Upgrade Now
-        </button>
+        <Link to={path.subscription}>
+          <button className='w-full bg-indigo-600 text-white font-medium px-4 py-2 rounded-lg hover:bg-indigo-500 transition-colors'>
+            Upgrade Now
+          </button>
+        </Link>
       </div>
 
       <div className='bg-gray-900 border-b rounded-xl shadow-sm border border-gray-700 overflow-hidden'>
