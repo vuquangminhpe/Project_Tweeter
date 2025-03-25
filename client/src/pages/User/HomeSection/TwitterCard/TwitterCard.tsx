@@ -74,7 +74,7 @@ const TwitterCard = ({ data, refetchAllDataTweet, data_length }: Props) => {
   })
   const { data: dataLikes, refetch: refetchDataLikes } = useQuery({
     queryKey: ['dataLikes', data._id],
-    queryFn: () => likesApi.getLikesTweet(data._id as string)
+    queryFn: () => likesApi.getLikesTweet(data._id as string) 
   })
 
   // khu vực action bằng mutation => chi viết action ở đây
@@ -185,14 +185,14 @@ const TwitterCard = ({ data, refetchAllDataTweet, data_length }: Props) => {
   }
   const handleUnBookmarksTweet = async (tweet_id: string) => {
     unBookmarksTweetMutation.mutateAsync(tweet_id, {
-      onSuccess: () => {
+      onSuccess: () => { 
         refetchDataBookmark()
       },
       onError: () => {
         toast.error('UnBookmarks Tweet Fail')
       }
     })
-  }
+  }  
 
   const handleDeleteComment = async (comment_id: string) => {
     deleteCommentMutation.mutateAsync(comment_id, {

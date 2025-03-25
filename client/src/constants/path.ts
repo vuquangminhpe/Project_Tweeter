@@ -24,6 +24,9 @@ const path = {
   paymentResult: '/user/payment/result',
   paymentHistory: '/user/payment/history',
   paymentDetail: '/user/payment/detail/:orderId',
-  subscription: '/user/subscription'
+  subscription: '/user/subscription',
+  bookmark: '/user/bookmarks',
+  whoToFollow: '/user/who-to-follow',
+  followingList: '/user/following',
 } as const
 export default path

@@ -7,6 +7,8 @@ enum UserVerifyStatus {
   Banned
 }
 
+export type UserRole = 'user' | 'admin'
+
 interface UserType {
   _id?: ObjectId
   name?: string
@@ -30,6 +32,7 @@ interface UserType {
   cover_photo?: string
   is_online?: boolean
   last_active?: Date
+  role?: UserRole
 }
 
 export default class User {
@@ -55,6 +58,7 @@ export default class User {
   cover_photo: string
   is_online: boolean
   last_active: Date
+  role: UserRole
 
   constructor(user: UserType) {
     const date = new Date()
@@ -80,5 +84,6 @@ export default class User {
     this.cover_photo = user.cover_photo || ''
     this.is_online = user.is_online || false
     this.last_active = user.last_active || date
+    this.role = user.role || 'user'
   }
 }

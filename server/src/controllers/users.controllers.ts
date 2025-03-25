@@ -63,6 +63,64 @@ export const registerController = async (
   })
 }
 
+export const searchUsersByNameController = async (req: Request, res: Response) => {
+  try {
+    const name = req.query.name as string;
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 10;
+
+    if (!name) {
+      res.status(400).json({
+        message: 'Name query parameter is required',
+      });
+      return;
+    }
+
+    const result = await usersService.searchUsersByName(name, page, limit);
+    res.json({
+      message: 'Searched users successfully',
+      result: {
+        users: result.users,
+        total: result.total,
+        page: result.page,
+        limit: result.limit,
+        totalPages: result.totalPages,
+      },
+    });
+  } catch (error) {
+    console.error('Error searching users:', error);
+    res.status(500).json({
+      message: 'Failed to search users',
+      error: error instanceof Error ? error.message : 'Unknown error',
+    });
+  }
+};
+
+export const getAllUsersController = async (req: Request, res: Response) => {
+  try {
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 10;
+
+    const result = await usersService.getAllUsers(page, limit);
+    res.json({
+      message: 'Fetched users successfully',
+      result: {
+        users: result.users,
+        total: result.total,
+        page: result.page,
+        limit: result.limit,
+        totalPages: result.totalPages
+      }
+    });
+  } catch (error) {
+    console.error('Error fetching users:', error);
+    res.status(500).json({
+      message: 'Failed to fetch users',
+      error: error instanceof Error ? error.message : 'Unknown error'
+    });
+  }
+};
+
 export const logoutController = async (req: Request<ParamsDictionary, any, LogoutReqBody>, res: Response) => {
   const { refresh_token } = req.body
 

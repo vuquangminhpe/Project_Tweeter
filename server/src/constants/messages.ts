@@ -208,3 +208,46 @@ export const PAYMENT_MESSAGE = {
   PAYMENT_NOT_FOUND: 'Payment not found',
   CANNOT_CREATE_FREE_PAYMENT: 'Cannot create payment for free subscription'
 }
+export const ADMIN_MESSAGES = {
+  ADMIN_PERMISSION_REQUIRED: 'Admin permission required',
+  GET_USER_STATS_SUCCESS: 'Get user statistics successfully',
+  GET_TWEET_STATS_SUCCESS: 'Get tweet statistics successfully',
+  GET_INTERACTION_STATS_SUCCESS: 'Get interaction statistics successfully',
+  GET_REVENUE_STATS_SUCCESS: 'Get revenue statistics successfully',
+  GET_SYSTEM_STATS_SUCCESS: 'Get system statistics successfully',
+  GET_DASHBOARD_STATS_SUCCESS: 'Get dashboard statistics successfully',
+  INVALID_DATE_FORMAT: 'Invalid date format. Use ISO8601 format (YYYY-MM-DD)',
+  TO_DATE_MUST_BE_AFTER_FROM_DATE: 'To date must be after from date',
+  INVALID_INTERVAL: 'Invalid interval. Use "daily", "weekly", or "monthly"',
+  GET_USER_LIST_SUCCESS: 'Get user list successfully',
+  USER_STATUS_UPDATED_SUCCESS: 'User status updated successfully',
+  USER_ROLE_UPDATED_SUCCESS: 'User role updated successfully',
+  CONTENT_DELETED_SUCCESS: 'Content deleted successfully',
+  GET_REPORT_SUCCESS: 'Get report successfully',
+  GENERATE_REPORT_SUCCESS: 'Generate report successfully',
+  GET_REPORTED_CONTENT_SUCCESS: 'Get reported content successfully',
+  REPORT_CONTENT_SUCCESS: 'Report content successfully',
+  MODERATE_CONTENT_SUCCESS: 'Moderate content successfully',
+  GET_COMMENTS_SUCCESS: 'Get comments successfully',
+  COMMENT_REMOVED_SUCCESS: 'Comment removed successfully',
+  USER_BANNED_SUCCESS: 'User banned successfully',
+  USER_UNBANNED_SUCCESS: 'User unbanned successfully',
+  GET_BAN_HISTORY_SUCCESS: 'Get ban history successfully',
+  GET_USER_GROWTH_SUCCESS: 'Get user growth successfully',
+  GET_MODERATION_STATS_SUCCESS: 'Get moderation stats successfully',
+  TOXIC_CONTENT_DETECTION_SUCCESS: 'Toxic content detection successfully'
+} as const
+
+export enum StatInterval {
+  DAILY = 'daily',
+  WEEKLY = 'weekly',
+  MONTHLY = 'monthly'
+}
+
+export enum AdminReportType {
+  USER_GROWTH = 'user_growth',
+  CONTENT_GROWTH = 'content_growth',
+  ENGAGEMENT = 'engagement',
+  REVENUE = 'revenue',
+  SYSTEM_PERFORMANCE = 'system_performance'
+}

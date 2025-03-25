@@ -27,6 +27,8 @@ import { Server as HttpServer } from 'http'
 import autoDeleteSystem from './services/System/AutoDeleteStoriesSystem.system'
 import initSocket from './utils/socket'
 import paymentRouter from './routes/payment.routes'
+import adminRouter from './routes/admin.routes'
+import contentModerationRouter from './routes/contentModeration.routes'
 
 config()
 databaseService
@@ -56,7 +58,7 @@ const corsOptions: CorsOptions = {
 
 // app.use(limiter)
 app.use(cors(corsOptions))
-// Tạo 1 folder upload
+
 initFolderImage()
 initFolderVideo()
 initFolderVideoHls()
@@ -74,11 +76,13 @@ app.use('/comments', commentsRouter)
 app.use('/geminiTweet', tweetGeminiRoutes)
 app.use('/stories', storiesRouter)
 app.use('/payments', paymentRouter)
+app.use('/admin', adminRouter)
+app.use('/contentModerationRouter', contentModerationRouter)
 // app.use('/static/video-hls', express.static(UPLOAD_VIDEO_HLS_DIR))
 
 app.use(defaultErrorHandler)
 export const io = initSocket(httpServer)
-// autoDeleteSystem.initialize(io)
+autoDeleteSystem.initialize(io)
 
 httpServer.listen(port, () => {
   console.log(`Server listening on port ${port}`)

@@ -14,6 +14,7 @@ import conversationsApi from '@/apis/conversation.api'
 import ChatInput from './ChatInput'
 import HeaderChat from './HeaderChat'
 import { AnimatePresence, motion } from 'framer-motion'
+import Navigation from '@/components/Navigation/Navigation'
 
 export interface UserStatus {
   user_id: string
@@ -296,172 +297,185 @@ function Chat() {
   }
 
   return (
-    <div ref={messagesEndRef} className='flex h-screen bg-[#0d1117] text-gray-200 overflow-hidden relative'>
-      {isMobile && (
-        <button
-          onClick={toggleSidebar}
-          className={`absolute top-4 ${sidebarVisible ? 'left-64' : 'left-4'} z-30 p-2 rounded-full bg-[#161b22] shadow-lg`}
-        >
-          <svg
-            xmlns='http://www.w3.org/2000/svg'
-            viewBox='0 0 24 24'
-            className='w-5 h-5 text-indigo-400'
-            fill='none'
-            stroke='currentColor'
-            strokeWidth='2'
+    <div className='bg-black flex min-h-screen max-w-[1500px] mx-auto'>
+      {/* Navigation */}
+      <div className='hidden sm:flex flex-col items-center xl:items-start xl:w-[340px] p-2 fixed h-full'>
+        <Navigation />
+      </div>
+
+      {/* Main Content Area */}
+      <div className='w-full sm:ml-[73px] xl:ml-[340px] flex'>
+        {isMobile && (
+          <button
+            onClick={toggleSidebar}
+            className={`absolute top-4 ${sidebarVisible ? 'left-64' : 'left-4'} z-30 p-2 rounded-full bg-[#161b22] shadow-lg`}
           >
-            {sidebarVisible ? (
-              <path strokeLinecap='round' strokeLinejoin='round' d='M15 19l-7-7 7-7' />
-            ) : (
-              <path strokeLinecap='round' strokeLinejoin='round' d='M9 5l7 7-7 7' />
-            )}
-          </svg>
-        </button>
-      )}
-
-      <AnimatePresence>
-        {sidebarVisible && (
-          <motion.div
-            initial={isMobile ? { x: -320 } : { x: 0 }}
-            animate={{ x: 0 }}
-            exit={{ x: -320 }}
-            transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-            className='w-80 min-w-80 h-full border-r border-[#1f252e] bg-[#161b22] overflow-hidden shadow-xl absolute md:relative z-20'
-          >
-            <StatusWithChat
-              onReceiverChange={handleReceiverSelect}
-              onlineUsers={onlineUsers}
-              statusOnline={onlineUsers[receiver]?.is_online || false}
-            />
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      <div className='flex-1 flex flex-col h-full bg-[#0d1117] overflow-hidden'>
-        <div className='z-10 relative'>
-          <div ref={loadPreviousRef} className='w-full bg-[#161b22] shadow-md'>
-            <HeaderChat
-              receiverId={receiver}
-              onlineReceiver={onlineUsers[receiver]?.is_online || false}
-              onlineUsers={onlineUsers}
-              setOnlineUsers={setOnlineUsers}
-              toggleSidebar={toggleSidebar}
-              isMobile={isMobile}
-            />
-          </div>
-        </div>
-
-        <div ref={chatContainerRef} className='flex-1 bg-white overflow-y-auto px-4' onWheel={handleWheel}>
-          {conversation?.map((msg) => (
-            <div
-              key={msg._id}
-              className={`flex mb-3 ${msg.sender_id === profile._id ? 'justify-end' : 'justify-start'}`}
+            <svg
+              xmlns='http://www.w3.org/2000/svg'
+              viewBox='0 0 24 24'
+              className='w-5 h-5 text-indigo-400'
+              fill='none'
+              stroke='currentColor'
+              strokeWidth='2'
             >
-              {msg.sender_id !== profile._id ? (
-                <div className='flex items-center group'>
-                  <div className='relative shrink-0 ml-2 mr-3'>
-                    <Avatar className='h-8 w-8 sm:h-10 sm:w-10'>
-                      <AvatarImage src='https://github.com/shadcn.png' />
-                      <AvatarFallback>CN</AvatarFallback>
-                    </Avatar>
-                    {onlineUsers[msg.sender_id]?.is_online && (
-                      <span className='absolute bottom-0 left-0 w-2 h-2 sm:w-3 sm:h-3 bg-green-500 rounded-full border-2 border-white'></span>
-                    )}
-                  </div>
-                  <div className='max-w-[70%] items-center px-3 py-2 sm:px-4 sm:py-2 rounded-2xl relative bg-gray-200 text-black rounded-bl-none'>
-                    <HoverCard>
-                      <HoverCardTrigger className='flex items-center justify-between'>
-                        <div className='break-words'>{msg.content}</div>
-                        <div className='absolute right-0 bottom-0 translate-y-2 text-sm'>
-                          {getEmojiByNumber(msg.emoji as unknown as number)}
-                        </div>
-                      </HoverCardTrigger>
-                      <HoverCardContent className='bg-gray-300 translate-y-6 p-3 rounded-xl shadow-xl z-50'>
-                        {new Date(msg.created_at).toISOString() !== new Date(msg.updated_at).toISOString()
-                          ? new Date(msg.updated_at).toLocaleString() + ' (đã chỉnh sửa)'
-                          : new Date(msg.created_at).toLocaleString()}
-                      </HoverCardContent>
-                    </HoverCard>
-                  </div>
-                  <div className='ml-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200'>
-                    <EventWithMessage
-                      refetchChatData={handleRefetch}
-                      message_id={msg._id}
-                      content={msg.content}
-                      receiver={receiver}
-                      totalPages={totalPages as number}
-                      isOwnMessage={false}
-                      onStartEditing={handleStartEditing}
-                    />
-                  </div>
-                </div>
+              {sidebarVisible ? (
+                <path strokeLinecap='round' strokeLinejoin='round' d='M15 19l-7-7 7-7' />
               ) : (
-                <div className='flex items-center group'>
-                  <div className='mr-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200'>
-                    <EventWithMessage
-                      refetchChatData={handleRefetch}
-                      message_id={msg._id}
-                      content={msg.content}
-                      receiver={receiver}
-                      totalPages={totalPages as number}
-                      isOwnMessage={true}
-                      onStartEditing={handleStartEditing}
-                    />
+                <path strokeLinecap='round' strokeLinejoin='round' d='M9 5l7 7-7 7' />
+              )}
+            </svg>
+          </button>
+        )}
+
+        <AnimatePresence>
+          {sidebarVisible && (
+            <motion.div
+              initial={isMobile ? { x: -320 } : { x: 0 }}
+              animate={{ x: 0 }}
+              exit={{ x: -320 }}
+              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+              className='w-80 min-w-80 h-full border-r border-[#1f252e] bg-[#161b22] overflow-hidden shadow-xl absolute md:relative z-20'
+            >
+              <StatusWithChat
+                onReceiverChange={handleReceiverSelect}
+                onlineUsers={onlineUsers}
+                statusOnline={onlineUsers[receiver]?.is_online || false}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Chat Container */}
+        <div className='flex-1 flex flex-col h-screen bg-[#0d1117] overflow-hidden'>
+          <div className='z-10 relative'>
+            <div ref={loadPreviousRef} className='w-full bg-[#161b22] shadow-md'>
+              <HeaderChat
+                receiverId={receiver}
+                onlineReceiver={onlineUsers[receiver]?.is_online || false}
+                onlineUsers={onlineUsers}
+                setOnlineUsers={setOnlineUsers}
+                toggleSidebar={toggleSidebar}
+                isMobile={isMobile}
+              />
+            </div>
+          </div>
+
+          <div 
+            ref={chatContainerRef} 
+            className='flex-1 bg-[#0d1117] overflow-y-auto px-4 text-white' 
+            onWheel={handleWheel}
+          >
+            {conversation?.map((msg) => (
+              <div
+                key={msg._id}
+                className={`flex mb-3 ${msg.sender_id === profile._id ? 'justify-end' : 'justify-start'}`}
+              >
+                {msg.sender_id !== profile._id ? (
+                  <div className='flex items-center group'>
+                    <div className='relative shrink-0 ml-2 mr-3'>
+                      <Avatar className='h-8 w-8 sm:h-10 sm:w-10'>
+                        <AvatarImage src='https://github.com/shadcn.png' />
+                        <AvatarFallback>CN</AvatarFallback>
+                      </Avatar>
+                      {onlineUsers[msg.sender_id]?.is_online && (
+                        <span className='absolute bottom-0 left-0 w-2 h-2 sm:w-3 sm:h-3 bg-green-500 rounded-full border-2 border-white'></span>
+                      )}
+                    </div>
+                    <div className='max-w-[70%] items-center px-3 py-2 sm:px-4 sm:py-2 rounded-2xl relative bg-gray-200 text-black rounded-bl-none'>
+                      <HoverCard>
+                        <HoverCardTrigger className='flex items-center justify-between'>
+                          <div className='break-words'>{msg.content}</div>
+                          <div className='absolute right-0 bottom-0 translate-y-2 text-sm'>
+                            {getEmojiByNumber(msg.emoji as unknown as number)}
+                          </div>
+                        </HoverCardTrigger>
+                        <HoverCardContent className='bg-gray-300 translate-y-6 p-3 rounded-xl shadow-xl z-50'>
+                          {new Date(msg.created_at).toISOString() !== new Date(msg.updated_at).toISOString()
+                            ? new Date(msg.updated_at).toLocaleString() + ' (đã chỉnh sửa)'
+                            : new Date(msg.created_at).toLocaleString()}
+                        </HoverCardContent>
+                      </HoverCard>
+                    </div>
+                    <div className='ml-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200'>
+                      <EventWithMessage
+                        refetchChatData={handleRefetch}
+                        message_id={msg._id}
+                        content={msg.content}
+                        receiver={receiver}
+                        totalPages={totalPages as number}
+                        isOwnMessage={false}
+                        onStartEditing={handleStartEditing}
+                      />
+                    </div>
                   </div>
-                  <div className='max-w-[70%] px-3 py-2 sm:px-4 sm:py-2 rounded-2xl bg-blue-500 text-white rounded-br-none'>
-                    {editingMessageId === msg._id ? (
-                      <div className='flex items-center gap-2'>
-                        <input
-                          type='text'
-                          value={editingContent}
-                          onChange={(e) => setEditingContent(e.target.value)}
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter') {
-                              handleFinishEditing(msg._id)
-                            } else if (e.key === 'Escape') {
+                ) : (
+                  <div className='flex items-center group'>
+                    <div className='mr-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200'>
+                      <EventWithMessage
+                        refetchChatData={handleRefetch}
+                        message_id={msg._id}
+                        content={msg.content}
+                        receiver={receiver}
+                        totalPages={totalPages as number}
+                        isOwnMessage={true}
+                        onStartEditing={handleStartEditing}
+                      />
+                    </div>
+                    <div className='max-w-[70%] px-3 py-2 sm:px-4 sm:py-2 rounded-2xl bg-blue-500 text-white rounded-br-none'>
+                      {editingMessageId === msg._id ? (
+                        <div className='flex items-center gap-2'>
+                          <input
+                            type='text'
+                            value={editingContent}
+                            onChange={(e) => setEditingContent(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') {
+                                handleFinishEditing(msg._id)
+                              } else if (e.key === 'Escape') {
+                                setEditingMessageId(null)
+                                setEditingContent('')
+                              }
+                            }}
+                            className='w-full bg-white text-black px-2 py-1 rounded focus:outline-none'
+                            autoFocus
+                          />
+                          <button
+                            onClick={() => handleFinishEditing(msg._id)}
+                            className='text-xs bg-green-600 hover:bg-green-700 text-white px-2 py-1 rounded'
+                          >
+                            ✓
+                          </button>
+                          <button
+                            onClick={() => {
                               setEditingMessageId(null)
                               setEditingContent('')
-                            }
-                          }}
-                          className='w-full bg-white text-black px-2 py-1 rounded focus:outline-none'
-                          autoFocus
-                        />
-                        <button
-                          onClick={() => handleFinishEditing(msg._id)}
-                          className='text-xs bg-green-600 hover:bg-green-700 text-white px-2 py-1 rounded'
-                        >
-                          ✓
-                        </button>
-                        <button
-                          onClick={() => {
-                            setEditingMessageId(null)
-                            setEditingContent('')
-                          }}
-                          className='text-xs bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded'
-                        >
-                          ✕
-                        </button>
-                      </div>
-                    ) : (
-                      <div className='break-words'>{msg.content}</div>
-                    )}
+                            }}
+                            className='text-xs bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded'
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      ) : (
+                        <div className='break-words'>{msg.content}</div>
+                      )}
+                    </div>
+                    <div className='relative shrink-0 ml-3'>
+                      <Avatar className='h-8 w-8 sm:h-10 sm:w-10'>
+                        <AvatarImage src='https://github.com/shadcn.png' />
+                        <AvatarFallback>CN</AvatarFallback>
+                      </Avatar>
+                      {onlineUsers[msg.sender_id]?.is_online && (
+                        <span className='absolute bottom-0 right-0 w-2 h-2 sm:w-3 sm:h-3 bg-green-500 rounded-full border-2 border-white'></span>
+                      )}
+                    </div>
                   </div>
-                  <div className='relative shrink-0 ml-3'>
-                    <Avatar className='h-8 w-8 sm:h-10 sm:w-10'>
-                      <AvatarImage src='https://github.com/shadcn.png' />
-                      <AvatarFallback>CN</AvatarFallback>
-                    </Avatar>
-                    {onlineUsers[msg.sender_id]?.is_online && (
-                      <span className='absolute bottom-0 right-0 w-2 h-2 sm:w-3 sm:h-3 bg-green-500 rounded-full border-2 border-white'></span>
-                    )}
-                  </div>
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
+                )}
+              </div>
+            ))}
+          </div>
 
-        <ChatInput value={value} setValue={setValue} send={send} inputRef={inputRef} refetchChatData={handleRefetch} />
+          <ChatInput value={value} setValue={setValue} send={send} inputRef={inputRef} refetchChatData={handleRefetch} />
+        </div>
       </div>
     </div>
   )
