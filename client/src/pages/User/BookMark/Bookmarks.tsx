@@ -1,158 +1,122 @@
 import { useState, useEffect } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import bookmarksApi from '../../../apis/bookmarks.api'
+import tweetsApi from '../../../apis/tweets.api'
 import { Bookmark } from '../../../types/Bookmarks.type'
+import { Tweets } from '../../../types/Tweet.type'
 import Navigation from '../../../components/Navigation/Navigation'
 import RightPart from '../../../components/RightPart'
+import TwitterCard from '../HomeSection/TwitterCard/TwitterCard'
+import { User } from '@/types/User.type'
+import { IoSparkles } from 'react-icons/io5'
 
-// Interface for a tweet with complete data
-interface TweetWithDetails {
-  _id: string
-  content: string
-  hashtags: Array<{ _id: string; name: string }>
-  medias: Array<{ url: string }>
-  created_at: string
-  user: {
-    name: string
-    username: string
-    avatar?: string
-  }
-}
-
-// Extended bookmark interface including tweet details
 interface BookmarkWithTweet extends Bookmark {
-  tweetDetails?: TweetWithDetails
+  tweetDetails?: Tweets
 }
 
 const Bookmarks = () => {
-  const [bookmarks, setBookmarks] = useState<BookmarkWithTweet[]>([])
+  const [bookmarksWithDetails, setBookmarksWithDetails] = useState<BookmarkWithTweet[]>([])
+  const [profile, setProfile] = useState<User | null>(null)
   const [loading, setLoading] = useState<boolean>(true)
 
+  // Get user profile from localStorage
   useEffect(() => {
-    const fetchBookmarks = async () => {
+    const userProfile = localStorage.getItem('profile')
+    if (userProfile) {
+      setProfile(JSON.parse(userProfile))
+    }
+  }, [])
+
+  // Query for bookmarks
+  const { data: bookmarksData, refetch: refetchBookmarks } = useQuery({
+    queryKey: ['bookmarks'],
+    queryFn: () => bookmarksApi.getBookmarks()
+  })
+
+  // Fetch tweet details for each bookmark
+  useEffect(() => {
+    const fetchTweetDetails = async () => {
+      if (!bookmarksData?.data?.data) return
+
       try {
-        const res = await bookmarksApi.getBookmarks()
-        const bookmarkData = res.data.data || []
-        
-        // Here you would typically fetch tweet details for each bookmark
-        // For now, we'll just set the bookmarks without tweet details
-        setBookmarks(bookmarkData)
-        
-        // Example of how you might fetch tweet details:
-        // const bookmarksWithTweets = await Promise.all(
-        //   bookmarkData.map(async (bookmark) => {
-        //     try {
-        //       // You would need to implement this API endpoint
-        //       const tweetRes = await tweetsApi.getTweetById(bookmark.tweet_id)
-        //       return { ...bookmark, tweetDetails: tweetRes.data.data }
-        //     } catch (error) {
-        //       console.error(`Error fetching tweet ${bookmark.tweet_id}:`, error)
-        //       return bookmark
-        //     }
-        //   })
-        // )
-        // setBookmarks(bookmarksWithTweets)
-        
+        const bookmarkData = bookmarksData.data.data as Bookmark[]
+        const detailedBookmarks = await Promise.all(
+          bookmarkData.map(async (bookmark) => {
+            try {
+              const tweetResponse = await tweetsApi.getTweetDetailsGuest(bookmark.tweet_id)
+              return {
+                ...bookmark,
+                tweetDetails: tweetResponse.data.data
+              }
+            } catch (error) {
+              console.error(`Error fetching tweet ${bookmark.tweet_id}:`, error)
+              return bookmark
+            }
+          })
+        )
+
+        setBookmarksWithDetails(detailedBookmarks)
       } catch (error) {
-        console.error('Error fetching bookmarks:', error)
-        setBookmarks([])
+        console.error('Error processing bookmarks:', error)
       } finally {
         setLoading(false)
       }
     }
-    fetchBookmarks()
-  }, [])
+
+    if (bookmarksData) {
+      fetchTweetDetails()
+    }
+  }, [bookmarksData])
 
   return (
-    <div className='flex w-screen px-5 lg:px-0 justify-between'>
-      <div className='lg:block lg:w-3/12 w-full relative transition-all duration-300'>
-        <Navigation />
-      </div>
-      <div className='lg:w-5/12 w-full relative'>
-        <h2 className='text-2xl font-bold mb-6'>Bookmarks</h2>
-        
-        {loading ? (
-          <p>Loading bookmarks...</p>
-        ) : bookmarks.length === 0 ? (
-          <p className='text-gray-500'>No bookmarks found.</p>
-        ) : (
-          <ul className='space-y-6'>
-            {bookmarks.map((bookmark) => (
-              <li
-                key={bookmark._id}
-                className='p-4 border border-gray-200 rounded-lg shadow-md bg-white hover:bg-gray-50 transition-colors'
-              >
-                {bookmark.tweetDetails ? (
-                  // Display tweet with details if available
-                  <>
-                    {/* Tweet User Info */}
-                    <div className='flex items-center mb-2'>
-                      <div className='flex flex-col items-center pr-2'>
-                        <button className='flex items-center justify-center w-16 h-16 rounded-full bg-gray-200 cursor-pointer overflow-hidden'>
-                          {bookmark.tweetDetails.user.avatar ? (
-                            <img src={bookmark.tweetDetails.user.avatar} alt='User Avatar' className='w-full h-full object-cover' />
-                          ) : (
-                            <span className='text-lg font-bold text-gray-700'>
-                              {bookmark.tweetDetails.user.name.charAt(0).toUpperCase()}
-                            </span>
-                          )}
-                        </button>
-                      </div>
-                      <div>
-                        <p className='font-semibold text-sm'>{bookmark.tweetDetails.user.name}</p>
-                        <p className='text-xs text-gray-500'>@{bookmark.tweetDetails.user.username || 'username'}</p>
-                      </div>
-                    </div>
+    <div className='bg-black flex min-h-screen max-w-[1500px] mx-auto'>
+      <Navigation />
+      
+      <div className='text-white flex-grow border-l border-r border-gray-700 max-w-2xl sm:ml-[73px] xl:ml-[370px]'>
+        <div className='text-[#d9d9d9] flex items-center sm:justify-between py-2 px-3 sticky top-0 z-50 bg-black border-b border-gray-700'>
+          <h2 className='text-lg sm:text-xl font-bold'>Bookmarks</h2>
+          <div className='hoverAnimation w-9 h-9 flex items-center justify-center xl:px-0 ml-auto'>
+            <IoSparkles />
+          </div>
+        </div>
 
-                    {/* Tweet Content */}
-                    <p className='text-gray-800 mb-2'>{bookmark.tweetDetails.content}</p>
-
-                    {/* Hashtags */}
-                    {bookmark.tweetDetails.hashtags?.length > 0 && (
-                      <div className='flex flex-wrap gap-2 mb-2'>
-                        {bookmark.tweetDetails.hashtags.map((hashtag) => (
-                          <span key={hashtag._id} className='text-blue-500 text-sm hover:underline cursor-pointer'>
-                            #{hashtag.name.replace('#', '')}
-                          </span>
-                        ))}
-                      </div>
-                    )}
-
-                    {/* Medias */}
-                    {bookmark.tweetDetails.medias?.length > 0 && (
-                      <div className='mb-2'>
-                        {bookmark.tweetDetails.medias.map((media, index) => (
-                          <img
-                            key={index}
-                            src={media.url}
-                            alt='Tweet media'
-                            className='w-full h-64 object-cover rounded-md'
-                          />
-                        ))}
-                      </div>
-                    )}
-
-                    {/* Timestamp */}
-                    <p className='text-xs text-gray-500'>
-                      {new Date(bookmark.tweetDetails.created_at).toLocaleDateString()} at{' '}
-                      {new Date(bookmark.tweetDetails.created_at).toLocaleTimeString()}
-                    </p>
-                  </>
-                ) : (
-                  // Display minimal information when tweet details aren't available
-                  <div>
-                    <p className='text-gray-500'>Tweet ID: {bookmark.tweet_id}</p>
-                    <p className='text-xs text-gray-500'>Bookmarked on: {new Date(bookmark.created_at).toLocaleString()}</p>
+        <div className='pb-72'>
+          {loading ? (
+            <div className="flex justify-center items-center py-10">
+              <div className="animate-pulse flex space-x-2">
+                <div className="h-3 w-3 bg-indigo-400 rounded-full"></div>
+                <div className="h-3 w-3 bg-indigo-500 rounded-full"></div>
+                <div className="h-3 w-3 bg-indigo-600 rounded-full"></div>
+              </div>
+            </div>
+          ) : bookmarksWithDetails.length === 0 ? (
+            <div className='text-center py-10'>
+              <p className='text-gray-500'>No bookmarks found.</p>
+            </div>
+          ) : (
+            <div className='space-y-6'>
+              {bookmarksWithDetails.map((bookmark) => (
+                bookmark.tweetDetails ? (
+                  <div key={bookmark._id}>
+                    <TwitterCard 
+                      profile={profile}
+                      data={bookmark.tweetDetails}
+                      data_length={bookmark.tweetDetails.medias?.length || 0}
+                      refetchAllDataTweet={refetchBookmarks}
+                    />
                   </div>
-                )}
-              </li>
-            ))}
-          </ul>
-        )}
+                ) : (
+                  <div key={bookmark._id} className="p-4 rounded-lg border border-gray-200">
+                    <p className="text-gray-500">Unable to load tweet details</p>
+                  </div>
+                )
+              ))}
+            </div>
+          )}
+        </div>
       </div>
-      {/* Rightpart */}
-      <div className='hidden lg:block lg:w-4/12 w-full relative'>
-        <RightPart />
-      </div>
+      
+      <RightPart />
     </div>
   )
 }

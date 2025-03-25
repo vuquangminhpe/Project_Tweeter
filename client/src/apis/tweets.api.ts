@@ -6,7 +6,15 @@ const tweetsApi = {
   deleteTweet: (tweet_id: string) => http.delete<SuccessResponse<string>>(`/tweets/${tweet_id}`),
   createTweet: (body: createdTweet) => http.post<SuccessResponse<Tweets>>('/tweets', body),
   updateTweets: (body: createdTweet) => http.put<SuccessResponse<Tweets>>(`/tweets/edit`, body),
-  generateTweetWithAi: (message: string) => http.post<SuccessResponse<string>>(`/tweets/generate/text`, message),
+  getTweetDetailsGuest: (tweet_id: string) => http.get<SuccessResponse<Tweets>>(`/tweets/guest/${tweet_id}`),
+  getNewFeeds: (page: number, limit: number) => http.get<SuccessResponse<Tweets[]>>(`/tweets/new/new-feeds`, {
+    params: {
+      page,
+      limit
+    }
+  }),
+  generateTweetWithAi: (messageData: { message: string }) => 
+    http.post<SuccessResponse<any>>(`/geminiTweet/generate/text`, messageData),
   chatWithAi: (message: string) => http.post<SuccessResponse<string>>(`/tweets/generate/chat`, message)
 }
 export default tweetsApi
