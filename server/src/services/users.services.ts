@@ -225,8 +225,7 @@ class UserService {
     await valkeyService.storeRefreshToken(user_id, refresh_token, expiryInSeconds)
 
     return {
-      access_token,
-      refresh_token
+      access_token
     }
   }
   async logout(refresh_token: string) {
