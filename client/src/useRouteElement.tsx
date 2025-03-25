@@ -26,6 +26,9 @@ import PaymentDetailPage from './pages/User/Payment/PaymentDetailPage'
 import StoriesPage from './pages/User/HomeSection/StoriesPage/StoriesPage'
 import StoryCreator from './pages/User/HomeSection/StoryCreator/StoryCreator'
 import StoryArchiveViewer from './pages/User/HomeSection/StoryArchiveViewer'
+import Bookmarks from './pages/User/BookMark'
+import WhoToFollow from './pages/User/WhoToFollow'
+import FollowingList from './pages/User/HomeSection/FollowingList'
 function ProtectedRoute() {
   const { isAuthenticated } = useContext(AppContext)
   return isAuthenticated ? <Outlet /> : <Navigate to={path.login} />
@@ -160,7 +163,19 @@ export default function useRouteElement() {
     {
       path: path.any,
       element: <Navigate to={path.home} />
-    }
+    },
+    {
+      path: path.bookmark,
+      element: <Bookmarks />
+  },
+  {
+    path: path.whoToFollow,
+    element: <WhoToFollow />
+},
+{
+    path: path.followingList,
+    element: <FollowingList profile={profile} />
+},
   ])
   return routeElements
 }
