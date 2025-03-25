@@ -28,5 +28,15 @@ const path = {
   bookmark: '/user/bookmarks',
   whoToFollow: '/user/who-to-follow',
   followingList: '/user/following',
+  admin: '/admin',
+  adminDashboard: '/admin/dashboard',
+  dashboard: 'dashboard',
+  statistics_user: 'statistics/users',
+  statistics_content: 'statistics/content',
+  statistics_interaction: 'statistics/interactions',
+  statistics_revenue: 'statistics/revenue',
+  users: 'users',
+  moderation_reported: 'moderation/reported',
+  moderation_generate: 'moderation/generate'
 } as const
 export default path
