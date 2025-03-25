@@ -8,7 +8,7 @@ import { AppContext } from '@/Contexts/app.context'
 import { Image } from 'lucide-react'
 import { SideBarLink } from './SideBarLink'
 import { DotsHorizontalIcon } from '@radix-ui/react-icons'
-import Logo from "../../../public/Logo.png"
+import Logo from "../../images/Logo.png"
 
 const Navigation = () => {
   const [showTitles, setShowTitles] = useState(true)

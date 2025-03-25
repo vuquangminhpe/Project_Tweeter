@@ -426,6 +426,80 @@ class UserService {
       message: USERS_MESSAGES.UN_FOLLOWER_SUCCESS
     }
   }
+  async getAllUsers(page: number = 1, limit: number = 10) {
+    try {
+      const skip = (page - 1) * limit; // Tính số lượng bản ghi cần bỏ qua
+      const users = await databaseService.users
+        .find({}, {
+          projection: {
+            _id: 1,
+            name: 1,
+            username: 1,
+            email: 1,
+            avatar: 1
+          }
+        })
+        .skip(skip) // Bỏ qua các bản ghi trước đó
+        .limit(limit) // Giới hạn số lượng bản ghi trả về
+        .toArray();
+
+      // Đếm tổng số người dùng để biết còn dữ liệu để tải hay không
+      const totalUsers = await databaseService.users.countDocuments();
+
+      return {
+        users,
+        total: totalUsers,
+        page,
+        limit,
+        totalPages: Math.ceil(totalUsers / limit)
+      };
+    } catch (error) {
+      console.error('Error fetching users:', error);
+      return { users: [], total: 0, page, limit, totalPages: 0 };
+    }
+  }
+
+  async searchUsersByName(name: string, page: number = 1, limit: number = 10) {
+    try {
+      const skip = (page - 1) * limit;
+      // Tìm kiếm người dùng với name khớp (không phân biệt hoa thường)
+      const users = await databaseService.users
+        .find(
+          {
+            name: { $regex: name, $options: 'i' }, // Tìm kiếm không phân biệt hoa thường
+          },
+          {
+            projection: {
+              _id: 1,
+              name: 1,
+              username: 1,
+              email: 1,
+              avatar: 1,
+            },
+          }
+        )
+        .skip(skip)
+        .limit(limit)
+        .toArray();
+
+      // Đếm tổng số người dùng khớp với tìm kiếm
+      const totalUsers = await databaseService.users.countDocuments({
+        name: { $regex: name, $options: 'i' },
+      });
+
+      return {
+        users,
+        total: totalUsers,
+        page,
+        limit,
+        totalPages: Math.ceil(totalUsers / limit),
+      };
+    } catch (error) {
+      console.error('Error searching users:', error);
+      return { users: [], total: 0, page, limit, totalPages: 0 };
+    }
+  }
+  
   async getFollowing(user_id: string) {
     const result = await databaseService.followers.find({ user_id: new ObjectId(user_id) }).toArray()
 
