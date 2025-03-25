@@ -71,7 +71,6 @@ class StoriesService {
     }
   }
   async getNewsFeedStories({ user_id, limit, page }: { user_id: string; limit: number; page: number }) {
-    // Bước 1: Lấy danh sách người dùng kết nối
     const connectedUsersQuery = await databaseService.users
       .aggregate([
         {
@@ -150,24 +149,16 @@ class StoriesService {
 
     const connectedUsers = connectedUsersQuery[0]?.connected_users || [new ObjectId(user_id)]
 
-    // Bước 2: Đếm tổng số stories để phân trang chính xác
-    console.log('Connected users:', connectedUsers)
-
     const totalCount = await databaseService.stories.countDocuments({
       user_id: { $in: connectedUsers },
       is_active: true
     })
 
-    console.log('Total count:', totalCount, 'Page:', page, 'Limit:', limit)
-
-    // Đảm bảo các thông số phân trang hợp lệ
     page = Math.max(1, page)
-    limit = Math.max(1, Math.min(100, limit)) // Giới hạn limit tối đa 100 để tránh quá tải
+    limit = Math.max(1, Math.min(100, limit))
 
     const skip = (page - 1) * limit
-    console.log('Using skip:', skip, 'limit:', limit)
 
-    // Bước 3: Truy vấn stories với phân trang
     const stories = await databaseService.stories
       .aggregate([
         {
@@ -216,8 +207,6 @@ class StoriesService {
         }
       ])
       .toArray()
-
-    console.log('Stories found:', stories.length)
 
     return {
       result: stories,

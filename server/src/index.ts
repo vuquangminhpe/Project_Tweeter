@@ -78,7 +78,7 @@ app.use('/payments', paymentRouter)
 
 app.use(defaultErrorHandler)
 export const io = initSocket(httpServer)
-// autoDeleteSystem.initialize(io)
+autoDeleteSystem.initialize(io)
 
 httpServer.listen(port, () => {
   console.log(`Server listening on port ${port}`)
