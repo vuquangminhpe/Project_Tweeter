@@ -34,10 +34,10 @@ import RevenueStatistics from './pages/Admin/Statistics/RevenueStatistics/Revenu
 import ContentStatistics from './pages/Admin/Statistics/ContentStatistics'
 import UserStatistics from './pages/Admin/Statistics'
 import AdminDashboard from './pages/Admin/Dashboard'
-import AdminLayout from './layout/AdminLayout'
 import ContentModeration from './pages/Admin/Moderation'
 import ReportGeneration from './pages/Admin/Reports'
 import InteractionStatistics from './pages/Admin/Statistics/InteractionStatistics'
+import AdminLayout from './layout/AdminLayout/AdminLayout'
 function ProtectedRoute() {
   const { isAuthenticated } = useContext(AppContext)
   return isAuthenticated ? <Outlet /> : <Navigate to={path.login} />
@@ -51,6 +51,54 @@ function RejectedRoute() {
 export default function useRouteElement() {
   const profile = useContext(AppContext).profile
   const routeElements = useRoutes([
+    {
+      path: path.admin,
+      element: <ProtectedRoute />,
+      children: [
+        {
+          path: '',
+          element: <AdminLayout />,
+          children: [
+            {
+              path: '',
+              element: <Navigate to={path.adminDashboard} />
+            },
+            {
+              path: path.dashboard,
+              element: <AdminDashboard />
+            },
+            {
+              path: path.statistics_user,
+              element: <UserStatistics />
+            },
+            {
+              path: path.statistics_content,
+              element: <ContentStatistics />
+            },
+            {
+              path: path.statistics_interaction,
+              element: <InteractionStatistics />
+            },
+            {
+              path: path.statistics_revenue,
+              element: <RevenueStatistics />
+            },
+            {
+              path: path.users,
+              element: <UserManagement />
+            },
+            {
+              path: path.moderation_reported,
+              element: <ContentModeration />
+            },
+            {
+              path: path.moderation_generate,
+              element: <ReportGeneration />
+            }
+          ]
+        }
+      ]
+    },
     {
       path: path.asHome,
       element: <Navigate to={path.home} />
@@ -180,55 +228,6 @@ export default function useRouteElement() {
     {
       path: path.followingList,
       element: <FollowingList profile={profile} />
-    },
-
-    {
-      path: path.admin,
-      element: <ProtectedRoute />,
-      children: [
-        {
-          path: '',
-          element: <AdminLayout children={undefined} />,
-          children: [
-            {
-              path: '',
-              element: <Navigate to={path.adminDashboard} />
-            },
-            {
-              path: path.dashboard,
-              element: <AdminDashboard />
-            },
-            {
-              path: path.statistics_user,
-              element: <UserStatistics />
-            },
-            {
-              path: path.statistics_content,
-              element: <ContentStatistics />
-            },
-            {
-              path: path.statistics_interaction,
-              element: <InteractionStatistics />
-            },
-            {
-              path: path.statistics_revenue,
-              element: <RevenueStatistics />
-            },
-            {
-              path: path.users,
-              element: <UserManagement />
-            },
-            {
-              path: path.moderation_reported,
-              element: <ContentModeration />
-            },
-            {
-              path: path.moderation_generate,
-              element: <ReportGeneration />
-            }
-          ]
-        }
-      ]
     },
 
     {

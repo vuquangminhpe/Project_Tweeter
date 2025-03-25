@@ -123,7 +123,7 @@ export default function UserManagement() {
 
   if (isLoading)
     return (
-      <div className='flex justify-center items-center h-screen'>
+      <div className='flex justify-center items-center h-screen overflow-hidden overflow-x-auto'>
         <div className='animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-blue-500'></div>
       </div>
     )
@@ -158,10 +158,7 @@ export default function UserManagement() {
               placeholder='Search users...'
               className='border border-gray-300 rounded-l-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500'
             />
-            <button
-              type='submit'
-              className='bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-r-md transition-colors'
-            >
+            <button type='submit' className='bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 ml-2 transition-colors'>
               Search
             </button>
           </form>
