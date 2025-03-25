@@ -1,35 +1,22 @@
-import { useState, useEffect, useCallback, useContext } from 'react'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useState, useCallback } from 'react'
+import { useQuery, useMutation } from '@tanstack/react-query'
 import storiesApi, { NewsFeedStory } from '@/apis/stories.api'
-import { AppContext } from '@/Contexts/app.context'
+import { toast } from 'sonner'
 
 interface UseStoriesOptions {
   limit?: number
   page?: number
-  autoRefresh?: boolean
-  refreshInterval?: number
 }
 
 const useStories = (options: UseStoriesOptions = {}) => {
-  const {
-    limit = 10,
-    page = 1,
-    autoRefresh = false,
-    refreshInterval = 60000 // 1 minute by default
-  } = options
-
-  const queryClient = useQueryClient()
-  const { profile } = useContext(AppContext)
+  const { limit = 10, page = 1 } = options
 
   const [activeStoryIndex, setActiveStoryIndex] = useState<number | null>(null)
   const [viewedStories, setViewedStories] = useState<Set<string>>(new Set())
 
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['news-feed-stories', limit, page],
-    queryFn: () => storiesApi.getNewsFeedStories(limit, page),
-    refetchOnWindowFocus: true,
-    refetchInterval: autoRefresh ? refreshInterval : undefined,
-    enabled: !!profile?._id // Only fetch if user is logged in
+    queryFn: () => storiesApi.getNewsFeedStories(limit, page)
   })
   console.log(data?.data)
 
@@ -38,24 +25,33 @@ const useStories = (options: UseStoriesOptions = {}) => {
   const viewStoryMutation = useMutation({
     mutationFn: storiesApi.viewStory,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['news-feed-stories'] })
+      toast.success('Story viewed successfully')
       refetch()
+    },
+    onError: () => {
+      toast.error('Error viewing story')
     }
   })
 
   const reactStoryMutation = useMutation({
     mutationFn: storiesApi.addStoryReaction,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['news-feed-stories'] })
+      toast.success('Story reacted successfully')
       refetch()
+    },
+    onError: () => {
+      toast.error('Error reacted story')
     }
   })
 
   const createStoryMutation = useMutation({
     mutationFn: storiesApi.createStory,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['news-feed-stories'] })
+      toast.success('Story created successfully')
       refetch()
+    },
+    onError: () => {
+      toast.error('Error created story')
     }
   })
 
@@ -100,17 +96,6 @@ const useStories = (options: UseStoriesOptions = {}) => {
   const refreshStories = useCallback(() => {
     refetch()
   }, [refetch])
-
-  // Auto-refresh setup
-  useEffect(() => {
-    if (!autoRefresh) return
-
-    const intervalId = setInterval(() => {
-      refetch()
-    }, refreshInterval)
-
-    return () => clearInterval(intervalId)
-  }, [autoRefresh, refreshInterval, refetch])
 
   return {
     stories,
