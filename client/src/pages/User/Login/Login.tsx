@@ -92,7 +92,7 @@ export default function Login() {
     setFocused({
       ...focused,
       [field]: true
-    })
+    }) 
   }
 
   const handleBlur = (field: 'email' | 'password' | 'remember') => () => {
