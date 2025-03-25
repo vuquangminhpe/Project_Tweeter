@@ -24,7 +24,19 @@ searchUsersByName: (name: string, page: number = 1, limit: number = 10) =>
 unfollowUser: (followed_user_id: string) =>
     http.delete<SuccessResponse<{ message: string }>>('/users/un-follow', { data: { followed_user_id } }),
   getProfileByUserName: (username: string) => http.get<SuccessResponse<User>>(`/users/${username}`),
-  getProfileById: (user_id: string) => http.get<SuccessResponse<User>>(`/users/profile/${user_id}`)
+  getProfileById: (user_id: string) => http.get<SuccessResponse<User>>(`/users/profile/${user_id}`),
+  updateMe: (body: {
+    name?: string
+    username?: string
+    bio?: string
+    avatar?: string
+    date_of_birth?: string
+    location?: string
+    website?: string
+    cover_photo?: string
+  }) => {
+    return http.patch('/users/me', body)
+  }
 }
 
 export default apiUser

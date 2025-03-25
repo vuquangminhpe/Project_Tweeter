@@ -8,7 +8,8 @@ import { AppContext } from '@/Contexts/app.context'
 import { Image } from 'lucide-react'
 import { SideBarLink } from './SideBarLink'
 import { DotsHorizontalIcon } from '@radix-ui/react-icons'
-import Logo from "../../images/Logo.png"
+import Logo from '../../images/Logo.png'
+import { Popover, PopoverContent, PopoverTrigger } from '@radix-ui/react-popover'
 
 const Navigation = () => {
   const [showTitles, setShowTitles] = useState(true)
@@ -84,27 +85,29 @@ const Navigation = () => {
         Post
       </button>
 
-      <div
-        className='text-[#d9d9d9] flex items-center justify-between hoverAnimation xl:ml-auto w-full mt-auto'
-        onClick={() => setDropDown(!dropDown)}
-      >
-        <div className='flex flex-row'>
-          <Avatar className='h-10 w-10 rounded-full xl:mr-2.5 xl:ml-0 ml-2'>
-            <AvatarImage src={profile?.avatar} alt={profile?.name || 'User'} />
-            <AvatarFallback className='bg-gradient-to-r from-violet-200 to-indigo-200 text-indigo-600'>
-              {profile?.name?.[0]?.toUpperCase() || 'U'}
-            </AvatarFallback>
-          </Avatar>
-          <div className='hidden xl:inline leading-5 text-left flex-col items-start'>
-            <h4 className='font-bold'>{profile?.name || 'User'}</h4>
-            <p className='text-[#6e767d]'>@{profile?.name || 'username'}</p>
+      <Popover>
+        <PopoverTrigger asChild>
+          <div
+            className='text-[#d9d9d9] flex items-center justify-between hoverAnimation xl:ml-auto w-full mt-auto'
+            onClick={() => setDropDown(!dropDown)}
+          >
+            <div className='flex flex-row'>
+              <Avatar className='h-10 w-10 rounded-full xl:mr-2.5 xl:ml-0 ml-2'>
+                <AvatarImage src={profile?.avatar} alt={profile?.name || 'User'} />
+                <AvatarFallback className='bg-gradient-to-r from-violet-200 to-indigo-200 text-indigo-600'>
+                  {profile?.name?.[0]?.toUpperCase() || 'U'}
+                </AvatarFallback>
+              </Avatar>
+              <div className='hidden xl:inline leading-5 text-left flex-col items-start'>
+                <h4 className='font-bold'>{profile?.name || 'User'}</h4>
+                <p className='text-[#6e767d]'>@{profile?.name || 'username'}</p>
+              </div>
+            </div>
+            <DotsHorizontalIcon className='h-5 hidden xl:inline ml-10' />
           </div>
-        </div>
-        <DotsHorizontalIcon className='h-5 hidden xl:inline ml-10' />
-      </div>
-
-      {dropDown && (
-        <div className='fixed xl:bottom-14 xl:left-14 bottom-11 left-11 border border-gray-700 shadow-lg bg-gray-800 text-white w-52 rounded-lg py-2 z-1 mb-4'>
+        </PopoverTrigger>
+        <PopoverContent asChild>
+        <div className='mx-3 border border-gray-700 shadow-lg bg-gray-800 text-white w-52 rounded-lg py-2 z-1 mb-4'>
           <div className='px-3 py-2 hover:bg-gray-700 text-gray-300 font-bold'>My Account</div>
           {profile ? (
             <>
@@ -137,7 +140,9 @@ const Navigation = () => {
             </div>
           )}
         </div>
-      )}
+        </PopoverContent>
+      </Popover>
+
     </div>
   )
 }

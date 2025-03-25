@@ -1,6 +1,7 @@
 import { useState } from 'react'
-import { Outlet, Link, useLocation } from 'react-router-dom'
+import { Link, Outlet, useLocation } from 'react-router-dom'
 import { motion } from 'framer-motion'
+import path from '@/constants/path'
 
 export default function AdminLayout() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true)
@@ -26,7 +27,7 @@ export default function AdminLayout() {
           <div className={`${isSidebarOpen ? 'block' : 'hidden'}`}>
             <h1 className='text-xl font-bold'>Admin Panel</h1>
           </div>
-          <button onClick={toggleSidebar} className='p-2 rounded-md hover:bg-gray-800 focus:outline-none'>
+          <button onClick={toggleSidebar} className='p-2 bg-gray-500 rounded-xl  hover:bg-gray-800 focus:outline-none'>
             {isSidebarOpen ? (
               <svg
                 xmlns='http://www.w3.org/2000/svg'
@@ -190,7 +191,7 @@ export default function AdminLayout() {
               </Link>
               <Link
                 to='/admin/moderation/reported'
-                className={`flex items-center ${isActivePath('/admin/moderation') ? 'bg-blue-700' : 'hover:bg-gray-800'} rounded-md p-3 mb-1 transition-colors`}
+                className={`flex items-center ${isActivePath('/admin/moderation/reported') ? 'bg-blue-700' : 'hover:bg-gray-800'} rounded-md p-3 mb-1 transition-colors`}
               >
                 <svg
                   xmlns='http://www.w3.org/2000/svg'
@@ -209,8 +210,8 @@ export default function AdminLayout() {
                 <span className={`ml-3 ${isSidebarOpen ? 'block' : 'hidden'}`}>Content Moderation</span>
               </Link>
               <Link
-                to='/admin/reports/generate'
-                className={`flex items-center ${isActivePath('/admin/reports') ? 'bg-blue-700' : 'hover:bg-gray-800'} rounded-md p-3 mb-1 transition-colors`}
+                to={path.moderation_generate}
+                className={`flex items-center ${isActivePath('/admin/moderation/generate') ? 'bg-blue-700' : 'hover:bg-gray-800'} rounded-md p-3 mb-1 transition-colors`}
               >
                 <svg
                   xmlns='http://www.w3.org/2000/svg'
