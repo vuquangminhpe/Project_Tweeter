@@ -235,7 +235,11 @@ export const ADMIN_MESSAGES = {
   GET_BAN_HISTORY_SUCCESS: 'Get ban history successfully',
   GET_USER_GROWTH_SUCCESS: 'Get user growth successfully',
   GET_MODERATION_STATS_SUCCESS: 'Get moderation stats successfully',
-  TOXIC_CONTENT_DETECTION_SUCCESS: 'Toxic content detection successfully'
+  TOXIC_CONTENT_DETECTION_SUCCESS: 'Toxic content detection successfully',
+  USER_ID_REQUIRED: 'User id is required',
+  USER_ALREADY_BANNED: 'User already banned',
+  REASON_REQUIRED: 'Reason is required',
+  INVALID_REASON: 'Invalid reason'
 } as const
 
 export enum StatInterval {
