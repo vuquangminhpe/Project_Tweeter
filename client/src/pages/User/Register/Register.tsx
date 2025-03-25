@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useMutation } from '@tanstack/react-query'
-import { toast } from 'react-toastify'
 import apiUser from '@/apis/users.api'
 import { RegisterType } from '@/types/User.type'
 import path from '@/constants/path'
@@ -28,9 +27,36 @@ export default function Register() {
     month: false,
     day: false
   })
+  
+  // New state to handle server-side validation errors
+  const [serverErrors, setServerErrors] = useState<Record<string, string>>({})
 
   const registerMutation = useMutation({
-    mutationFn: (body: RegisterType[]) => apiUser.registerUser(body)
+    mutationFn: (body: RegisterType[]) => apiUser.registerUser(body),
+    onSuccess: () => {
+      // Direct redirection on success
+      window.location.href = path.login
+    },
+    onError: (error: any) => {
+      // Consolidated error handling
+      const errors: Record<string, string> = {}
+      
+      if (error.data?.errors) {
+        // Handle structured validation errors
+        Object.keys(error.data.errors).forEach((field) => {
+          errors[field] = error.data.errors[field].msg
+        })
+      } else if (error.data?.message) {
+        // Handle general error message
+        errors['general'] = error.data.message
+      } else {
+        // Fallback error
+        errors['general'] = 'Registration failed. Please try again.'
+      }
+      
+      // Set server-side errors
+      setServerErrors(errors)
+    }
   })
 
   const handleDateChange = (field: string) => (e: any) => {
@@ -88,15 +114,9 @@ export default function Register() {
   }, [date])
 
   const handleRegister = () => {
-    registerMutation.mutate(Object(data[0]), {
-      onSuccess: () => {
-        toast.success('Registration successful! Please log in.')
-        window.location.href = path.login
-      },
-      onError: (error) => {
-        toast.error(`${(error as any).data?.messages || 'Registration failed. Please try again.'}`)
-      }
-    })
+    // Clear previous errors before submission
+    setServerErrors({})
+    registerMutation.mutate(Object(data[0]))
   }
 
   return (
@@ -106,10 +126,20 @@ export default function Register() {
         <div className='absolute -top-20 -left-20 w-40 h-40 rounded-full bg-blue-500/20 blur-3xl'></div>
         <div className='absolute -bottom-20 -right-20 w-40 h-40 rounded-full bg-purple-500/20 blur-3xl'></div>
 
+        {/* General Error Display */}
+        {serverErrors.general && (
+          <div className='px-8 pt-4'>
+            <div className='bg-red-500/20 border border-red-500/30 text-red-300 p-3 rounded-md text-center'>
+              {serverErrors.general}
+            </div>
+          </div>
+        )}
+
         <h1 className='text-3xl text-white font-light mb-2 text-center pt-8'>REGISTER</h1>
         <p className='text-white/50 text-center text-sm mb-8'>Create your account</p>
 
         <div className='space-y-6 p-8 relative z-10'>
+          {/* Email Input */}
           <div className='relative'>
             <label
               className={`absolute transition-all duration-300 ${
@@ -125,12 +155,16 @@ export default function Register() {
               onBlur={handleBlur('email')}
               type='email'
               name='email'
-              className='w-full px-4 pt-6 pb-2 rounded-md bg-white/10 backdrop-blur-sm 
-                border border-white/30 focus:outline-none focus:ring-2 focus:ring-blue-500/50
-                text-white'
+              className={`w-full px-4 pt-6 pb-2 rounded-md bg-white/10 backdrop-blur-sm 
+                border ${serverErrors.email ? 'border-red-500' : 'border-white/30'} 
+                focus:outline-none focus:ring-2 focus:ring-blue-500/50 text-white`}
             />
+            {serverErrors.email && (
+              <p className='text-red-500 text-xs mt-1 ml-4'>{serverErrors.email}</p>
+            )}
           </div>
 
+          {/* Password Input */}
           <div className='relative'>
             <label
               className={`absolute transition-all duration-300 ${
@@ -145,12 +179,16 @@ export default function Register() {
               onFocus={handleFocus('password')}
               onBlur={handleBlur('password')}
               type='password'
-              className='w-full px-4 pt-6 pb-2 rounded-md bg-white/10 backdrop-blur-sm 
-                border border-white/30 focus:outline-none focus:ring-2 focus:ring-blue-500/50
-                text-white'
+              className={`w-full px-4 pt-6 pb-2 rounded-md bg-white/10 backdrop-blur-sm 
+                border ${serverErrors.password ? 'border-red-500' : 'border-white/30'} 
+                focus:outline-none focus:ring-2 focus:ring-blue-500/50 text-white`}
             />
+            {serverErrors.password && (
+              <p className='text-red-500 text-xs mt-1 ml-4'>{serverErrors.password}</p>
+            )}
           </div>
 
+          {/* Confirm Password */}
           <div className='relative'>
             <label
               className={`absolute transition-all duration-300 ${
@@ -167,12 +205,16 @@ export default function Register() {
               onFocus={handleFocus('confirm_password')}
               onBlur={handleBlur('confirm_password')}
               type='password'
-              className='w-full px-4 pt-6 pb-2 rounded-md bg-white/10 backdrop-blur-sm 
-                border border-white/30 focus:outline-none focus:ring-2 focus:ring-blue-500/50
-                text-white'
+              className={`w-full px-4 pt-6 pb-2 rounded-md bg-white/10 backdrop-blur-sm 
+                border ${serverErrors.confirm_password ? 'border-red-500' : 'border-white/30'} 
+                focus:outline-none focus:ring-2 focus:ring-blue-500/50 text-white`}
             />
+            {serverErrors.confirm_password && (
+              <p className='text-red-500 text-xs mt-1 ml-4'>{serverErrors.confirm_password}</p>
+            )}
           </div>
 
+          {/* Name Input */}
           <div className='relative'>
             <label
               className={`absolute transition-all duration-300 ${
@@ -188,13 +230,17 @@ export default function Register() {
               onBlur={handleBlur('name')}
               type='text'
               name='name'
-              className='w-full px-4 pt-6 pb-2 rounded-md bg-white/10 backdrop-blur-sm 
-                border border-white/30 focus:outline-none focus:ring-2 focus:ring-blue-500/50
-                text-white'
+              className={`w-full px-4 pt-6 pb-2 rounded-md bg-white/10 backdrop-blur-sm 
+                border ${serverErrors.name ? 'border-red-500' : 'border-white/30'} 
+                focus:outline-none focus:ring-2 focus:ring-blue-500/50 text-white`}
             />
+            {serverErrors.name && (
+              <p className='text-red-500 text-xs mt-1 ml-4'>{serverErrors.name}</p>
+            )}
           </div>
 
           <div className='grid grid-cols-3 gap-4'>
+            {/* Year Input */}
             <div className='relative'>
               <label
                 className={`absolute transition-all duration-300 ${
@@ -211,12 +257,13 @@ export default function Register() {
                 type='number'
                 min={1900}
                 max={new Date().getFullYear()}
-                className='w-full px-4 pt-6 pb-2 rounded-md bg-white/10 backdrop-blur-sm 
-                  border border-white/30 focus:outline-none focus:ring-2 focus:ring-blue-500/50
-                  text-white'
+                className={`w-full px-4 pt-6 pb-2 rounded-md bg-white/10 backdrop-blur-sm 
+                  border ${serverErrors.date_of_birth ? 'border-red-500' : 'border-white/30'} 
+                  focus:outline-none focus:ring-2 focus:ring-blue-500/50 text-white`}
               />
             </div>
 
+            {/* Month Input */}
             <div className='relative'>
               <label
                 className={`absolute transition-all duration-300 ${
@@ -233,12 +280,13 @@ export default function Register() {
                 type='number'
                 min={1}
                 max={12}
-                className='w-full px-4 pt-6 pb-2 rounded-md bg-white/10 backdrop-blur-sm 
-                  border border-white/30 focus:outline-none focus:ring-2 focus:ring-blue-500/50
-                  text-white'
+                className={`w-full px-4 pt-6 pb-2 rounded-md bg-white/10 backdrop-blur-sm 
+                  border ${serverErrors.date_of_birth ? 'border-red-500' : 'border-white/30'} 
+                  focus:outline-none focus:ring-2 focus:ring-blue-500/50 text-white`}
               />
             </div>
 
+            {/* Day Input */}
             <div className='relative'>
               <label
                 className={`absolute transition-all duration-300 ${
@@ -255,12 +303,15 @@ export default function Register() {
                 type='number'
                 min={1}
                 max={31}
-                className='w-full px-4 pt-6 pb-2 rounded-md bg-white/10 backdrop-blur-sm 
-                  border border-white/30 focus:outline-none focus:ring-2 focus:ring-blue-500/50
-                  text-white'
+                className={`w-full px-4 pt-6 pb-2 rounded-md bg-white/10 backdrop-blur-sm 
+                  border ${serverErrors.date_of_birth ? 'border-red-500' : 'border-white/30'} 
+                  focus:outline-none focus:ring-2 focus:ring-blue-500/50 text-white`}
               />
             </div>
           </div>
+          {serverErrors.date_of_birth && (
+            <p className='text-red-500 text-xs mt-1 ml-4'>{serverErrors.date_of_birth}</p>
+          )}
         </div>
 
         <div className='px-8 pb-8'>

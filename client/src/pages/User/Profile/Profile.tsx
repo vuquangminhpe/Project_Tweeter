@@ -3,6 +3,8 @@ import { useQuery } from '@tanstack/react-query'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel'
 
+import EditProfileDialog from '@/pages/User/Profile/EditProfileDialog'
+
 export default function Profile() {
   const getProfileFromLocalStorage = () => {
     const data = localStorage.getItem('profile')
@@ -91,9 +93,7 @@ export default function Profile() {
             alt=''
             className='-translate-y-14 translate-x-3 size-32 rounded-full border-[3px] border-white'
           />
-          <div className='text-white h-10 -translate-x-3 items-center text-center leading-8 mt-4 p-1 block text-sm font-bold border-[1px] rounded-3xl border-white'>
-            Edit profile
-          </div>
+          <EditProfileDialog profile={dataProfile} />
         </div>
         <div className='mt-5 w-full'>
           <div className='flex items-center'>
@@ -115,9 +115,9 @@ export default function Profile() {
             >
               <path
                 stroke='currentColor'
-                stroke-linecap='round'
-                stroke-linejoin='round'
-                stroke-width='2'
+                strokeLinecap='round'
+                strokeLinejoin='round'
+                strokeWidth='2'
                 d='M5 1v3m5-3v3m5-3v3M1 7h18M5 11h10M2 3h16a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Z'
               />
             </svg>
@@ -147,7 +147,7 @@ export default function Profile() {
           </div>
           <div className='mt-5 border-t-[1px] border-gray-500'></div>
           <div className='mt-5 max-w-full relative'>
-            <div className='text-white font-bold text-2xl'>Let’s get you set up</div>
+            <div className='text-white font-bold text-2xl'>Let's get you set up</div>
             <Carousel className='mt-4'>
               <div className='absolute left-0 top-1/2 -translate-y-1/2 z-10'>
                 <CarouselPrevious className='bg-white hover:bg-white/90 text-black border-0 static' />

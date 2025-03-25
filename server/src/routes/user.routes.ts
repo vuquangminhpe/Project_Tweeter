@@ -71,6 +71,14 @@ usersRouter.post(
  */
 usersRouter.get('/all', wrapAsync(getAllUsersController));
 
+/**
+ * Description: Search users by name
+ * Path: /search
+ * Method: GET
+ * Query: { name: string, page?: number, limit?: number }
+ * Header: { Authorization: Bearer <access_token> }
+ */
+usersRouter.get('/search', wrapAsync(searchUsersByNameController));
 
 
 usersRouter.post('/reset-password', resetPasswordValidator, wrapAsync(resetPasswordController))
@@ -133,14 +141,6 @@ usersRouter.get('/me/followers', AccessTokenValidator, verifiedUserValidator, wr
  */
 usersRouter.post('/follow', AccessTokenValidator, verifiedUserValidator, followValidator, wrapAsync(followController))
 
-/**
- * Description: Search users by name
- * Path: /search
- * Method: GET
- * Query: { name: string, page?: number, limit?: number }
- * Header: { Authorization: Bearer <access_token> }
- */
-usersRouter.get('/search', AccessTokenValidator, verifiedUserValidator, wrapAsync(searchUsersByNameController));
 
 
 /**

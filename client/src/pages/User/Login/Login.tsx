@@ -14,6 +14,7 @@ export default function Login() {
     email: false,
     password: false
   })
+  const [errorMessage, setErrorMessage] = useState('')
   const navigate = useNavigate()
 
   const getGoogleAuthUrl = () => {
@@ -83,13 +84,15 @@ export default function Login() {
         [field]: value
       }
     ])
+    // Reset error message when user changes input
+    setErrorMessage('')
   }
 
   const handleFocus = (field: any) => () => {
     setFocused({
       ...focused,
       [field]: true
-    })
+    }) 
   }
 
   const handleBlur = (field: 'email' | 'password' | 'remember') => () => {
@@ -102,6 +105,7 @@ export default function Login() {
   }
 
   const handleLogin = () => {
+    setErrorMessage('')
     loginUserMutation.mutate(
       { email: data[0].email, password: data[0].password },
       {
@@ -113,7 +117,7 @@ export default function Login() {
           }, 0)
         },
         onError: (error) => {
-          toast.error(`${(error as any).data.messages}`)
+          setErrorMessage((error as any).data.messages || 'Login failed')
         }
       }
     )
@@ -132,6 +136,13 @@ export default function Login() {
 
         <h1 className='text-3xl text-white font-light mb-2 text-center pt-8'>LOGIN</h1>
         <p className='text-white/50 text-center text-sm mb-8'>Sign in to access your account</p>
+
+        {/* Display error message */}
+        {errorMessage && (
+          <div className='mx-8 mb-4 p-3 bg-red-500/10 border border-red-500/30 rounded-md'>
+            <p className='text-red-500 text-sm text-center'>{errorMessage}</p>
+          </div>
+        )}
 
         <div className='space-y-6 p-8 relative z-10'>
           <div className='relative'>
