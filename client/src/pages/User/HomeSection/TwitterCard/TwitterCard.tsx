@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useNavigate } from 'react-router-dom'
 import { GoVerified } from 'react-icons/go'
-import { useEffect, useMemo, useState } from 'react'
+import { useContext, useEffect, useMemo, useState } from 'react'
 import { FaEllipsisH } from 'react-icons/fa'
 import { BsChat } from 'react-icons/bs'
 import { MdFavorite, MdFavoriteBorder } from 'react-icons/md'
@@ -39,9 +39,10 @@ import {
   AlertDialogTrigger
 } from '@/components/ui/alert-dialog'
 import ImageViewerTweet from '../ImageViewer'
+import { DotsHorizontalIcon } from '@radix-ui/react-icons'
+import { AppContext } from '@/Contexts/app.context'
 
 interface Props {
-  profile: User | null
   data_length: number
   data: Tweets
   refetchAllDataTweet: (
@@ -52,7 +53,7 @@ interface Props {
 // đọc các comment ở dưới để hiểu rõ hơn (cấm viết khác để debug code dễ hơn )
 const LIMIT = 5
 const PAGE = 1
-const TwitterCard = ({ profile, data, refetchAllDataTweet, data_length }: Props) => {
+const TwitterCard = ({ data, refetchAllDataTweet, data_length }: Props) => {
   const navigate = useNavigate()
   const [commentModalOpen, setCommentModalOpen] = useState(false)
   const [comment, setComment] = useState('')
@@ -60,6 +61,7 @@ const TwitterCard = ({ profile, data, refetchAllDataTweet, data_length }: Props)
   const [loadingPage, setLoadingPage] = useState(PAGE)
   const [allComments, setAllComments] = useState<CommentRequest[]>([])
   const [edit, setEdit] = useState(false)
+  const { profile } = useContext(AppContext)
   // khu vực data Query => chỉ viết data Query ở đây
   const { data: dataBookmark, refetch: refetchDataBookmark } = useQuery({
     queryKey: ['dataBookmark'],
@@ -253,25 +255,20 @@ const TwitterCard = ({ profile, data, refetchAllDataTweet, data_length }: Props)
   }
 
   return (
-    <div className='bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300 overflow-hidden'>
-      <div className='p-4 border-b border-gray-100'>
+    <div className='p-3 flex cursor-pointer border-b border-gray-700'>
+      <div className='flex flex-col space-y-2 w-full'>
         <div className='flex space-x-4'>
-          <div
-            className='w-12 h-12 rounded-full overflow-hidden cursor-pointer ring-2 ring-blue-100 hover:ring-blue-300 transition'
-            onClick={() => navigate(`/user/profile/${profile?._id}`)}
-          >
-            <Avatar className='w-full h-full'>
-              <AvatarImage src={profile?.avatar} alt={profile?.name} className='object-cover' />
-              <AvatarFallback className='bg-blue-100 text-blue-600'>
-                {profile?.name?.charAt(0).toUpperCase()}
-              </AvatarFallback>
-            </Avatar>
-          </div>
+          <Avatar className='mx-4 h-11 w-11 rounded-full cursor-pointer'>
+            <AvatarImage src={profile?.avatar} alt={profile?.name} />
+            <AvatarFallback className='bg-gradient-to-r from-violet-200 to-indigo-200 text-indigo-600'>
+              {profile?.name?.charAt(0).toUpperCase()}
+            </AvatarFallback>
+          </Avatar>
 
           <div className='w-full'>
             <div className='flex justify-between items-center'>
               <div className='flex items-center space-x-2'>
-                <span className='text-base font-bold text-gray-800 hover:underline'>{profile?.name}</span>
+                <span className='font-bold text-[15px] sm:text-base text-[#d9d9d9] group-hover:underline'>{profile?.name}</span>
                 <span className='text-sm text-gray-500'>
                   @{profile?.username || 'no user name'} · {commentTime(data?.updated_at as Date)}
                 </span>
@@ -279,21 +276,23 @@ const TwitterCard = ({ profile, data, refetchAllDataTweet, data_length }: Props)
               </div>
 
               <Popover>
-                <PopoverTrigger>
+                <PopoverTrigger >
                   {data?.user_id === profile?._id && (
-                    <FaEllipsisH className='text-gray-500 text-lg cursor-pointer hover:text-blue-500 transition' />
+                    <div>
+                      <DotsHorizontalIcon className='h-5 text-[#6e7677] group-hover:text-[#1d9bf0]' />
+                    </div>
                   )}
                 </PopoverTrigger>
-                <PopoverContent className='flex gap-5 justify-around max-w-44 bg-slate-100 rounded-xl shadow-xl'>
+                <PopoverContent className='flex gap-5 justify-around max-w-44 bg-gray-800 text-white rounded-xl shadow-xl'>
                   <div
                     onClick={() => setEdit(true)}
-                    className='cursor-pointer font-semibold hover:bg-gray-600 transition-all px-3 py-1 rounded-xl'
+                    className='cursor-pointer font-semibold hover:bg-gray-700 transition-all px-3 py-1 rounded-xl'
                   >
                     Edit
                   </div>
                   <div
                     onClick={() => handleDeleteTweet(data?._id as string)}
-                    className='cursor-pointer font-semibold hover:bg-gray-600 px-3 py-1 rounded-xl'
+                    className='cursor-pointer font-semibold hover:bg-gray-700 px-3 py-1 rounded-xl'
                   >
                     Delete
                   </div>
@@ -305,8 +304,8 @@ const TwitterCard = ({ profile, data, refetchAllDataTweet, data_length }: Props)
               <EditTweet setEdit={setEdit} profile={profile} data={data} refetchAllDataTweet={refetchAllDataTweet} />
             ) : (
               <div className='mt-3'>
-                <p className='text-gray-800 mb-3 w-full'>{data?.content}</p>
-                <p className='text-gray-800 mb-3 w-full'>
+                <p className='text-gray-300 mb-3 w-full'>{data?.content}</p>
+                <p className='text-gray-300 mb-3 w-full'>
                   {data?.hashtag_info?.map((nameHashtag: any, index: number) => (
                     <div className='text-blue-500 cursor-pointer' key={index}>
                       {'#' + nameHashtag.name + ' '}
@@ -382,7 +381,7 @@ const TwitterCard = ({ profile, data, refetchAllDataTweet, data_length }: Props)
                                   <AvatarImage src={like.user_info.avatar} alt={like.user_info.username} />
                                   <AvatarFallback>{like.user_info.username.charAt(0).toUpperCase()}</AvatarFallback>
                                 </Avatar>
-                                <span className='text-sm text-gray-800'>{like.user_info.username}</span>
+                                <span className='text-sm text-gray-700'>{like.user_info.username}</span>
                               </div>
                             </div>
                           ))}
