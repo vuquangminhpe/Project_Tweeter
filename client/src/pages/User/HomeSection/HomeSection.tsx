@@ -362,28 +362,24 @@ const HomeSection = ({ setEdit, isPendingTweet = true, isTitleName = 'Share', cu
   )
 
   const generateAITweetMutation = useMutation({
-    mutationFn: (message: string) => tweetsApi.generateTweetWithAi({ message }),
+    mutationFn: (message: string) => tweetsApi.generateTweetWithAi(message),
     onMutate: () => {
       setIsGeneratingTweet(true)
     },
     onSuccess: (response) => {
-      // The API response has a nested structure
-      if (response.data?.data?.data) {
-        const aiGeneratedTweet = response.data.data.data
+      // Extract AI generated content and update form
+      if (response?.data?.data?.content) {
+        formik.setFieldValue('content', response.data.data.content)
 
-        // Update form content with AI-generated content
-        formik.setFieldValue('content', aiGeneratedTweet.content)
-        setContentWithGenerateAi(aiGeneratedTweet.content)
-
-        // Process hashtags - remove # prefix if present
-        if (aiGeneratedTweet.hashtags && aiGeneratedTweet.hashtags.length > 0) {
-          const formattedHashtags = aiGeneratedTweet.hashtags.map((tag: string) =>
-            tag.startsWith('#') ? tag.substring(1) : tag
-          )
-          formik.setFieldValue('hashtags', formattedHashtags)
+        // Also update hashtags if available
+        if (response.data.data.hashtags && response.data.data.hashtags.length > 0) {
+          formik.setFieldValue('hashtags', response.data.data.hashtags)
         }
 
-        toast.success('AI tweet generated!')
+        toast.success('AI tweet generated successfully')
+      } else {
+        console.error('Invalid AI response format:', response)
+        toast.error('Could not process AI response')
       }
     },
     onError: (error) => {
@@ -400,7 +396,11 @@ const HomeSection = ({ setEdit, isPendingTweet = true, isTitleName = 'Share', cu
     const message = formik.values.content.trim() || defaultMessage
 
     try {
-      await generateAITweetMutation.mutateAsync(message)
+      await generateAITweetMutation.mutateAsync(message, {
+        onSuccess: (response) => {
+          console.log(response)
+        }
+      })
     } catch (error) {
       console.error('Error in handleAIGeneration:', error)
     }
@@ -698,11 +698,11 @@ const HomeSection = ({ setEdit, isPendingTweet = true, isTitleName = 'Share', cu
               <div>
                 {newFeedTweets.map((element, index) => (
                   <PostCard
-                    refetchAllDataTweet={refetchAllDataTweet}
+                    refetchAllDataTweet={refetchAllDataTweet as any}
                     key={`${element._id}-${index}`}
                     data={element}
                     data_length={element?.medias?.length}
-                    profile={profile}
+                    profile={profile as any}
                   />
                 ))}
 
@@ -762,13 +762,13 @@ const HomeSection = ({ setEdit, isPendingTweet = true, isTitleName = 'Share', cu
           </div>
         ) : isPendingTweet && (myTweets?.data?.data?.length ?? 0) > 0 ? (
           <div>
-            {myTweets.data.data.map((element, index) => (
+            {myTweets?.data?.data?.map((element, index) => (
               <PostCard
-                refetchAllDataTweet={refetchAllDataTweet}
+                refetchAllDataTweet={refetchAllDataTweet as any}
                 key={`${element._id}-${index}`}
                 data={element}
                 data_length={element?.medias?.length}
-                profile={profile}
+                profile={profile as any}
               />
             ))}
           </div>
@@ -795,8 +795,6 @@ const HomeSection = ({ setEdit, isPendingTweet = true, isTitleName = 'Share', cu
           </div>
         )}
       </div>
-
-      {/* Remove the old conditional rendering for empty tweets */}
     </div>
   )
 }

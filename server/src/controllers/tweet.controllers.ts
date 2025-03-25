@@ -32,20 +32,20 @@ export const getAllTweetController = async (req: Request, res: Response) => {
   })
 }
 export const getTweetDetailsGuestController = async (req: Request, res: Response) => {
-  const result = await tweetsService.increaseView(req.params.tweet_id, undefined);
-  
+  const result = await tweetsService.increaseView(req.params.tweet_id, undefined)
+
   const tweet = {
     ...req.tweet,
     guest_views: result.guest_views,
     user_views: result.user_views,
     update_at: result.update_at
-  };
+  }
 
   res.json({
     message: TWEET_MESSAGE.GET_TWEET_DETAILS_SUCCESS,
     data: tweet
-  });
-};
+  })
+}
 
 export const getTweetDetailsController = async (req: Request, res: Response) => {
   const result = await tweetsService.increaseView(req.params.tweet_id, req.decode_authorization?.user_id)
@@ -125,7 +125,11 @@ export const generateTweetTextGeminiController = async (
 ) => {
   const { user_id } = req.decode_authorization as TokenPayload
   const { message } = req.body
+  console.log(message)
+
   const result = await tweetsService.generateTweetWithTextGemini(user_id, message)
+  console.log('data gen AI', result)
+
   res.json({
     message: TWEET_MESSAGE.GENERATE_TWEET_GEMINI_SUCCESS,
     data: result

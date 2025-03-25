@@ -545,6 +545,7 @@ class TweetService {
     const genAI = new GoogleGenerativeAI(apiKey as string)
     const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' })
     const user = await databaseService.users.findOne({ _id: new ObjectId(user_id) })
+    console.log(user?.typeAccount)
 
     if (user?.typeAccount === AccountStatus.FREE && user.count_type_account < 5) {
       const result =
@@ -565,6 +566,7 @@ class TweetService {
           }
         }
       )
+      console.log(parsedResponse)
 
       return parsedResponse
     } else if (user?.typeAccount === AccountStatus.PREMIUM && user.count_type_account < 20) {
@@ -586,6 +588,7 @@ class TweetService {
           }
         }
       )
+      console.log(parsedResponse)
 
       return parsedResponse
     } else if (user?.typeAccount === AccountStatus.PLATINUM) {
@@ -604,6 +607,7 @@ class TweetService {
           }
         }
       )
+      console.log(parsedResponse)
 
       return parsedResponse
     }

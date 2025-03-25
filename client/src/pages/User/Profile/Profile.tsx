@@ -2,8 +2,7 @@ import apiUser from '@/apis/users.api'
 import { useQuery } from '@tanstack/react-query'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel'
-import { useEffect, useState } from 'react'
-import { User } from '@/types/User.type'
+
 export default function Profile() {
   const getProfileFromLocalStorage = () => {
     const data = localStorage.getItem('profile')
@@ -151,11 +150,9 @@ export default function Profile() {
             <div className='text-white font-bold text-2xl'>Let’s get you set up</div>
             <Carousel className='mt-4'>
               <div className='absolute left-0 top-1/2 -translate-y-1/2 z-10'>
-              
                 <CarouselPrevious className='bg-white hover:bg-white/90 text-black border-0 static' />
               </div>
               <CarouselContent>
-                
                 <CarouselItem className='md:basis-1/2 lg:basis-1/3'>
                   <img src='https://ton.twimg.com/onboarding/persistent_nux/follow_2x.png' alt='' />
                   <div className='text-white'>Follow 5 accounts</div>
@@ -165,20 +162,16 @@ export default function Profile() {
                   <div className='capitalize text-white'>follow 3 topics</div>
                 </CarouselItem>
                 <CarouselItem className='md:basis-1/2 lg:basis-1/3 relative'>
-                  
                   <img src='https://ton.twimg.com/onboarding/persistent_nux/profile_2x.png' alt='' />
                   <div className='capitalize text-white'>Complete your profile</div>
                   <div className='p-2 text-white font-bold -translate-y-8 translate-x-3 bg-emerald-500 absolute bottom-0 rounded-3xl'>
-                    
                     done
                   </div>
                 </CarouselItem>
                 <CarouselItem className='md:basis-1/2 lg:basis-1/3'>
-                  
                   <img src='https://ton.twimg.com/onboarding/persistent_nux/notifs_2x.png' alt='' />
                   <div className=' text-white'>Turn on notifications</div>
                   <div className='p-2 text-white font-bold -translate-y-8 translate-x-3 bg-emerald-500 absolute bottom-0 rounded-3xl'>
-                    
                     done
                   </div>
                 </CarouselItem>

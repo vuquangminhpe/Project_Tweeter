@@ -20,3 +20,18 @@ export interface dataParams {
   limit: number
   page: number
 }
+
+export interface PostDataAI {
+  content: string
+  hashtags: string[]
+  scheduled_time: string
+  sentiment_analysis: {
+    sentiment: string
+    confidence_score: number
+  }
+  analytics_tags: {
+    campaign: string | null
+    source: string | null
+    target_audience: string
+  }
+}

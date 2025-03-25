@@ -7,7 +7,7 @@ import moment from 'moment'
 import qs from 'qs'
 import { ErrorWithStatus } from '~/models/Errors'
 import { PAYMENT_MESSAGE } from '~/constants/messages'
-
+import { Request } from 'express'
 const PRICES = {
   [AccountStatus.PREMIUM]: 50000,
   [AccountStatus.PLATINUM]: 100000
@@ -102,7 +102,7 @@ class PaymentService {
     }
   }
 
-  async verifyVnpayPayment(queryParams: any) {
+  async verifyVnpayPayment(queryParams: any, req: Request) {
     try {
       const secureHash = queryParams.vnp_SecureHash
 
@@ -120,6 +120,7 @@ class PaymentService {
           { order_id: vnpParams.vnp_TxnRef },
           { $set: { status: 'FAILED', error: 'Invalid signature', updated_at: new Date() } }
         )
+
         return { success: false, message: 'Invalid signature' }
       }
 
@@ -140,6 +141,21 @@ class PaymentService {
       await databaseService.payments.updateOne(
         { order_id: vnpParams.vnp_TxnRef },
         { $set: { status: 'SUCCESS', updated_at: new Date() } }
+      )
+      const amount = vnpParams.vnp_Amount
+      console.log(amount, vnpParams)
+
+      const user_id = req.decode_authorization?.user_id
+
+      await databaseService.users.updateOne(
+        { _id: new ObjectId(user_id) },
+        {
+          $set: {
+            typeAccount: 2,
+            subscription_end_date: moment().add(SUBSCRIPTION_DURATION[AccountStatus.PLATINUM], 'months').toDate(),
+            updated_at: new Date()
+          }
+        }
       )
 
       return { success: true, message: 'Payment successful' }
