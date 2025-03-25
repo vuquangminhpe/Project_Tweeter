@@ -3,7 +3,7 @@ import databaseService from './database.services'
 import Tweet from '~/models/schemas/Tweet.schema'
 import { ObjectId, WithId } from 'mongodb'
 import Hashtag from '~/models/schemas/Hashtag.schema'
-import { AccountStatus, MediaType, TweetType } from '~/constants/enums'
+import { AccountStatus, MediaType, TweetAudience, TweetType } from '~/constants/enums'
 import { deleteFileFromS3, deleteS3Folder } from '~/utils/s3'
 import { convertS3Url, extractContentAndInsertToDB, extractGeminiData } from '~/utils/utils'
 import { GoogleGenerativeAI } from '@google/generative-ai'
@@ -331,21 +331,15 @@ class TweetService {
             }
           },
           {
-            $unwind: {
-              path: '$user'
-            }
+            $unwind: '$user'
           },
           {
             $match: {
               $or: [
-                {
-                  audience: 0
-                },
+                { audience: 0 },
                 {
                   $and: [
-                    {
-                      audience: 1
-                    },
+                    { audience: 1 },
                     {
                       'user.twitter_circle': {
                         $in: [new ObjectId(user_id_obj)]
@@ -357,121 +351,42 @@ class TweetService {
             }
           },
           {
-            $skip: limit * (page - 1)
-          },
-          {
-            $limit: limit
+            $lookup: {
+              from: 'users',
+              localField: 'mentions',
+              foreignField: '_id',
+              as: 'mention_info'
+            }
           },
           {
             $lookup: {
               from: 'hashtags',
               localField: 'hashtags',
               foreignField: '_id',
-              as: 'hashtags'
+              as: 'hashtag_info'
             }
           },
           {
-            $lookup: {
-              from: 'users',
-              localField: 'mentions',
-              foreignField: '_id',
-              as: 'mentions'
-            }
+            $skip: limit * (page - 1)
           },
           {
-            $addFields: {
-              mentions: {
-                $map: {
-                  input: '$mentions',
-                  as: 'mention',
-                  in: {
-                    _id: '$$mention._id',
-                    name: '$$mention.name',
-                    email: '$$mention.email',
-                    username: '$$mention.username',
-                    date_of_birth: '$$mention.date_of_birth'
-                  }
-                }
-              }
-            }
-          },
-          {
-            $lookup: {
-              from: 'bookmarks',
-              localField: '_id',
-              foreignField: 'tweet_id',
-              as: 'bookmarks'
-            }
-          },
-          {
-            $lookup: {
-              from: 'likes',
-              localField: '_id',
-              foreignField: 'tweet_id',
-              as: 'likes'
-            }
-          },
-          {
-            $lookup: {
-              from: 'tweets',
-              localField: '_id',
-              foreignField: 'parent_id',
-              as: 'tweet_children'
-            }
-          },
-          {
-            $addFields: {
-              bookmarks: {
-                $size: '$bookmarks'
-              },
-              likes: {
-                $size: '$likes'
-              },
-              retweet_count: {
-                $size: {
-                  $filter: {
-                    input: '$tweet_children',
-                    as: 'item',
-                    cond: {
-                      $eq: ['$$item.type', TweetType.Retweet]
-                    }
-                  }
-                }
-              },
-              comment_count: {
-                $size: {
-                  $filter: {
-                    input: '$tweet_children',
-                    as: 'item',
-                    cond: {
-                      $eq: ['$$item.type', TweetType.Comment]
-                    }
-                  }
-                }
-              },
-              quote_count: {
-                $size: {
-                  $filter: {
-                    input: '$tweet_children',
-                    as: 'item',
-                    cond: {
-                      $eq: ['$$item.type', TweetType.QuoteTweet]
-                    }
-                  }
-                }
-              }
-            }
+            $limit: limit
           },
           {
             $project: {
-              tweet_children: 0,
-              user: {
-                password: 0,
-                email_verify_token: 0,
-                forgot_password_token: 0,
-                twitter_circle: 0,
-                date_of_birth: 0
-              }
+              _id: 1,
+              user_id: 1,
+              content: 1,
+              medias: 1,
+              mentions: 1,
+              hashtags: 1,
+              created_at: 1,
+              updated_at: 1,
+              guest_views: 1,
+              user_views: 1,
+              audience: 1,
+              'mention_info.username': 1,
+              'hashtag_info.name': 1
             }
           }
         ])
@@ -492,21 +407,15 @@ class TweetService {
             }
           },
           {
-            $unwind: {
-              path: '$user'
-            }
+            $unwind: '$user'
           },
           {
             $match: {
               $or: [
-                {
-                  audience: 0
-                },
+                { audience: 0 },
                 {
                   $and: [
-                    {
-                      audience: 1
-                    },
+                    { audience: 1 },
                     {
                       'user.twitter_circle': {
                         $in: [new ObjectId(user_id_obj)]
@@ -523,6 +432,7 @@ class TweetService {
         ])
         .toArray()
     ])
+
     const tweet_ids = tweets.map((tweet) => tweet._id as ObjectId)
     const inc = user_id ? { user_views: 1 } : { guest_views: 1 }
     const date = new Date()
@@ -548,6 +458,7 @@ class TweetService {
         tweet.guest_views += 1
       }
     })
+
     return { tweets, total: total[0].total }
   }
   async editTweet(user_id: string, body: EditTweetRequestBody) {

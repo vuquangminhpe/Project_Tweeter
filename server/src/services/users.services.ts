@@ -426,25 +426,32 @@ class UserService {
       message: USERS_MESSAGES.UN_FOLLOWER_SUCCESS
     }
   }
-  async getAllUsers(page: number = 1, limit: number = 10) {
+  async getAllUsers(user_id: string, page: number = 1, limit: number = 10) {
     try {
       const skip = (page - 1) * limit; // Tính số lượng bản ghi cần bỏ qua
-      const users = await databaseService.users
-        .find({}, {
-          projection: {
-            _id: 1,
-            name: 1,
-            username: 1,
-            email: 1,
-            avatar: 1
-          }
-        })
-        .skip(skip) // Bỏ qua các bản ghi trước đó
-        .limit(limit) // Giới hạn số lượng bản ghi trả về
+
+      // Lấy danh sách những user đã follow
+      const followedUsers = await databaseService.followers
+        .find({ user_id: new ObjectId(user_id) })
         .toArray();
 
-      // Đếm tổng số người dùng để biết còn dữ liệu để tải hay không
-      const totalUsers = await databaseService.users.countDocuments();
+      const followedUserIds = followedUsers.map((f) => new ObjectId(f.followed_user_id));
+
+      // Tìm những user chưa được follow
+      const query: any = followedUserIds.length > 0
+        ? { _id: { $nin: followedUserIds, $ne: new ObjectId(user_id) } } // Loại bỏ cả bản thân người dùng
+        : { _id: { $ne: new ObjectId(user_id) } }; // Nếu chưa follow ai, lấy tất cả trừ bản thân
+
+      const users = await databaseService.users
+        .find(query, {
+          projection: { _id: 1, name: 1, username: 1, email: 1, avatar: 1 }
+        })
+        .skip(skip)
+        .limit(limit)
+        .toArray();
+
+      // Đếm tổng số user chưa follow
+      const totalUsers = await databaseService.users.countDocuments(query);
 
       return {
         users,
@@ -501,9 +508,46 @@ class UserService {
   }
   
   async getFollowing(user_id: string) {
-    const result = await databaseService.followers.find({ user_id: new ObjectId(user_id) }).toArray()
+    // Lấy danh sách following từ collection followers
+    const followers = await databaseService.followers
+      .find({ user_id: new ObjectId(user_id) })
+      .toArray();
 
-    return result
+    // Lấy danh sách followed_user_id từ followers
+    const followerIds = followers.map((f) => new ObjectId(f.followed_user_id));
+
+    // Lấy thông tin chi tiết của từng người dùng từ collection users
+    const followerDetails = await databaseService.users
+      .find(
+        { _id: { $in: followerIds } },
+        { projection: { _id: 1, name: 1, username: 1, email: 1, avatar: 1 } } // Chỉ lấy các trường cần thiết
+      )
+      .toArray();
+
+    // Tạo một Map để dễ dàng truy vấn thông tin của từng người dùng
+    const followerMap = new Map(
+      followerDetails.map((user) => [
+        user._id.toString(),
+        {
+          _id: user._id.toString(),
+          name: user.name,
+          username: user.username,
+          email: user.email,
+          avatar: user.avatar || null,
+        },
+      ])
+    );
+
+    // Gán thông tin đúng vào từng follower
+    const result = followers.map((follower) => ({
+      _id: follower._id.toString(),
+      user_id: follower.user_id.toString(),
+      followed_user_id: follower.followed_user_id.toString(),
+      created_at: follower.created_at,
+      followingDetails: followerMap.get(follower.followed_user_id.toString()) || null,
+    }));
+
+    return result; // Trả về trực tiếp mảng result
   }
   async getFollowers(user_id: string) {
     const result = await databaseService.followers.find({ followed_user_id: new ObjectId(user_id) }).toArray()

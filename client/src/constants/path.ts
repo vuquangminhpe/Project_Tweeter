@@ -28,5 +28,6 @@ const path = {
   bookmark: '/user/bookmarks',
   whoToFollow: '/user/who-to-follow',
   followingList: '/user/following',
+  
 } as const
 export default path
