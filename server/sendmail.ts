@@ -65,6 +65,7 @@ export const sendVerifyEmail = async (toAddress: string, subject: string, body: 
 }
 
 const verifyEmailTemplate = fs.readFileSync(path.resolve('src/templates/verify-email.html'), 'utf-8')
+
 export const verifyEmail = (toAddress: string, email_verify_token: string, template: string = verifyEmailTemplate) => {
   return sendVerifyEmail(
     toAddress,
@@ -75,15 +76,19 @@ export const verifyEmail = (toAddress: string, email_verify_token: string, templ
   )
 }
 export const verifyForgotPassword = (
+  activeName: boolean,
   toAddress: string,
-  forgot_verify_token: string,
+  verify_token: string,
   template: string = verifyEmailTemplate
 ) => {
   return sendVerifyEmail(
     toAddress,
     'Verify your email',
     template
-      .replace('{{link}}', `${envConfig.client_url}/verify-forgot-password?token=${forgot_verify_token}`)
+      .replace(
+        '{{link}}',
+        `${envConfig.client_url}/${activeName ? 'verify-forgot-password' : 'verify-email'}?token=${verify_token}`
+      )
       .replace('{{name}}', `${toAddress.split('@')[0]?.split('+')[0]}`)
   )
 }
