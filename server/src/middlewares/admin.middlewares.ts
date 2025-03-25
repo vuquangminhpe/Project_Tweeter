@@ -57,3 +57,31 @@ export const dateRangeValidator = validate(
     ['query']
   )
 )
+export const banUserValidator = validate(
+  checkSchema({
+    user_id: {
+      notEmpty: {
+        errorMessage: ADMIN_MESSAGES.USER_ID_REQUIRED
+      },
+      custom: {
+        options: async (value) => {
+          const userBan = await databaseService.bans.findOne({ user_id: new ObjectId(value as string) })
+          if (userBan) {
+            throw new ErrorWithStatus({
+              message: ADMIN_MESSAGES.USER_ALREADY_BANNED,
+              status: HTTP_STATUS.BAD_REQUEST
+            })
+          }
+        }
+      }
+    },
+    reason: {
+      isEmpty: {
+        errorMessage: ADMIN_MESSAGES.REASON_REQUIRED
+      },
+      isString: {
+        errorMessage: ADMIN_MESSAGES.INVALID_REASON
+      }
+    }
+  })
+)

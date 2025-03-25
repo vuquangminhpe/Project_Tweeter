@@ -77,7 +77,7 @@ app.use('/geminiTweet', tweetGeminiRoutes)
 app.use('/stories', storiesRouter)
 app.use('/payments', paymentRouter)
 app.use('/admin', adminRouter)
-app.use('/contentModerationRouter', contentModerationRouter)
+app.use('/moderation', contentModerationRouter)
 // app.use('/static/video-hls', express.static(UPLOAD_VIDEO_HLS_DIR))
 
 app.use(defaultErrorHandler)

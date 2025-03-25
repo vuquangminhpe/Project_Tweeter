@@ -29,6 +29,15 @@ import StoryArchiveViewer from './pages/User/HomeSection/StoryArchiveViewer'
 import Bookmarks from './pages/User/BookMark'
 import WhoToFollow from './pages/User/WhoToFollow'
 import FollowingList from './pages/User/HomeSection/FollowingList'
+import UserManagement from './pages/Admin/Users/UserManagement'
+import RevenueStatistics from './pages/Admin/Statistics/RevenueStatistics/RevenueStatistics'
+import ContentStatistics from './pages/Admin/Statistics/ContentStatistics'
+import UserStatistics from './pages/Admin/Statistics'
+import AdminDashboard from './pages/Admin/Dashboard'
+import AdminLayout from './layout/AdminLayout'
+import ContentModeration from './pages/Admin/Moderation'
+import ReportGeneration from './pages/Admin/Reports'
+import InteractionStatistics from './pages/Admin/Statistics/InteractionStatistics'
 function ProtectedRoute() {
   const { isAuthenticated } = useContext(AppContext)
   return isAuthenticated ? <Outlet /> : <Navigate to={path.login} />
@@ -161,21 +170,71 @@ export default function useRouteElement() {
       element: <OAuthCallback />
     },
     {
-      path: path.any,
-      element: <Navigate to={path.home} />
-    },
-    {
       path: path.bookmark,
       element: <Bookmarks />
-  },
-  {
-    path: path.whoToFollow,
-    element: <WhoToFollow />
-},
-{
-    path: path.followingList,
-    element: <FollowingList profile={profile} />
-},
+    },
+    {
+      path: path.whoToFollow,
+      element: <WhoToFollow />
+    },
+    {
+      path: path.followingList,
+      element: <FollowingList profile={profile} />
+    },
+
+    {
+      path: path.admin,
+      element: <ProtectedRoute />,
+      children: [
+        {
+          path: '',
+          element: <AdminLayout children={undefined} />,
+          children: [
+            {
+              path: '',
+              element: <Navigate to={path.adminDashboard} />
+            },
+            {
+              path: path.dashboard,
+              element: <AdminDashboard />
+            },
+            {
+              path: path.statistics_user,
+              element: <UserStatistics />
+            },
+            {
+              path: path.statistics_content,
+              element: <ContentStatistics />
+            },
+            {
+              path: path.statistics_interaction,
+              element: <InteractionStatistics />
+            },
+            {
+              path: path.statistics_revenue,
+              element: <RevenueStatistics />
+            },
+            {
+              path: path.users,
+              element: <UserManagement />
+            },
+            {
+              path: path.moderation_reported,
+              element: <ContentModeration />
+            },
+            {
+              path: path.moderation_generate,
+              element: <ReportGeneration />
+            }
+          ]
+        }
+      ]
+    },
+
+    {
+      path: path.any,
+      element: <Navigate to={path.home} />
+    }
   ])
   return routeElements
 }

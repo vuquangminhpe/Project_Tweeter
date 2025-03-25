@@ -12,7 +12,7 @@ import {
   detectToxicContentController
 } from '~/controllers/contentModeration.controllers'
 import { AccessTokenValidator, verifiedUserValidator } from '~/middlewares/users.middlewares'
-import { isAdminValidator } from '~/middlewares/admin.middlewares'
+import { banUserValidator, isAdminValidator } from '~/middlewares/admin.middlewares'
 import { wrapAsync } from '~/utils/handler'
 
 const contentModerationRouter = Router()
@@ -21,18 +21,18 @@ contentModerationRouter.post('/report', AccessTokenValidator, verifiedUserValida
 
 contentModerationRouter.use(AccessTokenValidator, verifiedUserValidator, isAdminValidator)
 
-contentModerationRouter.get('/reported', wrapAsync(getReportedContentController))
-contentModerationRouter.post('/moderate', wrapAsync(moderateContentController))
+contentModerationRouter.get('/reported', AccessTokenValidator, wrapAsync(getReportedContentController))
+contentModerationRouter.post('/moderate', AccessTokenValidator, wrapAsync(moderateContentController))
 
-contentModerationRouter.get('/comments', wrapAsync(getCommentsController))
-contentModerationRouter.post('/comments/remove', wrapAsync(removeCommentController))
+contentModerationRouter.get('/comments', AccessTokenValidator, wrapAsync(getCommentsController))
+contentModerationRouter.post('/comments/remove', AccessTokenValidator, wrapAsync(removeCommentController))
 
-contentModerationRouter.post('/users/ban', wrapAsync(banUserController))
-contentModerationRouter.post('/users/unban', wrapAsync(unbanUserController))
-contentModerationRouter.get('/users/:user_id/ban-history', wrapAsync(getUserBanHistoryController))
+contentModerationRouter.post('/users/ban', AccessTokenValidator, banUserValidator, wrapAsync(banUserController))
+contentModerationRouter.post('/users/unban', AccessTokenValidator, wrapAsync(unbanUserController))
+contentModerationRouter.get('/users/:user_id/ban-history', AccessTokenValidator, wrapAsync(getUserBanHistoryController))
 
-contentModerationRouter.get('/stats', wrapAsync(getContentModerationStatsController))
+contentModerationRouter.get('/stats', AccessTokenValidator, wrapAsync(getContentModerationStatsController))
 
-contentModerationRouter.post('/detect-toxic', wrapAsync(detectToxicContentController))
+contentModerationRouter.post('/detect-toxic', AccessTokenValidator, wrapAsync(detectToxicContentController))
 
 export default contentModerationRouter

@@ -88,6 +88,7 @@ class UserService {
         ...payload,
         _id: user_id,
         typeAccount: AccountStatus.FREE,
+        role: 'user',
         count_type_account: 0,
         email_verify_token: email_verify_token,
         password: hashPassword(payload.password),
@@ -224,8 +225,7 @@ class UserService {
     await valkeyService.storeRefreshToken(user_id, refresh_token, expiryInSeconds)
 
     return {
-      access_token,
-      refresh_token
+      access_token
     }
   }
   async logout(refresh_token: string) {
@@ -459,21 +459,21 @@ class UserService {
         page,
         limit,
         totalPages: Math.ceil(totalUsers / limit)
-      };
+      }
     } catch (error) {
-      console.error('Error fetching users:', error);
-      return { users: [], total: 0, page, limit, totalPages: 0 };
+      console.error('Error fetching users:', error)
+      return { users: [], total: 0, page, limit, totalPages: 0 }
     }
   }
 
   async searchUsersByName(name: string, page: number = 1, limit: number = 10) {
     try {
-      const skip = (page - 1) * limit;
+      const skip = (page - 1) * limit
       // Tìm kiếm người dùng với name khớp (không phân biệt hoa thường)
       const users = await databaseService.users
         .find(
           {
-            name: { $regex: name, $options: 'i' }, // Tìm kiếm không phân biệt hoa thường
+            name: { $regex: name, $options: 'i' } // Tìm kiếm không phân biệt hoa thường
           },
           {
             projection: {
@@ -481,32 +481,32 @@ class UserService {
               name: 1,
               username: 1,
               email: 1,
-              avatar: 1,
-            },
+              avatar: 1
+            }
           }
         )
         .skip(skip)
         .limit(limit)
-        .toArray();
+        .toArray()
 
       // Đếm tổng số người dùng khớp với tìm kiếm
       const totalUsers = await databaseService.users.countDocuments({
-        name: { $regex: name, $options: 'i' },
-      });
+        name: { $regex: name, $options: 'i' }
+      })
 
       return {
         users,
         total: totalUsers,
         page,
         limit,
-        totalPages: Math.ceil(totalUsers / limit),
-      };
+        totalPages: Math.ceil(totalUsers / limit)
+      }
     } catch (error) {
-      console.error('Error searching users:', error);
-      return { users: [], total: 0, page, limit, totalPages: 0 };
+      console.error('Error searching users:', error)
+      return { users: [], total: 0, page, limit, totalPages: 0 }
     }
   }
-  
+
   async getFollowing(user_id: string) {
     // Lấy danh sách following từ collection followers
     const followers = await databaseService.followers
