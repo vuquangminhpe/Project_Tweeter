@@ -34,7 +34,7 @@ function Home() {
       <Navigation/>
       <HomeSection/>
       {/* <Feed/> */}
-      <RightPart/>
+      {/* <RightPart/> */}
     </div>
   )
 }

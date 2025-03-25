@@ -131,12 +131,12 @@ const HomeSection = ({ setEdit, isPendingTweet = true, isTitleName = 'Share', cu
   })
 
   // Flatten tweets from all pages
-  const newFeedTweets = newFeedsData?.pages.flatMap(page => page.results) || []
+  const newFeedTweets = newFeedsData?.pages.flatMap((page) => page.results) || []
 
   const refetchAllDataTweet = useCallback(() => {
-    refetchMyTweets();
-    refetchNewFeeds();
-  }, [refetchMyTweets, refetchNewFeeds]);
+    refetchMyTweets()
+    refetchNewFeeds()
+  }, [refetchMyTweets, refetchNewFeeds])
 
   useEffect(() => {
     const convertMentionsToIds = async () => {
@@ -252,7 +252,6 @@ const HomeSection = ({ setEdit, isPendingTweet = true, isTitleName = 'Share', cu
       setImagePreviews((prev) => [...prev, ...previews])
 
       formik.setFieldValue('images', [...formik.values.images, ...fileArray])
-
     }
   }
 
@@ -373,21 +372,21 @@ const HomeSection = ({ setEdit, isPendingTweet = true, isTitleName = 'Share', cu
     onSuccess: (response) => {
       // The API response has a nested structure
       if (response.data?.data?.data) {
-        const aiGeneratedTweet = response.data.data.data;
-        
+        const aiGeneratedTweet = response.data.data.data
+
         // Update form content with AI-generated content
-        formik.setFieldValue('content', aiGeneratedTweet.content);
-        setContentWithGenerateAi(aiGeneratedTweet.content);
-        
+        formik.setFieldValue('content', aiGeneratedTweet.content)
+        setContentWithGenerateAi(aiGeneratedTweet.content)
+
         // Process hashtags - remove # prefix if present
         if (aiGeneratedTweet.hashtags && aiGeneratedTweet.hashtags.length > 0) {
-          const formattedHashtags = aiGeneratedTweet.hashtags.map((tag: string) => 
+          const formattedHashtags = aiGeneratedTweet.hashtags.map((tag: string) =>
             tag.startsWith('#') ? tag.substring(1) : tag
-          );
-          formik.setFieldValue('hashtags', formattedHashtags);
+          )
+          formik.setFieldValue('hashtags', formattedHashtags)
         }
-        
-        toast.success('AI tweet generated!');
+
+        toast.success('AI tweet generated!')
       }
     },
     onError: (error) => {
@@ -400,13 +399,13 @@ const HomeSection = ({ setEdit, isPendingTweet = true, isTitleName = 'Share', cu
   })
 
   const handleAIGeneration = async () => {
-    const defaultMessage = 'Hôm nay của tôi';
-    const message = formik.values.content.trim() || defaultMessage;
-    
+    const defaultMessage = 'Hôm nay của tôi'
+    const message = formik.values.content.trim() || defaultMessage
+
     try {
-      await generateAITweetMutation.mutateAsync(message);
+      await generateAITweetMutation.mutateAsync(message)
     } catch (error) {
-      console.error('Error in handleAIGeneration:', error);
+      console.error('Error in handleAIGeneration:', error)
     }
   }
 
@@ -506,16 +505,11 @@ const HomeSection = ({ setEdit, isPendingTweet = true, isTitleName = 'Share', cu
                   </label>
 
                   {/* AI Generation Orb */}
-                  <div 
+                  <div
                     className='relative flex items-center justify-center w-8 h-8 flex-shrink-0 cursor-pointer'
                     onClick={handleAIGeneration}
                   >
-                    <Orb
-                      hoverIntensity={0.3}
-                      rotateOnHover={true}
-                      hue={120}
-                      forceHoverState={isGeneratingTweet}
-                    />
+                    <Orb hoverIntensity={0.3} rotateOnHover={true} hue={120} forceHoverState={isGeneratingTweet} />
                     {isGeneratingTweet && (
                       <div className='absolute inset-0 flex items-center justify-center'>
                         <div className='animate-spin h-4 w-4 border-2 border-indigo-500 rounded-full border-t-transparent'></div>
@@ -714,8 +708,10 @@ const HomeSection = ({ setEdit, isPendingTweet = true, isTitleName = 'Share', cu
                     profile={profile}
                   />
                 ))}
+
+                {/* {newFeedTweets.map((element) => console.log(element))} */}
               </div>
-              
+
               {/* Load More Button */}
               {hasNextPage && (
                 <div className='flex justify-center my-4'>
@@ -729,7 +725,7 @@ const HomeSection = ({ setEdit, isPendingTweet = true, isTitleName = 'Share', cu
                   </button>
                 </div>
               )}
-              
+
               {/* Loading More Indicator */}
               {isFetchingNextPage && (
                 <div className='flex justify-center items-center my-4'>
