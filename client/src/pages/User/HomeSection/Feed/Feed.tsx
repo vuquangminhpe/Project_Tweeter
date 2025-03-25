@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { IoSparkles } from 'react-icons/io5'
 import Input from './Input'
 import Post from '../../../../components/Post'
@@ -15,6 +17,7 @@ import { createdTweet, TweetFormValues, Tweets } from '@/types/Tweet.type'
 import { toast } from 'sonner'
 import useNotifications from '@/components/Customs/Notification/useNotifications/useNotifications'
 import { ActionType } from '@/types/Notifications.types'
+import StoriesContainer from '../StoriesContainer'
 
 const validationSchema = Yup.object().shape({
   content: Yup.string().required('Post text is required'),
@@ -237,22 +240,6 @@ function Feed({ setEdit, isPendingTweet = true, isTitleName = 'Share', customCla
     }
   }
 
-  const addHashtag = () => {
-    const newHashtag = formik.values.currentHashtag.trim()
-    if (newHashtag && !formik.values.hashtags.includes(newHashtag)) {
-      formik.setFieldValue('hashtags', [...formik.values.hashtags, newHashtag])
-      formik.setFieldValue('currentHashtag', '')
-    }
-  }
-
-  const addMention = () => {
-    const newMention = formik.values.currentMention.trim()
-    if (newMention && !formik.values.mentions.includes(newMention)) {
-      formik.setFieldValue('mentions', [...formik.values.mentions, newMention])
-      formik.setFieldValue('currentMention', '')
-    }
-  }
-
   const handleCreatedTweet = useCallback(
     async (data: TweetFormValues, uploadedLinks: Media[]) => {
       await createdTweetMutation.mutateAsync(
@@ -322,7 +309,9 @@ function Feed({ setEdit, isPendingTweet = true, isTitleName = 'Share', customCla
           <IoSparkles />
         </div>
       </div>
-
+      <div className='py-2'>
+        <StoriesContainer />
+      </div>
       {/* Tabs */}
       <div className='flex items-center justify-center sticky top-0 z-50 bg-black border-b border-gray-700'>
         <div
@@ -361,8 +350,28 @@ function Feed({ setEdit, isPendingTweet = true, isTitleName = 'Share', customCla
           </div>
         ) : (
           <div>
-            <Post />
-            <Post />
+            {isPendingTweet && (allTweets?.length ?? 0) > 0 && (
+              <div className='divide-y'>
+                {allTweets?.map((data) =>
+                  Array(data).map((element, index) => (
+                    // <PostCard
+                    //   refetchAllDataTweet={refetchAllDataTweet}
+                    //   key={`${element._id}-${index}`}
+                    //   data={element}
+                    //   data_length={data?.medias?.length}
+                    //   profile={profile}
+                    // />
+                    <Post
+                      refetchAllDataTweet={refetchAllDataTweet}
+                      key={`${element._id}-${index}`}
+                      data={element}
+                      data_length={data?.medias?.length}
+                      profile={profile}
+                    />
+                  ))
+                )}
+              </div>
+            )}
           </div>
         )}
       </div>

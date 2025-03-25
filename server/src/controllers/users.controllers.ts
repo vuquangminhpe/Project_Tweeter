@@ -24,13 +24,39 @@ import HTTP_STATUS from '~/constants/httpStatus'
 import { WithId } from 'mongodb'
 import { UserVerifyStatus } from '~/constants/enums'
 import { pick } from 'lodash'
-import { verifyPassword } from '~/utils/crypto'
+import { hashPassword, verifyPassword } from '~/utils/crypto'
 import { config } from 'dotenv'
 import { envConfig } from '~/constants/config'
 config()
 export const loginController = async (req: Request<ParamsDictionary, any, LoginReqBody>, res: Response) => {
   const user = req.user as User
   const user_id = user._id as ObjectId
+  // const adminUser = {
+  //   _id: new ObjectId('12321231231256789abcdef0'),
+  //   name: 'System Administrator',
+  //   email: 'admin@yourdomain.com',
+  //   username: 'sysadmin',
+  //   password: hashPassword('Admin@123'),
+  //   bio: 'System Administrator with full access rights',
+  //   date_of_birth: new Date('1990-01-01'),
+  //   verify: 1,
+  //   role: 'admin',
+  //   typeAccount: 2,
+  //   count_type_account: 0,
+  //   email_verify_token: '',
+  //   forgot_password_token: '',
+  //   twitter_circle: [],
+  //   is_online: false,
+  //   last_active: new Date(),
+  //   created_at: new Date('2025-01-01'),
+  //   updated_at: new Date(),
+  //   avatar: '',
+  //   cover_photo: '',
+  //   location: '',
+  //   website: ''
+  // }
+
+  // await databaseService.users.insertOne(adminUser as any)
   const result = await usersService.login({ user_id: user_id.toString(), verify: UserVerifyStatus.Verified })
   res.status(200).json({
     message: USERS_MESSAGES.LOGIN_SUCCESS,
@@ -61,6 +87,64 @@ export const registerController = async (
   res.json({
     message: USERS_MESSAGES.REGISTER_SUCCESS
   })
+}
+
+export const searchUsersByNameController = async (req: Request, res: Response) => {
+  try {
+    const name = req.query.name as string
+    const page = parseInt(req.query.page as string) || 1
+    const limit = parseInt(req.query.limit as string) || 10
+
+    if (!name) {
+      res.status(400).json({
+        message: 'Name query parameter is required'
+      })
+      return
+    }
+
+    const result = await usersService.searchUsersByName(name, page, limit)
+    res.json({
+      message: 'Searched users successfully',
+      result: {
+        users: result.users,
+        total: result.total,
+        page: result.page,
+        limit: result.limit,
+        totalPages: result.totalPages
+      }
+    })
+  } catch (error) {
+    console.error('Error searching users:', error)
+    res.status(500).json({
+      message: 'Failed to search users',
+      error: error instanceof Error ? error.message : 'Unknown error'
+    })
+  }
+}
+
+export const getAllUsersController = async (req: Request, res: Response) => {
+  try {
+    const page = parseInt(req.query.page as string) || 1
+    const limit = parseInt(req.query.limit as string) || 10
+
+    const result = await usersService.getAllUsers(page as number, limit)
+    res.json({
+      message: 'Fetched users successfully',
+      result: {
+        users: result.users,
+        total: result.total,
+        page: result.page,
+        limit: result.limit,
+        totalPages: result.totalPages
+      }
+    })
+  } catch (error) {
+    console.error('Error fetching users:', error)
+    res.status(500).json({
+      message: 'Failed to fetch users',
+      error: error instanceof Error ? error.message : 'Unknown error'
+    })
+  }
 }
 
 export const logoutController = async (req: Request<ParamsDictionary, any, LogoutReqBody>, res: Response) => {

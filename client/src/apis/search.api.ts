@@ -1,10 +1,17 @@
-import { SearchRequest } from '@/types/Search.type'
-import { Tweets } from '@/types/Tweet.type'
 import { SuccessResponse } from '@/types/Utils.type'
+import { Tweets } from '@/types/Tweet.type'
 import { MediaType } from '@/constants/enum'
 import http from '@/utils/http'
 
-export interface SearchResponse {
+export interface SearchRequest {
+  content: string
+  page?: number
+  limit?: number
+  media_type?: MediaType
+  search_users?: boolean
+}
+
+interface TweetSearchResponse {
   tweets: Tweets[]
   total_pages: number
   total_tweets: number
@@ -13,28 +20,52 @@ export interface SearchResponse {
   execution_time_ms: number
 }
 
+interface UserSearchResponse {
+  users: {
+    _id: string
+    name: string
+    username: string
+    avatar: string
+    created_at: string
+    bio: string
+    location: string
+    website: string
+    is_followed: boolean
+  }[]
+  total_pages: number
+  total_users: number
+  limit: number
+  page: number
+  execution_time_ms: number
+}
+
 const searchApis = {
-  search: (params: SearchRequest) => {
-    // Create a base params object with required fields
+  searchTweets: (params: Omit<SearchRequest, 'search_users'>) => {
     const searchParams: Record<string, any> = {
-      content: params.content || '',
-      limit: params.limit || 5, // Default to 5 results
-      page: params.page || 1
+      content: params.content,
+      page: params.page || 1,
+      limit: params.limit || 5
     }
-    
-    // Only add media_type if it has a valid value, and convert enum to string
+
+    // Chỉ thêm media_type nếu có giá trị hợp lệ
     if (params.media_type !== undefined) {
-      // Make sure we're sending the exact string values expected by the API
-      if (params.media_type === MediaType.Image) {
-        searchParams.media_type = 'image'
-      } else if (params.media_type === MediaType.Video) {
-        searchParams.media_type = 'video'
-      }
+      searchParams.media_type = params.media_type === MediaType.Image ? 'image' : 'video'
     }
-    
-    return http.get<SuccessResponse<SearchResponse>>('/search', { params: searchParams })
+
+    return http.get<SuccessResponse<TweetSearchResponse>>('/search', { params: searchParams })
   },
-  
+
+  searchUsers: (params: Omit<SearchRequest, 'media_type'>) => {
+    const searchParams: Record<string, any> = {
+      content: params.content,
+      page: params.page || 1,
+      limit: params.limit || 5,
+      search_users: true
+    }
+
+    return http.get<SuccessResponse<UserSearchResponse>>('/search', { params: searchParams })
+  },
+
   clearCache: (pattern?: string) => 
     http.post<SuccessResponse<null>>('/search/cache/clear', { pattern })
 }

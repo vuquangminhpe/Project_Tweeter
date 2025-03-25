@@ -6,7 +6,8 @@ import {
   getAllTweetController,
   getNewTweetController,
   getTweetChildrenController,
-  getTweetDetailsController
+  getTweetDetailsController,
+  getTweetDetailsGuestController
 } from '~/controllers/tweet.controllers'
 import {
   audienceValidator,
@@ -46,6 +47,13 @@ tweetsRouter.post(
  * type: tweetTypes
  */
 tweetsRouter.get('/', AccessTokenValidator, verifiedUserValidator, wrapAsync(getAllTweetController))
+
+tweetsRouter.get(
+  '/guest/:tweet_id',
+  tweetIdValidator,
+  wrapAsync(getTweetDetailsGuestController) // Controller mới
+);
+
 
 /**
  * Description: get Tweet details

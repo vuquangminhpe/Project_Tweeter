@@ -13,6 +13,8 @@ import Comment from '~/models/schemas/Comment.schema'
 import Stories from '~/models/schemas/Stories.schema'
 import { Notification } from '~/models/schemas/Notification.shema'
 import { Payment } from '~/models/schemas/Payment.schema'
+import { Ban } from '~/models/schemas/Ban.schemas'
+import { Report } from '~/models/schemas/Report.schemas'
 
 const uri = `mongodb+srv://${envConfig.db_username}:${envConfig.db_password}@minhdevmongo.hzvnp.mongodb.net/?retryWrites=true&w=majority&appName=minhdevMongo`
 
@@ -58,6 +60,34 @@ class DatabaseService {
       this.followers.createIndex({ user_id: 1, followed_user_id: 1 }, { unique: true })
     }
   }
+  async indexReports() {
+    const existsContentIndex = await this.reports.indexExists('content_id_1_content_type_1')
+    if (!existsContentIndex) {
+      this.reports.createIndex({ content_id: 1, content_type: 1 })
+    }
+
+    const existsStatusIndex = await this.reports.indexExists('status_1')
+    if (!existsStatusIndex) {
+      this.reports.createIndex({ status: 1 })
+    }
+
+    const existsDateIndex = await this.reports.indexExists('created_at_1')
+    if (!existsDateIndex) {
+      this.reports.createIndex({ created_at: 1 })
+    }
+  }
+
+  async indexBans() {
+    const existsUserIndex = await this.bans.indexExists('user_id_1')
+    if (!existsUserIndex) {
+      this.bans.createIndex({ user_id: 1 })
+    }
+
+    const existsActiveIndex = await this.bans.indexExists('user_id_1_is_active_1')
+    if (!existsActiveIndex) {
+      this.bans.createIndex({ user_id: 1, is_active: 1 })
+    }
+  }
   get users(): Collection<User> {
     return this.db.collection(envConfig.usersCollection)
   }
@@ -96,6 +126,12 @@ class DatabaseService {
   }
   get payments(): Collection<Payment> {
     return this.db.collection(envConfig.paymentCollection)
+  }
+  get bans(): Collection<Ban> {
+    return this.db.collection(envConfig.bansCollection)
+  }
+  get reports(): Collection<Report> {
+    return this.db.collection(envConfig.reportsCollection)
   }
 }
 

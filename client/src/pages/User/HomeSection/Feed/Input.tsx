@@ -2,10 +2,10 @@ import { XIcon } from 'lucide-react'
 import { ChangeEvent, useContext, useEffect, useRef, useState } from 'react'
 import { IoMdPhotos } from 'react-icons/io'
 import { HiChartBar } from 'react-icons/hi'
-import { VscMention } from "react-icons/vsc";
+import { VscMention } from 'react-icons/vsc'
 import { BsEmojiKissFill } from 'react-icons/bs'
 import { FaRegCalendarCheck } from 'react-icons/fa6'
-import { IoIosSettings } from "react-icons/io";
+import { IoIosSettings } from 'react-icons/io'
 import data from '@emoji-mart/data'
 import Picker from '@emoji-mart/react'
 import { FaUserTag } from 'react-icons/fa'
@@ -57,6 +57,7 @@ function Input({ setEdit, isPendingTweet = true, dataEdit }: Props) {
     try {
       const uploadedLinks = await handleUploadItems()
       setAllLinkCreatedTweet(uploadedLinks)
+
       resetForm({
         values: {
           _id: '',
@@ -221,12 +222,14 @@ function Input({ setEdit, isPendingTweet = true, dataEdit }: Props) {
     }
   }
 
+
+
   return (
     <div className={`border-b border-gray-700 p-3 flex space-x-3`}>
       <Avatar className='h-11 w-11 rounded-full cursor-pointer'>
-        <AvatarImage src={profile?.avatar} alt={profile?.username || 'User'} />
+        <AvatarImage src={profile?.avatar} alt={profile?.name || 'User'} />
         <AvatarFallback className='bg-gradient-to-r from-violet-200 to-indigo-200 text-indigo-600'>
-          {profile?.username?.[0]?.toUpperCase() || 'U'}
+          {profile?.name?.[0]?.toUpperCase() || 'U'}
         </AvatarFallback>
       </Avatar>
       <div className='w-full divide-y divide-gray-700'>
@@ -278,7 +281,11 @@ function Input({ setEdit, isPendingTweet = true, dataEdit }: Props) {
                 <FaUserTag className='h-[22px] text-[#1d9bf0]' />
               </div>
               <div className='icon'>
-                <BsEmojiKissFill size={15} onClick={() => setShowEmoji(!showEmoji)} className='h-[22px] text-[#1d9bf0]' />
+                <BsEmojiKissFill
+                  size={15}
+                  onClick={() => setShowEmoji(!showEmoji)}
+                  className='h-[22px] text-[#1d9bf0]'
+                />
               </div>
               <div className='icon'>
                 <IoIosSettings size={20} className='h-[22px] text-[#1d9bf0]' />

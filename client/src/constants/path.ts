@@ -10,6 +10,9 @@ const path = {
   forgotPassword: '/auth/forgot-password',
   verifyForgotPassword: '/auth/verify-forgot-password',
   resetPassword: '/auth/reset-password',
+  storyView: '/user/story/:id',
+  storyCreate: '/user/story/create',
+  storyArchive: '/user/story/archive',
   user: '/user',
   any: '*',
   no: '',
@@ -21,6 +24,19 @@ const path = {
   paymentResult: '/user/payment/result',
   paymentHistory: '/user/payment/history',
   paymentDetail: '/user/payment/detail/:orderId',
-  subscription: '/user/subscription'
+  subscription: '/user/subscription',
+  bookmark: '/user/bookmarks',
+  whoToFollow: '/user/who-to-follow',
+  followingList: '/user/following',
+  admin: '/admin',
+  adminDashboard: '/admin/dashboard',
+  dashboard: 'dashboard',
+  statistics_user: 'statistics/users',
+  statistics_content: 'statistics/content',
+  statistics_interaction: 'statistics/interactions',
+  statistics_revenue: 'statistics/revenue',
+  users: 'users',
+  moderation_reported: 'moderation/reported',
+  moderation_generate: 'moderation/generate'
 } as const
 export default path

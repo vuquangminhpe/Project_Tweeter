@@ -1,7 +1,7 @@
 import Navigation from '@/components/Navigation/Navigation'
 import React from 'react'
 interface Props {
-  children: React.ReactNode
+  children?: React.ReactNode
 }
 export default function MainLayout({ children }: Props) {
   return (

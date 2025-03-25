@@ -458,6 +458,3 @@ export const deleteTweetValidator = validate(
     }
   })
 )
-
-
-

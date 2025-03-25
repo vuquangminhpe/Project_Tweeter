@@ -4,9 +4,9 @@ import { useState, ChangeEvent, useContext, useEffect, useCallback } from 'react
 import { FormikHelpers, useFormik } from 'formik'
 import * as Yup from 'yup'
 import { BiImageAlt, BiHash, BiAt, BiCog } from 'react-icons/bi'
-import { useMutation, useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery, useInfiniteQuery } from '@tanstack/react-query'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { IoIosArrowDown } from 'react-icons/io'
 
 import PostCard from './TwitterCard/TwitterCard'
 import { AppContext } from '@/Contexts/app.context'
@@ -45,6 +45,7 @@ const HomeSection = ({ setEdit, isPendingTweet = true, isTitleName = 'Share', cu
   const [allIdWithMentionName, setAllIdWithMentionName] = useState<string[]>([])
   const [allIdWithMentionName_Undefined, setAllIdWithMentionName_Undefined] = useState<string[]>([])
   const { profile } = useContext(AppContext)
+  const [isGeneratingTweet, setIsGeneratingTweet] = useState<boolean>(false)
 
   const handleSubmit = async (values: TweetFormValues, { resetForm }: FormikHelpers<TweetFormValues>) => {
     try {
@@ -97,15 +98,42 @@ const HomeSection = ({ setEdit, isPendingTweet = true, isTitleName = 'Share', cu
   })
 
   const {
-    data: dataTweets,
-    isLoading: isLoadingAllDataTweet,
-    refetch: refetchAllDataTweet
+    data: myTweets,
+    isLoading: isLoadingMyTweets,
+    refetch: refetchMyTweets
   } = useQuery({
-    queryKey: ['dataTweets'],
+    queryKey: ['myTweets'],
     queryFn: tweetsApi.getAllTweets
   })
 
-  const allTweets = dataTweets?.data?.data
+  // Replace the regular query with infinite query
+  const {
+    data: newFeedsData,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isLoading: isLoadingNewFeeds,
+    refetch: refetchNewFeeds
+  } = useInfiniteQuery({
+    queryKey: ['newFeeds'],
+    queryFn: async ({ pageParam = 1 }) => {
+      const response = await tweetsApi.getNewFeeds(pageParam, 10)
+      return response.data
+    },
+    getNextPageParam: (lastPage, allPages) => {
+      const currentPage = allPages.length
+      return Number(currentPage) < Number(lastPage.total_pages) ? currentPage + 1 : undefined
+    },
+    initialPageParam: 1
+  })
+
+  // Flatten tweets from all pages
+  const newFeedTweets = newFeedsData?.pages.flatMap((page) => page.results) || []
+
+  const refetchAllDataTweet = useCallback(() => {
+    refetchMyTweets()
+    refetchNewFeeds()
+  }, [refetchMyTweets, refetchNewFeeds])
 
   useEffect(() => {
     const convertMentionsToIds = async () => {
@@ -198,19 +226,35 @@ const HomeSection = ({ setEdit, isPendingTweet = true, isTitleName = 'Share', cu
     }
   })
 
+  // const handleImageSelect = (event: ChangeEvent<HTMLInputElement>) => {
+  //   const files = event.target.files
+  //   if (files) {
+  //     const fileArray = Array.from(files)
+  //     setSelectItemInTweet(fileArray)
+  //     const previews = fileArray.map((file) => URL.createObjectURL(file))
+  //     setImagePreviews(previews)
+  //     formik.setFieldValue('images', fileArray)
+  //   }
+  //   console.log(formik.getFieldProps('images'))
+  // }
+
   const handleImageSelect = (event: ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files
-    if (files) {
+    if (files && files.length > 0) {
       const fileArray = Array.from(files)
-      setSelectItemInTweet(fileArray)
+
+      setSelectItemInTweet((prev) => [...prev, ...fileArray])
+
       const previews = fileArray.map((file) => URL.createObjectURL(file))
-      setImagePreviews(previews)
-      formik.setFieldValue('images', fileArray)
+      setImagePreviews((prev) => [...prev, ...previews])
+
+      formik.setFieldValue('images', [...formik.values.images, ...fileArray])
     }
   }
 
   const handleUploadItems = async () => {
     if (selectItemInTweet.length > 0) {
+      console.log('Uploading files:', selectItemInTweet)
       try {
         const uploadedFiles = await Promise.all(
           selectItemInTweet.map(async (item) => {
@@ -317,57 +361,97 @@ const HomeSection = ({ setEdit, isPendingTweet = true, isTitleName = 'Share', cu
     [allIdWithMentionName, editTweetMutation, formik.values.type, dataEdit?._id]
   )
 
-  if (isLoadingAllDataTweet) {
-    return (
-      <div className='flex justify-center items-center min-h-[200px]'>
-        <div className='animate-pulse flex space-x-2'>
-          <div className='h-3 w-3 bg-indigo-400 rounded-full'></div>
-          <div className='h-3 w-3 bg-indigo-500 rounded-full'></div>
-          <div className='h-3 w-3 bg-indigo-600 rounded-full'></div>
-        </div>
-      </div>
-    )
+  const generateAITweetMutation = useMutation({
+    mutationFn: (message: string) => tweetsApi.generateTweetWithAi({ message }),
+    onMutate: () => {
+      setIsGeneratingTweet(true)
+    },
+    onSuccess: (response) => {
+      // The API response has a nested structure
+      if (response.data?.data?.data) {
+        const aiGeneratedTweet = response.data.data.data
+
+        // Update form content with AI-generated content
+        formik.setFieldValue('content', aiGeneratedTweet.content)
+        setContentWithGenerateAi(aiGeneratedTweet.content)
+
+        // Process hashtags - remove # prefix if present
+        if (aiGeneratedTweet.hashtags && aiGeneratedTweet.hashtags.length > 0) {
+          const formattedHashtags = aiGeneratedTweet.hashtags.map((tag: string) =>
+            tag.startsWith('#') ? tag.substring(1) : tag
+          )
+          formik.setFieldValue('hashtags', formattedHashtags)
+        }
+
+        toast.success('AI tweet generated!')
+      }
+    },
+    onError: (error) => {
+      console.error('Failed to generate AI tweet:', error)
+      toast.error('Failed to generate AI tweet')
+    },
+    onSettled: () => {
+      setIsGeneratingTweet(false)
+    }
+  })
+
+  const handleAIGeneration = async () => {
+    const defaultMessage = 'Hôm nay của tôi'
+    const message = formik.values.content.trim() || defaultMessage
+
+    try {
+      await generateAITweetMutation.mutateAsync(message)
+    } catch (error) {
+      console.error('Error in handleAIGeneration:', error)
+    }
   }
 
   return (
-    <div className={`${isPendingTweet ? 'container' : 'w-full'} mx-auto bg-white rounded-xl shadow-sm overflow-hidden`}>
+    <div className=' text-white flex-grow border-l border-r border-gray-700 max-w-2xl sm:ml-[73px] xl:ml-[370px]'>
       {isPendingTweet && (
         <div className={`${customClassName}`}>
-          <Tabs defaultValue={activeTab} onValueChange={setActiveTab} className='w-full'>
-            <TabsList className='w-full p-0 h-12 bg-gray-50 rounded-none border-b'>
-              <TabsTrigger
-                value='forYou'
-                className='flex-1 h-full data-[state=active]:bg-white data-[state=active]:shadow-none rounded-none data-[state=active]:border-b-2 data-[state=active]:border-indigo-600'
-              >
-                For You
-              </TabsTrigger>
-              <TabsTrigger
-                value='following'
-                className='flex-1 h-full data-[state=active]:bg-white data-[state=active]:shadow-none rounded-none data-[state=active]:border-b-2 data-[state=active]:border-indigo-600'
-              >
-                Following
-              </TabsTrigger>
-            </TabsList>
-          </Tabs>
+          <div className='flex items-center justify-center sticky top-0 z-50 bg-black border-b border-gray-700'>
+            <div
+              className={`relative flex-1 text-center py-3 cursor-pointer transition duration-300 ${
+                activeTab === 'forYou' ? 'text-white' : 'text-gray-500 hover:bg-gray-800 hover:text-white'
+              }`}
+              onClick={() => setActiveTab('forYou')}
+            >
+              For you
+              {activeTab === 'forYou' && (
+                <div className='absolute bottom-0 left-1/2 transform -translate-x-1/2 w-[80px] border-b-4 border-[#1D9BF0]'></div>
+              )}
+            </div>
+            <div
+              className={`relative flex-1 text-center py-3 cursor-pointer transition duration-300 ${
+                activeTab === 'myTweet' ? 'text-white' : 'text-gray-500 hover:bg-gray-800 hover:text-white'
+              }`}
+              onClick={() => setActiveTab('myTweet')}
+            >
+              My Tweet
+              {activeTab === 'myTweet' && (
+                <div className='absolute bottom-0 left-1/2 transform -translate-x-1/2 w-[80px] border-b-4 border-[#1D9BF0]'></div>
+              )}
+            </div>
+          </div>
         </div>
       )}
 
-      <div className={`p-4 bg-white border-b ${isPendingTweet ? '' : 'w-full'}`}>
-        <div className='flex items-start gap-4'>
-          <Avatar className='w-10 h-10 border border-gray-200'>
+      <div className={`p-4 bg-black border-b border-gray-700 ${isPendingTweet ? '' : 'w-full'}`}>
+        <div className='border-b border-gray-700 p-3 flex space-x-3'>
+          <Avatar className='h-11 w-11 rounded-full cursor-pointer'>
             <AvatarImage src={profile?.avatar} alt={profile?.name} />
             <AvatarFallback className='bg-gradient-to-r from-violet-200 to-indigo-200 text-indigo-600'>
               {profile?.name?.charAt(0).toUpperCase()}
             </AvatarFallback>
           </Avatar>
 
-          <div className='flex-1'>
+          <div className='w-full divide-y divide-gray-700'>
             <form onSubmit={formik.handleSubmit}>
               <textarea
                 placeholder="Share what's on your mind..."
-                className='w-full min-h-[100px] p-4 bg-gray-50 border border-gray-200 
-                rounded-lg focus:ring-2 focus:ring-indigo-200 focus:border-indigo-300
-                resize-none transition-all duration-200'
+                className='bg-transparent outline-none 
+            text-[#d9d9d9] text-lg placeholder-gray-500 tracking-wide w-full min-h-[50px] overflow-hidden'
                 {...formik.getFieldProps('content')}
               />
 
@@ -376,11 +460,11 @@ const HomeSection = ({ setEdit, isPendingTweet = true, isTitleName = 'Share', cu
               )}
 
               {imagePreviews.length > 0 && (
-                <div className='grid grid-cols-2 sm:grid-cols-3 gap-3 mt-4'>
+                <div className='flex flex-row overflow-x-auto gap-1'>
                   {imagePreviews.map((preview, index) => (
-                    <div key={index} className='relative rounded-lg overflow-hidden'>
+                    <div key={index} className='relative'>
                       {typeof preview === 'string' && (
-                        <img src={preview} alt={`Preview ${index}`} className='w-full h-36 object-cover' />
+                        <img src={preview} alt={`Preview ${index}`} className='rounded-2xl max-h-80 object-contain' />
                       )}
                       <button
                         type='button'
@@ -393,27 +477,17 @@ const HomeSection = ({ setEdit, isPendingTweet = true, isTitleName = 'Share', cu
                           setSelectItemInTweet(newImages)
                           formik.setFieldValue('images', newImages)
                         }}
-                        className='absolute top-2 right-2 bg-black/50 text-white rounded-full p-1.5 hover:bg-black/70 transition'
+                        className='absolute w-8 h-8 bg-[#15181c] hover:bg-[#272c26] bg-opacity-75 
+        rounded-full flex items-center justify-center top-1 left-1 cursor-pointer'
                       >
-                        <svg
-                          xmlns='http://www.w3.org/2000/svg'
-                          className='h-4 w-4'
-                          viewBox='0 0 20 20'
-                          fill='currentColor'
-                        >
-                          <path
-                            fillRule='evenodd'
-                            d='M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z'
-                            clipRule='evenodd'
-                          />
-                        </svg>
+                        X
                       </button>
                     </div>
                   ))}
                 </div>
               )}
 
-              <div className='flex justify-between items-center mt-4'>
+              <div className='flex items-center justify-between pt-2.5'>
                 <div className='flex space-x-4'>
                   <label className='cursor-pointer text-gray-600 hover:text-indigo-600 transition flex items-center gap-1'>
                     <BiImageAlt className='text-xl' />
@@ -427,22 +501,25 @@ const HomeSection = ({ setEdit, isPendingTweet = true, isTitleName = 'Share', cu
                     />
                   </label>
 
-                  <div className='relative flex items-center justify-center w-8 h-8 flex-shrink-0'>
-          <Orb
-            hoverIntensity={0.3} // Giảm intensity để phù hợp kích thước nhỏ
-            rotateOnHover={true}
-            hue={120} // Màu mặc định
-            forceHoverState={false}
-          
-          />
-        </div>
+                  {/* AI Generation Orb */}
+                  <div
+                    className='relative flex items-center justify-center w-8 h-8 flex-shrink-0 cursor-pointer'
+                    onClick={handleAIGeneration}
+                  >
+                    <Orb hoverIntensity={0.3} rotateOnHover={true} hue={120} forceHoverState={isGeneratingTweet} />
+                    {isGeneratingTweet && (
+                      <div className='absolute inset-0 flex items-center justify-center'>
+                        <div className='animate-spin h-4 w-4 border-2 border-indigo-500 rounded-full border-t-transparent'></div>
+                      </div>
+                    )}
+                  </div>
 
                   <Popover>
                     <PopoverTrigger className='flex items-center gap-1 text-gray-600 hover:text-indigo-600 transition'>
                       <BiHash className='text-xl' />
                       <span className='text-sm'>Tags</span>
                     </PopoverTrigger>
-                    <PopoverContent className='w-72 p-4 rounded-lg'>
+                    <PopoverContent className='w-72 p-4 rounded-lg bg-gray-800 text-white shadow-xl'>
                       <h3 className='text-sm font-medium mb-2'>Add tags to your post</h3>
                       <div className='flex gap-2 mb-3'>
                         <input
@@ -451,12 +528,12 @@ const HomeSection = ({ setEdit, isPendingTweet = true, isTitleName = 'Share', cu
                           onChange={formik.handleChange}
                           name='currentHashtag'
                           placeholder='Enter tag name'
-                          className='flex-1 bg-gray-100 rounded-lg px-3 py-2 text-sm'
+                          className='flex-1 bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-400'
                         />
                         <button
                           type='button'
                           onClick={addHashtag}
-                          className='bg-indigo-100 text-indigo-600 px-3 py-2 rounded-lg text-sm font-medium hover:bg-indigo-200 transition'
+                          className='bg-indigo-700 text-white px-3 py-2 rounded-lg text-sm font-medium hover:bg-indigo-600 transition'
                         >
                           Add
                         </button>
@@ -468,7 +545,7 @@ const HomeSection = ({ setEdit, isPendingTweet = true, isTitleName = 'Share', cu
                             {formik?.values?.hashtags?.map((hashtag: any, index: any) => (
                               <span
                                 key={index}
-                                className='bg-indigo-100 text-indigo-600 px-2 py-1 rounded-full text-xs flex items-center'
+                                className='bg-indigo-700 text-white px-2 py-1 rounded-full text-xs flex items-center'
                               >
                                 #{!isPendingTweet ? (hashtag as any).name : hashtag}
                                 <button
@@ -477,7 +554,7 @@ const HomeSection = ({ setEdit, isPendingTweet = true, isTitleName = 'Share', cu
                                     const newHashtags = formik.values.hashtags.filter((_, i) => i !== index)
                                     formik.setFieldValue('hashtags', newHashtags)
                                   }}
-                                  className='ml-1 text-indigo-400 hover:text-indigo-700'
+                                  className='ml-1 text-indigo-300 hover:text-indigo-500'
                                 >
                                   ×
                                 </button>
@@ -494,7 +571,7 @@ const HomeSection = ({ setEdit, isPendingTweet = true, isTitleName = 'Share', cu
                       <BiAt className='text-xl' />
                       <span className='text-sm'>Mention</span>
                     </PopoverTrigger>
-                    <PopoverContent className='w-72 p-4 rounded-lg'>
+                    <PopoverContent className='w-72 p-4 rounded-lg bg-gray-800 text-white shadow-xl'>
                       <h3 className='text-sm font-medium mb-2'>Mention people</h3>
                       <div className='flex gap-2 mb-3'>
                         <input
@@ -503,12 +580,12 @@ const HomeSection = ({ setEdit, isPendingTweet = true, isTitleName = 'Share', cu
                           onChange={formik.handleChange}
                           name='currentMention'
                           placeholder='Enter username'
-                          className='flex-1 bg-gray-100 rounded-lg px-3 py-2 text-sm'
+                          className='flex-1 bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-400'
                         />
                         <button
                           type='button'
                           onClick={addMention}
-                          className='bg-indigo-100 text-indigo-600 px-3 py-2 rounded-lg text-sm font-medium hover:bg-indigo-200 transition'
+                          className='bg-indigo-700 text-white px-3 py-2 rounded-lg text-sm font-medium hover:bg-indigo-600 transition'
                         >
                           Add
                         </button>
@@ -523,7 +600,7 @@ const HomeSection = ({ setEdit, isPendingTweet = true, isTitleName = 'Share', cu
                                 <span
                                   key={index}
                                   className={`px-2 py-1 rounded-full text-xs flex items-center ${
-                                    isValid ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-600'
+                                    isValid ? 'bg-green-700 text-white' : 'bg-gray-700 text-gray-400'
                                   }`}
                                 >
                                   @{!isPendingTweet ? (mention as any).username : mention}
@@ -533,7 +610,11 @@ const HomeSection = ({ setEdit, isPendingTweet = true, isTitleName = 'Share', cu
                                       const newMentions = formik.values.mentions.filter((_, i) => i !== index)
                                       formik.setFieldValue('mentions', newMentions)
                                     }}
-                                    className={`ml-1 ${isValid ? 'text-green-400 hover:text-green-700' : 'text-gray-400 hover:text-gray-700'}`}
+                                    className={`ml-1 ${
+                                      isValid
+                                        ? 'text-green-300 hover:text-green-500'
+                                        : 'text-gray-400 hover:text-gray-500'
+                                    }`}
                                   >
                                     ×
                                   </button>
@@ -551,7 +632,7 @@ const HomeSection = ({ setEdit, isPendingTweet = true, isTitleName = 'Share', cu
                       <BiCog className='text-xl' />
                       <span className='text-sm'>Privacy</span>
                     </PopoverTrigger>
-                    <PopoverContent className='w-64 p-4 rounded-lg'>
+                    <PopoverContent className='w-64 p-4 rounded-lg bg-gray-800 text-white shadow-xl'>
                       <h3 className='text-sm font-medium mb-3'>Who can see this post?</h3>
                       <div className='space-y-3'>
                         <label className='flex items-center gap-2 cursor-pointer'>
@@ -560,12 +641,12 @@ const HomeSection = ({ setEdit, isPendingTweet = true, isTitleName = 'Share', cu
                             value={1}
                             checked={formik.values.audience === 1}
                             name='audience'
-                            className='accent-indigo-600'
+                            className='accent-indigo-500'
                             onChange={() => formik.setFieldValue('audience', 1)}
                           />
                           <div>
                             <div className='text-sm font-medium'>Everyone</div>
-                            <div className='text-xs text-gray-500'>Any user can see this post</div>
+                            <div className='text-xs text-gray-400'>Any user can see this post</div>
                           </div>
                         </label>
                         <label className='flex items-center gap-2 cursor-pointer'>
@@ -574,12 +655,12 @@ const HomeSection = ({ setEdit, isPendingTweet = true, isTitleName = 'Share', cu
                             value={0}
                             checked={formik.values.audience === 0}
                             name='audience'
-                            className='accent-indigo-600'
+                            className='accent-indigo-500'
                             onChange={() => formik.setFieldValue('audience', 0)}
                           />
                           <div>
                             <div className='text-sm font-medium'>Circle Only</div>
-                            <div className='text-xs text-gray-500'>Only people in your circle can see</div>
+                            <div className='text-xs text-gray-400'>Only people in your circle can see</div>
                           </div>
                         </label>
                       </div>
@@ -590,7 +671,7 @@ const HomeSection = ({ setEdit, isPendingTweet = true, isTitleName = 'Share', cu
                 <button
                   type='submit'
                   disabled={uploadingImage}
-                  className='bg-gradient-to-r from-violet-600 to-indigo-600 text-white px-6 py-2 rounded-lg
+                  className='mx-2 bg-gradient-to-r from-violet-600 to-indigo-600 text-white px-6 py-2 rounded-lg
                   font-medium hover:from-violet-700 hover:to-indigo-700 transition-colors duration-200 
                   focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-2 disabled:opacity-70'
                 >
@@ -602,44 +683,120 @@ const HomeSection = ({ setEdit, isPendingTweet = true, isTitleName = 'Share', cu
         </div>
       </div>
 
-      {isPendingTweet && (allTweets?.length ?? 0) > 0 && (
-        <div className='divide-y'>
-          {allTweets?.map((data) =>
-            Array(data).map((element, index) => (
+      <div className='pb-72'>
+        {activeTab === 'forYou' ? (
+          isLoadingNewFeeds && !newFeedsData ? (
+            <div className='flex justify-center items-center min-h-[200px]'>
+              <div className='animate-pulse flex space-x-2'>
+                <div className='h-3 w-3 bg-indigo-400 rounded-full'></div>
+                <div className='h-3 w-3 bg-indigo-500 rounded-full'></div>
+                <div className='h-3 w-3 bg-indigo-600 rounded-full'></div>
+              </div>
+            </div>
+          ) : isPendingTweet && newFeedTweets.length > 0 ? (
+            <>
+              <div>
+                {newFeedTweets.map((element, index) => (
+                  <PostCard
+                    refetchAllDataTweet={refetchAllDataTweet}
+                    key={`${element._id}-${index}`}
+                    data={element}
+                    data_length={element?.medias?.length}
+                    profile={profile}
+                  />
+                ))}
+
+                {/* {newFeedTweets.map((element) => console.log(element))} */}
+              </div>
+
+              {/* Load More Button */}
+              {hasNextPage && (
+                <div className='flex justify-center my-4'>
+                  <button
+                    onClick={() => fetchNextPage()}
+                    disabled={isFetchingNextPage}
+                    className='flex items-center px-4 py-2 bg-indigo-500 text-white rounded-full hover:bg-indigo-600 disabled:opacity-50'
+                  >
+                    {isFetchingNextPage ? 'Loading...' : 'Load More'}
+                    <IoIosArrowDown className='ml-2' />
+                  </button>
+                </div>
+              )}
+
+              {/* Loading More Indicator */}
+              {isFetchingNextPage && (
+                <div className='flex justify-center items-center my-4'>
+                  <div className='animate-pulse text-gray-500'>Fetching more tweets...</div>
+                </div>
+              )}
+            </>
+          ) : (
+            <div className='py-12 px-4 text-center'>
+              <div className='bg-indigo-50 rounded-full w-16 h-16 mx-auto flex items-center justify-center mb-4'>
+                <svg
+                  xmlns='http://www.w3.org/2000/svg'
+                  className='h-8 w-8 text-indigo-500'
+                  fill='none'
+                  viewBox='0 0 24 24'
+                  stroke='currentColor'
+                >
+                  <path
+                    strokeLinecap='round'
+                    strokeLinejoin='round'
+                    strokeWidth={2}
+                    d='M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z'
+                  />
+                </svg>
+              </div>
+              <h3 className='text-lg font-medium text-gray-900 mb-1'>No posts in your feed</h3>
+              <p className='text-gray-500 mb-6'>Follow more people to see their posts</p>
+            </div>
+          )
+        ) : isLoadingMyTweets ? (
+          <div className='flex justify-center items-center min-h-[200px]'>
+            <div className='animate-pulse flex space-x-2'>
+              <div className='h-3 w-3 bg-indigo-400 rounded-full'></div>
+              <div className='h-3 w-3 bg-indigo-500 rounded-full'></div>
+              <div className='h-3 w-3 bg-indigo-600 rounded-full'></div>
+            </div>
+          </div>
+        ) : isPendingTweet && (myTweets?.data?.data?.length ?? 0) > 0 ? (
+          <div>
+            {myTweets.data.data.map((element, index) => (
               <PostCard
                 refetchAllDataTweet={refetchAllDataTweet}
                 key={`${element._id}-${index}`}
                 data={element}
-                data_length={data?.medias?.length}
+                data_length={element?.medias?.length}
                 profile={profile}
               />
-            ))
-          )}
-        </div>
-      )}
-
-      {isPendingTweet && (!allTweets || allTweets.length === 0) && (
-        <div className='py-12 px-4 text-center'>
-          <div className='bg-indigo-50 rounded-full w-16 h-16 mx-auto flex items-center justify-center mb-4'>
-            <svg
-              xmlns='http://www.w3.org/2000/svg'
-              className='h-8 w-8 text-indigo-500'
-              fill='none'
-              viewBox='0 0 24 24'
-              stroke='currentColor'
-            >
-              <path
-                strokeLinecap='round'
-                strokeLinejoin='round'
-                strokeWidth={2}
-                d='M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z'
-              />
-            </svg>
+            ))}
           </div>
-          <h3 className='text-lg font-medium text-gray-900 mb-1'>No posts yet</h3>
-          <p className='text-gray-500 mb-6'>Be the first to share something with your circle</p>
-        </div>
-      )}
+        ) : (
+          <div className='py-12 px-4 text-center'>
+            <div className='bg-indigo-50 rounded-full w-16 h-16 mx-auto flex items-center justify-center mb-4'>
+              <svg
+                xmlns='http://www.w3.org/2000/svg'
+                className='h-8 w-8 text-indigo-500'
+                fill='none'
+                viewBox='0 0 24 24'
+                stroke='currentColor'
+              >
+                <path
+                  strokeLinecap='round'
+                  strokeLinejoin='round'
+                  strokeWidth={2}
+                  d='M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z'
+                />
+              </svg>
+            </div>
+            <h3 className='text-lg font-medium text-gray-900 mb-1'>You haven't posted yet</h3>
+            <p className='text-gray-500 mb-6'>Share something to see your tweets here</p>
+          </div>
+        )}
+      </div>
+
+      {/* Remove the old conditional rendering for empty tweets */}
     </div>
   )
 }

@@ -88,6 +88,7 @@ class UserService {
         ...payload,
         _id: user_id,
         typeAccount: AccountStatus.FREE,
+        role: 'user',
         count_type_account: 0,
         email_verify_token: email_verify_token,
         password: hashPassword(payload.password),
@@ -103,11 +104,10 @@ class UserService {
     const expiryInSeconds = envConfig.token_expiry_seconds || 604800
     await valkeyService.storeRefreshToken(user_id.toString(), refresh_token, expiryInSeconds)
 
-    await sendVerifyEmail(payload.email, email_verify_token)
+    verifyForgotPassword(false, payload.email, email_verify_token)
 
     return {
-      access_token,
-      refresh_token
+      access_token
     }
   }
   async refreshToken(user_id: string, verify: UserVerifyStatus, refresh_token: string) {
@@ -224,8 +224,7 @@ class UserService {
     await valkeyService.storeRefreshToken(user_id, refresh_token, expiryInSeconds)
 
     return {
-      access_token,
-      refresh_token
+      access_token
     }
   }
   async logout(refresh_token: string) {
@@ -296,7 +295,7 @@ class UserService {
         }
       }
     )
-    verifyForgotPassword(user?.email as string, forgot_password_token)
+    verifyForgotPassword(true, user?.email as string, forgot_password_token)
     return {
       message: USERS_MESSAGES.CHECK_EMAIL_TO_RESET_PASSWORD
     }
@@ -426,10 +425,125 @@ class UserService {
       message: USERS_MESSAGES.UN_FOLLOWER_SUCCESS
     }
   }
-  async getFollowing(user_id: string) {
-    const result = await databaseService.followers.find({ user_id: new ObjectId(user_id) }).toArray()
+  async getAllUsers(user_id: string, page: number = 1, limit: number = 10) {
+    try {
+      const skip = (page - 1) * limit // Tính số lượng bản ghi cần bỏ qua
 
-    return result
+      // Lấy danh sách những user đã follow
+      const followedUsers = await databaseService.followers.find({ user_id: new ObjectId(user_id) }).toArray()
+
+      const followedUserIds = followedUsers.map((f) => new ObjectId(f.followed_user_id))
+
+      // Tìm những user chưa được follow
+      const query: any =
+        followedUserIds.length > 0
+          ? { _id: { $nin: followedUserIds, $ne: new ObjectId(user_id) } } // Loại bỏ cả bản thân người dùng
+          : { _id: { $ne: new ObjectId(user_id) } } // Nếu chưa follow ai, lấy tất cả trừ bản thân
+
+      const users = await databaseService.users
+        .find(query, {
+          projection: { _id: 1, name: 1, username: 1, email: 1, avatar: 1 }
+        })
+        .skip(skip)
+        .limit(limit)
+        .toArray()
+
+      // Đếm tổng số user chưa follow
+      const totalUsers = await databaseService.users.countDocuments(query)
+
+      return {
+        users,
+        total: totalUsers,
+        page,
+        limit,
+        totalPages: Math.ceil(totalUsers / limit)
+      }
+    } catch (error) {
+      console.error('Error fetching users:', error)
+      return { users: [], total: 0, page, limit, totalPages: 0 }
+    }
+  }
+
+  async searchUsersByName(name: string, page: number = 1, limit: number = 10) {
+    try {
+      const skip = (page - 1) * limit
+      // Tìm kiếm người dùng với name khớp (không phân biệt hoa thường)
+      const users = await databaseService.users
+        .find(
+          {
+            name: { $regex: name, $options: 'i' } // Tìm kiếm không phân biệt hoa thường
+          },
+          {
+            projection: {
+              _id: 1,
+              name: 1,
+              username: 1,
+              email: 1,
+              avatar: 1
+            }
+          }
+        )
+        .skip(skip)
+        .limit(limit)
+        .toArray()
+
+      // Đếm tổng số người dùng khớp với tìm kiếm
+      const totalUsers = await databaseService.users.countDocuments({
+        name: { $regex: name, $options: 'i' }
+      })
+
+      return {
+        users,
+        total: totalUsers,
+        page,
+        limit,
+        totalPages: Math.ceil(totalUsers / limit)
+      }
+    } catch (error) {
+      console.error('Error searching users:', error)
+      return { users: [], total: 0, page, limit, totalPages: 0 }
+    }
+  }
+
+  async getFollowing(user_id: string) {
+    // Lấy danh sách following từ collection followers
+    const followers = await databaseService.followers.find({ user_id: new ObjectId(user_id) }).toArray()
+
+    // Lấy danh sách followed_user_id từ followers
+    const followerIds = followers.map((f) => new ObjectId(f.followed_user_id))
+
+    // Lấy thông tin chi tiết của từng người dùng từ collection users
+    const followerDetails = await databaseService.users
+      .find(
+        { _id: { $in: followerIds } },
+        { projection: { _id: 1, name: 1, username: 1, email: 1, avatar: 1 } } // Chỉ lấy các trường cần thiết
+      )
+      .toArray()
+
+    // Tạo một Map để dễ dàng truy vấn thông tin của từng người dùng
+    const followerMap = new Map(
+      followerDetails.map((user) => [
+        user._id.toString(),
+        {
+          _id: user._id.toString(),
+          name: user.name,
+          username: user.username,
+          email: user.email,
+          avatar: user.avatar || null
+        }
+      ])
+    )
+
+    // Gán thông tin đúng vào từng follower
+    const result = followers.map((follower) => ({
+      _id: follower._id.toString(),
+      user_id: follower.user_id.toString(),
+      followed_user_id: follower.followed_user_id.toString(),
+      created_at: follower.created_at,
+      followingDetails: followerMap.get(follower.followed_user_id.toString()) || null
+    }))
+
+    return result // Trả về trực tiếp mảng result
   }
   async getFollowers(user_id: string) {
     const result = await databaseService.followers.find({ followed_user_id: new ObjectId(user_id) }).toArray()

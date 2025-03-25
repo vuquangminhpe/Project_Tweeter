@@ -23,7 +23,21 @@ import SubscriptionPage from './pages/User/Subscription'
 import PaymentResultPage from './pages/User/Payment/PaymentResultPage'
 import PaymentHistoryPage from './pages/User/Payment/PaymentHistoryPage'
 import PaymentDetailPage from './pages/User/Payment/PaymentDetailPage'
-
+import StoriesPage from './pages/User/HomeSection/StoriesPage/StoriesPage'
+import StoryCreator from './pages/User/HomeSection/StoryCreator/StoryCreator'
+import StoryArchiveViewer from './pages/User/HomeSection/StoryArchiveViewer'
+import Bookmarks from './pages/User/BookMark'
+import WhoToFollow from './pages/User/WhoToFollow'
+import FollowingList from './pages/User/HomeSection/FollowingList'
+import UserManagement from './pages/Admin/Users/UserManagement'
+import RevenueStatistics from './pages/Admin/Statistics/RevenueStatistics/RevenueStatistics'
+import ContentStatistics from './pages/Admin/Statistics/ContentStatistics'
+import UserStatistics from './pages/Admin/Statistics'
+import AdminDashboard from './pages/Admin/Dashboard'
+import ContentModeration from './pages/Admin/Moderation'
+import ReportGeneration from './pages/Admin/Reports'
+import InteractionStatistics from './pages/Admin/Statistics/InteractionStatistics'
+import AdminLayout from './layout/AdminLayout/AdminLayout'
 function ProtectedRoute() {
   const { isAuthenticated } = useContext(AppContext)
   return isAuthenticated ? <Outlet /> : <Navigate to={path.login} />
@@ -35,7 +49,56 @@ function RejectedRoute() {
 }
 
 export default function useRouteElement() {
+  const profile = useContext(AppContext).profile
   const routeElements = useRoutes([
+    {
+      path: path.admin,
+      element: <ProtectedRoute />,
+      children: [
+        {
+          path: '',
+          element: <AdminLayout />,
+          children: [
+            {
+              path: '',
+              element: <Navigate to={path.adminDashboard} />
+            },
+            {
+              path: path.dashboard,
+              element: <AdminDashboard />
+            },
+            {
+              path: path.statistics_user,
+              element: <UserStatistics />
+            },
+            {
+              path: path.statistics_content,
+              element: <ContentStatistics />
+            },
+            {
+              path: path.statistics_interaction,
+              element: <InteractionStatistics />
+            },
+            {
+              path: path.statistics_revenue,
+              element: <RevenueStatistics />
+            },
+            {
+              path: path.users,
+              element: <UserManagement />
+            },
+            {
+              path: path.moderation_reported,
+              element: <ContentModeration />
+            },
+            {
+              path: path.moderation_generate,
+              element: <ReportGeneration />
+            }
+          ]
+        }
+      ]
+    },
     {
       path: path.asHome,
       element: <Navigate to={path.home} />
@@ -97,6 +160,22 @@ export default function useRouteElement() {
           element: <Chat />
         },
         {
+          path: 'story',
+          element: <StoriesPage />
+        },
+        {
+          path: 'story/:id',
+          element: <StoriesPage />
+        },
+        {
+          path: 'story/create',
+          element: <StoryCreator onClose={() => window.history.back()} />
+        },
+        {
+          path: 'story/archive',
+          element: <StoryArchiveViewer userId={profile?._id || ''} onClose={() => window.history.back()} />
+        },
+        {
           path: path.story,
           element: <Story />
         },
@@ -138,6 +217,19 @@ export default function useRouteElement() {
       path: path.googleLogin,
       element: <OAuthCallback />
     },
+    {
+      path: path.bookmark,
+      element: <Bookmarks />
+    },
+    {
+      path: path.whoToFollow,
+      element: <WhoToFollow />
+    },
+    {
+      path: path.followingList,
+      element: <FollowingList profile={profile} />
+    },
+
     {
       path: path.any,
       element: <Navigate to={path.home} />

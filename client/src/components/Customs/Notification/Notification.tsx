@@ -131,7 +131,7 @@ export default function NotificationIsland({
                 className='size-full absolute top-0 right-0 inline-grid place-content-center transform-gpu dark:text-neutral-400 text-neutral-600 transition-colors duration-500 dark:hover:text-neutral-300 hover:text-neutral-700'
                 onClick={handleOpenSettings}
                 type='button'
-                initial={{ opacity: 0 }}
+                initial={{ opacity: 0.6 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
               >

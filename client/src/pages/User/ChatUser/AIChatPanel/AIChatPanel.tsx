@@ -210,7 +210,7 @@ const AIChatPanel = ({ isOpen, onClose }: AIChatPanelProps) => {
           {/* Header */}
           <motion.div
             className='p-3 border-b border-[#30363d] bg-gradient-to-r from-[#1a1f29] to-[#161b22]'
-            initial={{ opacity: 0 }}
+            initial={{ opacity: 0.6 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.1 }}
           >
