@@ -18,7 +18,6 @@ const useStories = (options: UseStoriesOptions = {}) => {
     queryKey: ['news-feed-stories', limit, page],
     queryFn: () => storiesApi.getNewsFeedStories(limit, page)
   })
-  console.log(data?.data)
 
   const stories = data?.data?.result || []
 
