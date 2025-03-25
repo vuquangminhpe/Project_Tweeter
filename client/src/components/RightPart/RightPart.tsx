@@ -62,20 +62,8 @@ const RightPart: React.FC = () => {
   ]
 
   return (
-    <div className='sticky hidden sm:flex flex-col p-2 h-full gap-3 xl:w-[340px]'>
-      <div className='relative group mt-3 border-gray-300'>
-        <div className='absolute inset-y-0 left-3 flex items-center pointer-events-none'>
-          <SearchGrowing />
-        </div>
-        <input
-          type='text'
-          placeholder='Search PulseVibe'
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className='bg-black border-3 ring-1 ring-white border-white w-full pl-10 pr-4 py-3 rounded-xl text-sm
-              focus:outline-none focus:ring-2 hover:ring focus:ring-white transition-all duration-200'
-        />
-      </div>
+    <div className='sticky hidden sm:flex flex-col p-1 h-full gap-3 xl:w-[340px]'>
+      <SearchGrowing />
 
       <div className='bg-gray-900 border-b border-gray-700 rounded-xl p-5 text-white shadow-md'>
         <h2 className='font-bold text-lg mb-2'>Unlock Premium Features</h2>

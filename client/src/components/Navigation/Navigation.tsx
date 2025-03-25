@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import { useState, useEffect, useContext } from 'react'
 import NavigationMenu from './NavigationMenu'
 import { Link, useNavigate } from 'react-router-dom'
@@ -9,6 +8,7 @@ import { AppContext } from '@/Contexts/app.context'
 import { Image } from 'lucide-react'
 import { SideBarLink } from './SideBarLink'
 import { DotsHorizontalIcon } from '@radix-ui/react-icons'
+import Logo from "../../../public/Logo.png"
 
 const Navigation = () => {
   const [showTitles, setShowTitles] = useState(true)
@@ -66,16 +66,14 @@ const Navigation = () => {
     navigate('/auth/login')
   }
 
-  const handleViewProfile = () => {
-    navigate('/user/profile')
-  }
-
   const { profile } = useContext(AppContext)
 
   return (
     <div className='hidden sm:flex flex-col items-center xl:items-start xl:w-[340px] p-2 fixed h-full'>
-      <div className='flex items-center justify-center w-14 h-14 hoverAnimation p-0 xm:ml-24'>
-        <Image href='' width={30} height={30} />
+      <div className='flex items-center justify-center w-14 h-14 hoverAnimation p-0 xl:ml-24'>
+        <Link to='/' className='flex items-center justify-center'>
+          <img className='h-14 w-14' src={Logo} alt='Logo' />
+        </Link>
       </div>
       <div className='space-y-2.5 mt-4 mb-2.5 xl:ml-24'>
         {NavigationMenu.map((item, index) => (
@@ -111,7 +109,7 @@ const Navigation = () => {
           {profile ? (
             <>
               <div
-                onClick={handleViewProfile}
+                onClick={() => console.log('View Profile')}
                 className='cursor-pointer hover:bg-gray-700 text-gray-300 px-3 py-2 rounded-md transition'
               >
                 View Profile
