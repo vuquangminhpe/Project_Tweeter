@@ -1,15 +1,10 @@
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger
-} from '@/components/ui/dialog';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { User } from '@/types/User.type'
 import { useState } from 'react'
-import { useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import apiUser from '@/apis/users.api'
-import mediasApi from '@/apis/medias.api';
+import mediasApi from '@/apis/medias.api'
 
 interface EditProfileDialogProps {
   profile: User | null
@@ -24,53 +19,53 @@ export default function EditProfileDialog({ profile }: EditProfileDialogProps) {
   const [error, setError] = useState('')
   const [avatarPreview, setAvatarPreview] = useState(profile?.avatar || '')
   const [open, setOpen] = useState(false)
-  
-  const queryClient = useQueryClient()
 
+  const queryClient = useQueryClient()
+  const uploadMutation = useMutation({
+    mutationFn: mediasApi.uploadImages
+  })
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    debugger;
     e.preventDefault()
     try {
       setError('')
       setIsLoading(true)
 
-      let avatarUrl = profile?.avatar
-      
       if (avatar) {
         try {
-          const uploadResponse = await mediasApi.uploadImages(avatar);
-          console.log(uploadResponse);
-          avatarUrl = uploadResponse.data.result[0].url
+          uploadMutation.mutateAsync(avatar, {
+            onSuccess: (data) => {
+              setAvatarPreview(data?.data?.result[0].url)
+            }
+          })
         } catch (error) {
           console.error('Error uploading avatar:', error)
         }
       }
-      
+
       const updateData = {
         name,
         username,
         bio,
-        avatar: avatarUrl,
+        avatar: avatarPreview,
         date_of_birth: profile?.date_of_birth?.toISOString(),
         location: profile?.location,
         website: profile?.website,
         cover_photo: profile?.cover_photo
       }
-      
+
       const response = await apiUser.updateMe(updateData)
-      
+
       const updatedProfile = {
         ...profile,
         ...response.data.result
       }
       localStorage.setItem('profile', JSON.stringify(updatedProfile))
-      
+
       queryClient.invalidateQueries({ queryKey: ['dataProfile'] })
       setOpen(false)
-
     } catch (error: any) {
       if (error.response?.data?.errors?.username) {
-        setError('Username already exists, please choose another username');
+        setError('Username already exists, please choose another username')
       } else {
         setError('An error occurred, please try again')
       }
@@ -89,9 +84,7 @@ export default function EditProfileDialog({ profile }: EditProfileDialogProps) {
           <DialogTitle className='text-xl font-bold'>Edit profile</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className='space-y-4'>
-          {error && (
-            <div className='text-red-500 text-sm'>{error}</div>
-          )}
+          {error && <div className='text-red-500 text-sm'>{error}</div>}
           <div>
             <label className='block text-sm font-medium mb-2'>Name</label>
             <input
@@ -121,12 +114,7 @@ export default function EditProfileDialog({ profile }: EditProfileDialogProps) {
           </div>
           <div>
             <label className='block text-sm font-medium mb-2'>Profile photo</label>
-            {avatarPreview && (
-              <img 
-                src={avatarPreview} 
-                className="w-20 h-20 rounded-full mb-2 object-cover"
-              />
-            )}
+            {avatarPreview && <img src={avatarPreview} className='w-20 h-20 rounded-full mb-2 object-cover' />}
             <input
               type='file'
               accept='image/*'
@@ -161,4 +149,4 @@ export default function EditProfileDialog({ profile }: EditProfileDialogProps) {
       </DialogContent>
     </Dialog>
   )
-} 
+}
