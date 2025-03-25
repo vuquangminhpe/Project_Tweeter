@@ -24,54 +24,48 @@ export default function EditProfileDialog({ profile }: EditProfileDialogProps) {
   const uploadMutation = useMutation({
     mutationFn: mediasApi.uploadImages
   })
+  const updateMyMutation = useMutation({
+    mutationFn: apiUser.updateMe
+  })
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    try {
-      setError('')
-      setIsLoading(true)
 
-      if (avatar) {
-        try {
-          uploadMutation.mutateAsync(avatar, {
-            onSuccess: (data) => {
-              setAvatarPreview(data?.data?.result[0].url)
-            }
-          })
-        } catch (error) {
-          console.error('Error uploading avatar:', error)
-        }
+    setError('')
+    setIsLoading(true)
+
+    if (avatar) {
+      try {
+        uploadMutation.mutateAsync(avatar, {
+          onSuccess: (data) => {
+            setAvatarPreview(data?.data?.result[0].url)
+          }
+        })
+      } catch (error) {
+        console.error('Error uploading avatar:', error)
       }
-
-      const updateData = {
-        name,
-        username,
-        bio,
-        avatar: avatarPreview,
-        date_of_birth: profile?.date_of_birth?.toISOString(),
-        location: profile?.location,
-        website: profile?.website,
-        cover_photo: profile?.cover_photo
-      }
-
-      const response = await apiUser.updateMe(updateData)
-
-      const updatedProfile = {
-        ...profile,
-        ...response.data.result
-      }
-      localStorage.setItem('profile', JSON.stringify(updatedProfile))
-
-      queryClient.invalidateQueries({ queryKey: ['dataProfile'] })
-      setOpen(false)
-    } catch (error: any) {
-      if (error.response?.data?.errors?.username) {
-        setError('Username already exists, please choose another username')
-      } else {
-        setError('An error occurred, please try again')
-      }
-    } finally {
-      setIsLoading(false)
     }
+
+    const updateData = {
+      name,
+      username,
+      bio,
+      avatar: avatarPreview,
+      date_of_birth: new Date(profile?.date_of_birth as Date).toISOString(),
+      location: profile?.location,
+      website: profile?.website,
+      cover_photo: profile?.cover_photo
+    }
+
+    updateMyMutation.mutateAsync(updateData, {
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ['dataProfile'] })
+      },
+      onError: (error) => {
+        console.log('Error updating profile:', error)
+      }
+    })
+
+    setOpen(false)
   }
 
   return (
