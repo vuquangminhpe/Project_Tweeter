@@ -22,6 +22,7 @@ import useNotifications from '@/components/Customs/Notification/useNotifications
 import { ActionType } from '@/types/Notifications.types'
 import Orb from '@/components/ui/orb'
 import { FaTimes } from 'react-icons/fa'
+import { log } from 'console'
 
 const validationSchema = Yup.object().shape({
   content: Yup.string().required('Post text is required'),
@@ -199,19 +200,36 @@ const HomeSection = ({ setEdit, isPendingTweet = true, isTitleName = 'Share', cu
     }
   })
 
+  // const handleImageSelect = (event: ChangeEvent<HTMLInputElement>) => {
+  //   const files = event.target.files
+  //   if (files) {
+  //     const fileArray = Array.from(files)
+  //     setSelectItemInTweet(fileArray)
+  //     const previews = fileArray.map((file) => URL.createObjectURL(file))
+  //     setImagePreviews(previews)
+  //     formik.setFieldValue('images', fileArray)
+  //   }
+  //   console.log(formik.getFieldProps('images'))
+  // }
+
   const handleImageSelect = (event: ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files
-    if (files) {
+    if (files && files.length > 0) {
       const fileArray = Array.from(files)
-      setSelectItemInTweet(fileArray)
+
+      setSelectItemInTweet((prev) => [...prev, ...fileArray])
+
       const previews = fileArray.map((file) => URL.createObjectURL(file))
-      setImagePreviews(previews)
-      formik.setFieldValue('images', fileArray)
+      setImagePreviews((prev) => [...prev, ...previews])
+
+      formik.setFieldValue('images', [...formik.values.images, ...fileArray])
+
     }
   }
 
   const handleUploadItems = async () => {
     if (selectItemInTweet.length > 0) {
+      console.log('Uploading files:', selectItemInTweet)
       try {
         const uploadedFiles = await Promise.all(
           selectItemInTweet.map(async (item) => {
@@ -318,18 +336,6 @@ const HomeSection = ({ setEdit, isPendingTweet = true, isTitleName = 'Share', cu
     [allIdWithMentionName, editTweetMutation, formik.values.type, dataEdit?._id]
   )
 
-  if (isLoadingAllDataTweet) {
-    return (
-      <div className='flex justify-center items-center min-h-[200px]'>
-        <div className='animate-pulse flex space-x-2'>
-          <div className='h-3 w-3 bg-indigo-400 rounded-full'></div>
-          <div className='h-3 w-3 bg-indigo-500 rounded-full'></div>
-          <div className='h-3 w-3 bg-indigo-600 rounded-full'></div>
-        </div>
-      </div>
-    )
-  }
-
   return (
     <div className=' text-white flex-grow border-l border-r border-gray-700 max-w-2xl sm:ml-[73px] xl:ml-[370px]'>
       {isPendingTweet && (
@@ -361,7 +367,7 @@ const HomeSection = ({ setEdit, isPendingTweet = true, isTitleName = 'Share', cu
         </div>
       )}
 
-      <div className={`p-4 bg-black border-b ${isPendingTweet ? '' : 'w-full'}`}>
+      <div className={`p-4 bg-black border-b border-gray-700 ${isPendingTweet ? '' : 'w-full'}`}>
         <div className='border-b border-gray-700 p-3 flex space-x-3'>
           <Avatar className='h-11 w-11 rounded-full cursor-pointer'>
             <AvatarImage src={profile?.avatar} alt={profile?.name} />
@@ -603,21 +609,29 @@ const HomeSection = ({ setEdit, isPendingTweet = true, isTitleName = 'Share', cu
         </div>
       </div>
 
-      {isPendingTweet && (allTweets?.length ?? 0) > 0 && (
-        <div className='divide-y'>
-          {allTweets?.map((data) =>
-            Array(data).map((element, index) => (
+      <div className='pb-72'>
+        {isLoadingAllDataTweet ? (
+          <div className='flex justify-center items-center min-h-[200px]'>
+            <div className='animate-pulse flex space-x-2'>
+              <div className='h-3 w-3 bg-indigo-400 rounded-full'></div>
+              <div className='h-3 w-3 bg-indigo-500 rounded-full'></div>
+              <div className='h-3 w-3 bg-indigo-600 rounded-full'></div>
+            </div>
+          </div>
+        ) : isPendingTweet && (allTweets?.length ?? 0) > 0 ? (
+          <div>
+            {allTweets.map((element, index) => (
               <PostCard
                 refetchAllDataTweet={refetchAllDataTweet}
                 key={`${element._id}-${index}`}
                 data={element}
-                data_length={data?.medias?.length}
+                data_length={element?.medias?.length}
                 profile={profile}
               />
-            ))
-          )}
-        </div>
-      )}
+            ))}
+          </div>
+        ) : null}
+      </div>
 
       {isPendingTweet && (!allTweets || allTweets.length === 0) && (
         <div className='py-12 px-4 text-center'>

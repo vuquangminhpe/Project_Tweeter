@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useNavigate } from 'react-router-dom'
 import { GoVerified } from 'react-icons/go'
-import { useEffect, useMemo, useState } from 'react'
+import { useContext, useEffect, useMemo, useState } from 'react'
 import { FaEllipsisH } from 'react-icons/fa'
 import { BsChat } from 'react-icons/bs'
 import { MdFavorite, MdFavoriteBorder } from 'react-icons/md'
@@ -40,9 +40,9 @@ import {
 } from '@/components/ui/alert-dialog'
 import ImageViewerTweet from '../ImageViewer'
 import { DotsHorizontalIcon } from '@radix-ui/react-icons'
+import { AppContext } from '@/Contexts/app.context'
 
 interface Props {
-  profile: User | null
   data_length: number
   data: Tweets
   refetchAllDataTweet: (
@@ -53,7 +53,7 @@ interface Props {
 // đọc các comment ở dưới để hiểu rõ hơn (cấm viết khác để debug code dễ hơn )
 const LIMIT = 5
 const PAGE = 1
-const TwitterCard = ({ profile, data, refetchAllDataTweet, data_length }: Props) => {
+const TwitterCard = ({ data, refetchAllDataTweet, data_length }: Props) => {
   const navigate = useNavigate()
   const [commentModalOpen, setCommentModalOpen] = useState(false)
   const [comment, setComment] = useState('')
@@ -61,6 +61,7 @@ const TwitterCard = ({ profile, data, refetchAllDataTweet, data_length }: Props)
   const [loadingPage, setLoadingPage] = useState(PAGE)
   const [allComments, setAllComments] = useState<CommentRequest[]>([])
   const [edit, setEdit] = useState(false)
+  const { profile } = useContext(AppContext)
   // khu vực data Query => chỉ viết data Query ở đây
   const { data: dataBookmark, refetch: refetchDataBookmark } = useQuery({
     queryKey: ['dataBookmark'],
@@ -267,7 +268,7 @@ const TwitterCard = ({ profile, data, refetchAllDataTweet, data_length }: Props)
           <div className='w-full'>
             <div className='flex justify-between items-center'>
               <div className='flex items-center space-x-2'>
-                <span className='text-base font-bold text-gray-800 hover:underline'>{profile?.name}</span>
+                <span className='font-bold text-[15px] sm:text-base text-[#d9d9d9] group-hover:underline'>{profile?.name}</span>
                 <span className='text-sm text-gray-500'>
                   @{profile?.username || 'no user name'} · {commentTime(data?.updated_at as Date)}
                 </span>
@@ -275,9 +276,11 @@ const TwitterCard = ({ profile, data, refetchAllDataTweet, data_length }: Props)
               </div>
 
               <Popover>
-                <PopoverTrigger>
+                <PopoverTrigger >
                   {data?.user_id === profile?._id && (
-                    <DotsHorizontalIcon className='h-5 text-[#6e7677] group-hover:text-[#1d9bf0]' />
+                    <div>
+                      <DotsHorizontalIcon className='h-5 text-[#6e7677] group-hover:text-[#1d9bf0]' />
+                    </div>
                   )}
                 </PopoverTrigger>
                 <PopoverContent className='flex gap-5 justify-around max-w-44 bg-gray-800 text-white rounded-xl shadow-xl'>
@@ -301,8 +304,8 @@ const TwitterCard = ({ profile, data, refetchAllDataTweet, data_length }: Props)
               <EditTweet setEdit={setEdit} profile={profile} data={data} refetchAllDataTweet={refetchAllDataTweet} />
             ) : (
               <div className='mt-3'>
-                <p className='text-gray-800 mb-3 w-full'>{data?.content}</p>
-                <p className='text-gray-800 mb-3 w-full'>
+                <p className='text-gray-300 mb-3 w-full'>{data?.content}</p>
+                <p className='text-gray-300 mb-3 w-full'>
                   {data?.hashtag_info?.map((nameHashtag: any, index: number) => (
                     <div className='text-blue-500 cursor-pointer' key={index}>
                       {'#' + nameHashtag.name + ' '}
@@ -378,7 +381,7 @@ const TwitterCard = ({ profile, data, refetchAllDataTweet, data_length }: Props)
                                   <AvatarImage src={like.user_info.avatar} alt={like.user_info.username} />
                                   <AvatarFallback>{like.user_info.username.charAt(0).toUpperCase()}</AvatarFallback>
                                 </Avatar>
-                                <span className='text-sm text-gray-800'>{like.user_info.username}</span>
+                                <span className='text-sm text-gray-700'>{like.user_info.username}</span>
                               </div>
                             </div>
                           ))}
