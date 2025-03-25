@@ -44,32 +44,30 @@ export default function EditTweet({ data, refetchAllDataTweet, setEdit }: Props)
     }
   }
   return (
-    <div className='bg-gray-50 rounded-xl p-4 shadow-inner'>
+    <div className=''>
       <div className='flex flex-col space-y-4'>
         <div key={data._id}>
           <div className='mt-5 flex flex-col w-full'>
             <div className='w-full'>
-              <div className='text-lg font-semibold mb-4'>Old Medias</div>
-              <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4'>
+              <div className='flex flex-row overflow-x-auto gap-1'>
                 {data?.medias?.map((media) => (
                   <div key={media.url} className='relative'>
                     {media.type === MediaType.Image ? (
                       <img
                         src={media.url}
                         alt='media'
-                        className='w-full h-48 object-cover rounded-xl shadow-2xl transition-transform hover:scale-105'
+                        className='rounded-2xl max-h-80 object-contain'
                       />
                     ) : (
                       <div className='w-full h-48 relative'>
-                        <VideoHLSPlayer classNames='w-full h-full' src={media.url} />
+                        <VideoHLSPlayer classNames='rounded-2xl max-h-80 object-contain' src={media.url} />
                       </div>
                     )}
                     <button
                       onClick={() => handleDeletedItemInTweetMutation(media.url)}
                       type='button'
-                      className='absolute top-2 right-2 bg-gray-500/70 text-white 
-                        rounded-full p-1 hover:bg-black/70 transition-all duration-300 
-                        opacity-0 group-hover:opacity-100 focus:opacity-100'
+                      className='absolute w-8 h-8 bg-[#15181c] hover:bg-[#272c26] bg-opacity-75 
+                          rounded-full flex items-center justify-center top-1 left-1 cursor-pointer'
                     >
                       ✕
                     </button>
@@ -78,7 +76,7 @@ export default function EditTweet({ data, refetchAllDataTweet, setEdit }: Props)
               </div>
               <HomeSection
                 setEdit={setEdit}
-                customClassName={'w-full mt-6'}
+                customClassName={'border-none'}
                 isPendingTweet={false}
                 isTitleName='Save'
                 dataEdit={data}

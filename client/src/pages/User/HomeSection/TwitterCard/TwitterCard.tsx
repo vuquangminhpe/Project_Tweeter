@@ -9,7 +9,7 @@ import { MdFavorite, MdFavoriteBorder } from 'react-icons/md'
 import { RiShare2Fill } from 'react-icons/ri'
 import { RiBarChartGroupedLine } from 'react-icons/ri'
 import { FaBookmark } from 'react-icons/fa'
-import { User } from '@/types/User.type'
+import { Profile, User } from '@/types/User.type'
 import { Tweets } from '@/types/Tweet.type'
 import { keepPreviousData, QueryObserverResult, RefetchOptions, useMutation, useQuery } from '@tanstack/react-query'
 import likesApi from '@/apis/likes.api'
@@ -29,6 +29,7 @@ import { Bookmark } from '@/types/Bookmarks.type'
 import { Media } from '@/types/Medias.type'
 import VideoHLSPlayer from '@/components/Customs/VideoHLSPlayer'
 import EditTweet from '../EditTweet'
+import { CiTrash } from 'react-icons/ci'
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -41,6 +42,7 @@ import {
 import ImageViewerTweet from '../ImageViewer'
 import { DotsHorizontalIcon } from '@radix-ui/react-icons'
 import { AppContext } from '@/Contexts/app.context'
+import apiUser from '@/apis/users.api'
 
 interface Props {
   data_length: number
@@ -74,8 +76,16 @@ const TwitterCard = ({ data, refetchAllDataTweet, data_length }: Props) => {
   })
   const { data: dataLikes, refetch: refetchDataLikes } = useQuery({
     queryKey: ['dataLikes', data._id],
-    queryFn: () => likesApi.getLikesTweet(data._id as string) 
+    queryFn: () => likesApi.getLikesTweet(data._id as string)
   })
+
+  const { data: dataUser} = useQuery({
+    queryKey: ['dataUser', data.user_id],
+    queryFn: () => apiUser.getProfileById(data.user_id)
+  }) 
+
+  // console.log(dataUser?.data?.name);
+  
 
   // khu vực action bằng mutation => chi viết action ở đây
   const handleDeletedMutation = useMutation({
@@ -185,14 +195,14 @@ const TwitterCard = ({ data, refetchAllDataTweet, data_length }: Props) => {
   }
   const handleUnBookmarksTweet = async (tweet_id: string) => {
     unBookmarksTweetMutation.mutateAsync(tweet_id, {
-      onSuccess: () => { 
+      onSuccess: () => {
         refetchDataBookmark()
       },
       onError: () => {
         toast.error('UnBookmarks Tweet Fail')
       }
     })
-  }  
+  }
 
   const handleDeleteComment = async (comment_id: string) => {
     deleteCommentMutation.mutateAsync(comment_id, {
@@ -259,27 +269,33 @@ const TwitterCard = ({ data, refetchAllDataTweet, data_length }: Props) => {
       <div className='flex flex-col space-y-2 w-full'>
         <div className='flex space-x-4'>
           <Avatar className='mx-4 h-11 w-11 rounded-full cursor-pointer'>
-            <AvatarImage src={profile?.avatar} alt={profile?.name} />
+            <AvatarImage src={dataUser?.data?.avatar as String} alt={dataUser?.data?.name} />
             <AvatarFallback className='bg-gradient-to-r from-violet-200 to-indigo-200 text-indigo-600'>
-              {profile?.name?.charAt(0).toUpperCase()}
+              {dataUser?.data?.name?.charAt(0).toUpperCase()}
             </AvatarFallback>
           </Avatar>
 
           <div className='w-full'>
             <div className='flex justify-between items-center'>
               <div className='flex items-center space-x-2'>
-                <span className='font-bold text-[15px] sm:text-base text-[#d9d9d9] group-hover:underline'>{profile?.name}</span>
+                <span className='font-bold text-[15px] sm:text-base text-[#d9d9d9] group-hover:underline'>
+                  {dataUser?.data?.name}
+                </span>
                 <span className='text-sm text-gray-500'>
-                  @{profile?.username || 'no user name'} · {commentTime(data?.updated_at as Date)}
+                  @{dataUser?.data?.username || 'no user name'} · {commentTime(data?.updated_at as Date)}
                 </span>
                 <GoVerified className='text-blue-500' />
               </div>
 
               <Popover>
-                <PopoverTrigger >
+                <PopoverTrigger asChild>
                   {data?.user_id === profile?._id && (
                     <div>
-                      <DotsHorizontalIcon className='h-5 text-[#6e7677] group-hover:text-[#1d9bf0]' />
+                      <DotsHorizontalIcon
+                        role='button'
+                        tabIndex={0}
+                        className='h-5 text-[#6e7677] group-hover:text-[#1d9bf0] hoverAnimation cursor-pointer'
+                      />
                     </div>
                   )}
                 </PopoverTrigger>
@@ -415,9 +431,9 @@ const TwitterCard = ({ data, refetchAllDataTweet, data_length }: Props) => {
                 </div>
 
                 {commentModalOpen && (
-                  <div className='mt-4 space-y-3'>
+                  <div className='mt-4 space-y-3 border-t border-gray-700'>
                     {(allComments as unknown as CommentRequest[])?.map((comment: CommentRequest) => (
-                      <div key={comment?._id} className='flex items-start space-x-3 bg-gray-50 p-3 rounded-lg'>
+                      <div key={comment?._id} className='p-3 flex cursor-pointer border-b border-gray-700'>
                         <Avatar className='w-8 h-8 bg-gray-300'>
                           <AvatarImage src={comment.user_info.avatar} alt={comment.user_info.username} />
                           <AvatarFallback>{comment.user_info.username.charAt(0).toUpperCase()}</AvatarFallback>
@@ -425,8 +441,8 @@ const TwitterCard = ({ data, refetchAllDataTweet, data_length }: Props) => {
 
                         <div className='w-full'>
                           <div className='flex justify-between'>
-                            <div className='flex items-center relative space-x-2'>
-                              <span className='font-semibold text-sm text-gray-800'>{comment.user_info.username}</span>
+                            <div className='flex items-center relative space-x-2 mx-2' style={{ marginBottom: '10px' }}>
+                              <span className='font-semibold text-sm text-gray-500'>{comment.user_info.username}</span>
                               <span className='text-xs text-gray-500'>{commentTime(comment.updatedAt)}</span>
                               <span className='right-0 absolute'>
                                 {Number(new Date(comment.updatedAt).getTime()) -
@@ -437,15 +453,19 @@ const TwitterCard = ({ data, refetchAllDataTweet, data_length }: Props) => {
                               </span>
                             </div>
                             <Popover>
-                              <PopoverTrigger>
+                              <PopoverTrigger asChild>
                                 {data?.user_id === profile?._id && (
-                                  <FaEllipsisH className='text-gray-500 text-lg cursor-pointer hover:text-blue-500 transition' />
+                                  <DotsHorizontalIcon
+                                    role='button'
+                                    tabIndex={0}
+                                    className='h-5 text-[#6e7677] group-hover:text-[#1d9bf0] cursor-pointer hoverAnimation'
+                                  />
                                 )}
                               </PopoverTrigger>
                               <PopoverContent className='flex gap-5 justify-around max-w-44 bg-slate-100 rounded-xl shadow-xl'>
-                                <div className='cursor-pointer font-semibold hover:bg-gray-600 transition-all px-3 py-1 rounded-xl'>
+                                {/* <div className='cursor-pointer font-semibold hover:bg-gray-600 transition-all px-3 py-1 rounded-xl'>
                                   Edit
-                                </div>
+                                </div> */}
                                 <div
                                   onClick={() => handleDeleteComment(comment?._id as string)}
                                   className='cursor-pointer font-semibold hover:bg-gray-600 px-3 py-1 rounded-xl'
@@ -455,7 +475,7 @@ const TwitterCard = ({ data, refetchAllDataTweet, data_length }: Props) => {
                               </PopoverContent>
                             </Popover>
                           </div>
-                          <p className='text-sm text-gray-700 mt-1'>{comment?.commentContent}</p>
+                          <p className='text-gray-300 mb-3 w-full'>{comment?.commentContent}</p>
                         </div>
                       </div>
                     ))}
@@ -474,19 +494,22 @@ const TwitterCard = ({ data, refetchAllDataTweet, data_length }: Props) => {
                         Load more comment....
                       </div>
                     ) : (
-                      <div className='text-gray-500 font-semibold py-2 cursor-pointer'>No load more comment....</div>
+                      <></>
                     )}
                     <div className='flex gap-4 items-center'>
-                      <div className='w-full border-2 border-gray-400 focus:ring-2 rounded-2xl focus:ring-blue-200'>
+                      <div className='w-full pt-2 '>
                         <textarea
-                          className='items-center p-1 w-full rounded-xl focus:outline-none'
-                          placeholder='comment tweet .....'
+                          className='bg-transparent outline-none 
+            text-[#d9d9d9] text-lg placeholder-gray-500 tracking-wide w-full min-h-[50px] overflow-hidden'
+                          placeholder='Comment tweet .....'
                           onChange={(e) => setComment(e.currentTarget.value)}
                         />
                       </div>
                       <div
                         onClick={() => handleCreateComment(data?._id as string)}
-                        className='bg-blue-950 p-4 items-center text-center text-white rounded-xl cursor-pointer font-semibold'
+                        className='mx-2 bg-gradient-to-r from-violet-600 to-indigo-600 text-white px-6 py-2 rounded-lg
+                  font-medium hover:from-violet-700 hover:to-indigo-700 transition-colors duration-200 
+                  focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-2 disabled:opacity-70'
                       >
                         Send
                       </div>

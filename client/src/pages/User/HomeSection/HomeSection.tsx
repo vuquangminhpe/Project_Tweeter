@@ -501,6 +501,7 @@ const HomeSection = ({ setEdit, isPendingTweet = true, isTitleName = 'Share', cu
                     />
                   </label>
 
+                  {/* AI Generation Orb */}
                   <div
                     className='relative flex items-center justify-center w-8 h-8 flex-shrink-0 cursor-pointer'
                     onClick={handleAIGeneration}
@@ -704,6 +705,8 @@ const HomeSection = ({ setEdit, isPendingTweet = true, isTitleName = 'Share', cu
                     profile={profile}
                   />
                 ))}
+
+                {/* {newFeedTweets.map((element) => console.log(element))} */}
               </div>
 
               {/* Load More Button */}
