@@ -291,11 +291,7 @@ const TwitterCard = ({ data, refetchAllDataTweet, data_length }: Props) => {
                 <PopoverTrigger asChild>
                   {data?.user_id === profile?._id && (
                     <div>
-                      <DotsHorizontalIcon
-                        role='button'
-                        tabIndex={0}
-                        className='h-5 text-[#6e7677] group-hover:text-[#1d9bf0] hoverAnimation cursor-pointer'
-                      />
+                      ...
                     </div>
                   )}
                 </PopoverTrigger>
