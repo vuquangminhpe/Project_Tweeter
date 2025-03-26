@@ -21,6 +21,9 @@ import { toast } from 'sonner'
 import useNotifications from '@/components/Customs/Notification/useNotifications/useNotifications'
 import { ActionType } from '@/types/Notifications.types'
 import Orb from '@/components/ui/orb'
+import StoryViewer from './StoryViewer'
+import StoriesPage from './StoriesPage/StoriesPage'
+import StoriesContainer from './StoriesContainer'
 
 const validationSchema = Yup.object().shape({
   content: Yup.string().required('Post text is required'),
@@ -370,21 +373,21 @@ const HomeSection = ({ setEdit, isPendingTweet = true, isTitleName = 'Share', cu
       // Extract AI generated content and update form
       if (response?.data?.status === 'SUCCESS' && response?.data?.data?.content) {
         // Update content with AI generated text
-        formik.setFieldValue('content', response.data.data.content);
-        
+        formik.setFieldValue('content', response.data.data.content)
+
         // Process hashtags - remove # prefix if needed and update form
         if (response.data.data.hashtags && response.data.data.hashtags.length > 0) {
-          const processedHashtags = response.data.data.hashtags.map((tag: string) => 
+          const processedHashtags = response.data.data.hashtags.map((tag: string) =>
             tag.startsWith('#') ? tag.substring(1) : tag
-          );
-          
+          )
+
           // Reset existing hashtags and set the new ones
-          formik.setFieldValue('hashtags', processedHashtags);
-          
+          formik.setFieldValue('hashtags', processedHashtags)
+
           // Clear current hashtag input field
-          formik.setFieldValue('currentHashtag', '');
+          formik.setFieldValue('currentHashtag', '')
         }
-        
+
         toast.success('AI tweet generated successfully')
       } else {
         console.error('Invalid AI response format:', response)
@@ -401,44 +404,44 @@ const HomeSection = ({ setEdit, isPendingTweet = true, isTitleName = 'Share', cu
   })
 
   const handleAIGeneration = async () => {
-    const defaultMessage = 'Hôm nay của tôi';
-    const message = formik.values.content.trim() || defaultMessage;
-  
+    const defaultMessage = 'Hôm nay của tôi'
+    const message = formik.values.content.trim() || defaultMessage
+
     try {
-      const response = await generateAITweetMutation.mutateAsync(message);
-      console.log('Response:', response);
-  
+      const response = await generateAITweetMutation.mutateAsync(message)
+      console.log('Response:', response)
+
       if (response.status === 200 && response.data.message === 'Generate tweet gemini success') {
-        const aiData = response.data.data.data;
-  
+        const aiData = response.data.data.data
+
         if (aiData.content) {
-          formik.setFieldValue('content', aiData.content);
+          formik.setFieldValue('content', aiData.content)
         } else {
-          console.warn('Không tìm thấy content trong phản hồi AI');
+          console.warn('Không tìm thấy content trong phản hồi AI')
         }
-  
+
         if (aiData.hashtags && Array.isArray(aiData.hashtags)) {
-          const processedHashtags = aiData.hashtags.map((tag) =>
-            tag.startsWith('#') ? tag.substring(1) : tag
-          );
-          formik.setFieldValue('hashtags', processedHashtags);
+          const processedHashtags = aiData.hashtags.map((tag) => (tag.startsWith('#') ? tag.substring(1) : tag))
+          formik.setFieldValue('hashtags', processedHashtags)
         } else {
-          console.warn('Không tìm thấy hashtags trong phản hồi AI hoặc hashtags không phải mảng');
-          formik.setFieldValue('hashtags', []);
+          console.warn('Không tìm thấy hashtags trong phản hồi AI hoặc hashtags không phải mảng')
+          formik.setFieldValue('hashtags', [])
         }
-  
-        toast.success('Tweet AI được tạo thành công');
+
+        toast.success('Tweet AI được tạo thành công')
       } else {
-        toast.error('Không thể tạo tweet AI');
+        toast.error('Không thể tạo tweet AI')
       }
     } catch (error) {
-      console.error('Lỗi khi tạo tweet AI:', error);
-      toast.error('Lỗi khi tạo tweet AI');
+      console.error('Lỗi khi tạo tweet AI:', error)
+      toast.error('Lỗi khi tạo tweet AI')
     }
-  };
+  }
 
   return (
-    <div className={`text-white ${isPendingTweet ? 'flex-grow border-l border-r border-gray-700 max-w-2xl sm:ml-[73px] xl:ml-[370px]' : 'w-full'} ${customClassName || ''}`}>
+    <div
+      className={`text-white ${isPendingTweet ? 'flex-grow border-l border-r border-gray-700 max-w-2xl sm:ml-[73px] xl:ml-[370px]' : 'w-full'} ${customClassName || ''}`}
+    >
       {isPendingTweet && (
         <div className={`${customClassName}`}>
           <div className='flex items-center justify-center sticky top-0 z-50 bg-black border-b border-gray-700'>
@@ -469,6 +472,7 @@ const HomeSection = ({ setEdit, isPendingTweet = true, isTitleName = 'Share', cu
       )}
 
       <div className={`p-4 bg-black ${isPendingTweet ? 'border-b border-gray-700' : ''}`}>
+        <StoriesContainer />
         <div className={`${isPendingTweet ? 'border-b border-gray-700' : ''} p-3 flex space-x-3`}>
           <Avatar className='h-11 w-11 rounded-full cursor-pointer'>
             <AvatarImage src={profile?.avatar} alt={profile?.name} />

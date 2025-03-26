@@ -193,7 +193,6 @@ class UserService {
 
       return {
         access_token,
-        refresh_token,
         newUser: 0,
         verify: user.verify
       }

@@ -43,10 +43,10 @@ const StoriesContainer = () => {
   }, [activeStoryIndex, stories, markStoryAsViewed, isStoryViewed])
 
   const userStories = React.useMemo(() => {
-    if (!stories || Number((stories as any)?.result?.length) === 0) return []
+    if (!stories || Number((stories as any)?.length) === 0) return []
 
     const storyGroups = new Map()
-    ;(stories as any)?.result?.forEach((story: any) => {
+    ;(stories as any)?.forEach((story: any) => {
       if (!story || !story.user || !story.user._id) return
 
       const userId = story.user._id
@@ -113,7 +113,7 @@ const StoriesContainer = () => {
             userStories.map((group: any) => {
               if (!group || !group.user) return null
 
-              const startIndex = (stories as any)?.result?.findIndex((s: any) => s.user._id === group.user._id) || 0
+              const startIndex = (stories as any)?.findIndex((s: any) => s.user._id === group.user._id) || 0
               const isUserStoriesViewed = group.stories.every((story: any) => isStoryViewed(story))
 
               return (

@@ -14,7 +14,6 @@ interface UserStatus {
   heartbeatTimeout?: NodeJS.Timeout
 }
 
-// Simple interface for user status data sent to clients
 interface UserStatusResponse {
   user_id: string
   is_online: boolean
@@ -52,7 +51,6 @@ const initSocket = (httpServer: ServerHttp) => {
       )
 
       if (broadcast) {
-        // Send only the required data
         const statusResponse: UserStatusResponse = {
           user_id,
           is_online: status.is_online,
@@ -140,7 +138,6 @@ const initSocket = (httpServer: ServerHttp) => {
           .limit(limit)
           .toArray()
 
-        // Convert ObjectIds to strings to avoid circular reference issues
         const notificationsForClient = notifications.map((notification) => ({
           ...notification,
           _id: notification._id.toString(),
@@ -283,7 +280,6 @@ const initSocket = (httpServer: ServerHttp) => {
             { projection: { name: 1, username: 1, avatar: 1 } }
           )
 
-          // Convert ObjectId to string to avoid circular reference
           const senderForClient = sender
             ? {
                 ...sender,
@@ -367,7 +363,6 @@ const initSocket = (httpServer: ServerHttp) => {
         })
         const result = await databaseService.conversations.insertOne(conversations)
 
-        // Create a safe conversation object for the client
         const conversationForClient = {
           _id: result.insertedId.toString(),
           sender_id: sender_id.toString(),
@@ -394,7 +389,6 @@ const initSocket = (httpServer: ServerHttp) => {
         const result = await databaseService.users.findOne({ _id: new ObjectId(target_user_id) })
         const memoryStatus = users[target_user_id]
 
-        // Create a safe status object
         const user_status: UserStatusResponse = {
           user_id: target_user_id,
           is_online: memoryStatus?.is_online || false,
@@ -413,10 +407,8 @@ const initSocket = (httpServer: ServerHttp) => {
     })
 
     socket.on('get_all_online_users', () => {
-      // Create a safe copy of online users
       const online_users: Record<string, UserStatusResponse> = {}
 
-      // Only include the essential status information to avoid circular references
       Object.entries(users).forEach(([id, status]) => {
         online_users[id] = {
           user_id: id,

@@ -116,6 +116,7 @@ export const useNotifications = ({ userId, limit = 10 }: UseNotificationsProps) 
     },
     [userId]
   )
+  console.log(notifications)
 
   const createNotification = useCallback(
     (data: { recipientId: string; actionType: ActionType; targetId: string[]; content: string }) => {

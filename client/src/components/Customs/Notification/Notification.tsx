@@ -110,7 +110,7 @@ export default function NotificationIsland({
             width: isOpen ? WIDTH : 52
           }}
           className={cn(
-            'absolute z-50 top-5 right-1 overflow-hidden rounded-2xl dark:bg-neutral-900 bg-neutral-50 border border-neutral-400/15 text-neutral-50 shadow-lg transition',
+            'absolute z-[9999999999] translate-y-10 top-5 right-1 overflow-hidden rounded-2xl dark:bg-neutral-900 bg-neutral-50 border border-neutral-400/15 text-neutral-50 shadow-lg transition',
             !isOpen &&
               unreadCount > 0 &&
               'after:size-2 after:absolute after:top-3 after:right-4 after:bg-amber-500 after:rounded-full after:pointer-events-none',

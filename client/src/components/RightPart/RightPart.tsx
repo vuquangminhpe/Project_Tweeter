@@ -10,6 +10,7 @@ import userApi from '@/apis/users.api'
 import SearchGrowing from '../Customs/SearchGrowing'
 import useNotifications from '../Customs/Notification/useNotifications/useNotifications'
 import { ActionType } from '@/types/Notifications.types'
+import Notification from '../Customs/Notification'
 
 // Định nghĩa kiểu dữ liệu cho Suggested User (dựa trên dữ liệu từ API)
 interface SuggestedUser {
@@ -155,6 +156,7 @@ const RightPart: React.FC = () => {
 
   return (
     <div className='sticky hidden sm:flex flex-col p-2 h-full gap-3 xl:w-[340px]'>
+      <Notification userId={profile?._id as string} />
       <SearchGrowing />
 
       <div className='bg-gray-900 border-b border-gray-700 rounded-xl p-5 text-white shadow-md'>
