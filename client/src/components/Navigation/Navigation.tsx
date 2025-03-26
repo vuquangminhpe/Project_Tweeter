@@ -81,9 +81,9 @@ const Navigation = () => {
           <SideBarLink key={index} text={item.title} Icon={item.icon} path={item.path} />
         ))}
       </div>
-      <button className='hidden xl:inline ml-auto bg-[#1d9bf0] text-white rounded-full w-56 h-[52px] text-lg font-bold shadow-md hover:bg-[#1a8cd8]'>
+      {/* <button className='hidden xl:inline ml-auto bg-[#1d9bf0] text-white rounded-full w-56 h-[52px] text-lg font-bold shadow-md hover:bg-[#1a8cd8]'>
         Post
-      </button>
+      </button> */}
 
       <Popover>
         <PopoverTrigger asChild>

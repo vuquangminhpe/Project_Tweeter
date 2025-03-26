@@ -368,14 +368,23 @@ const HomeSection = ({ setEdit, isPendingTweet = true, isTitleName = 'Share', cu
     },
     onSuccess: (response) => {
       // Extract AI generated content and update form
-      if (response?.data?.data?.content) {
-        formik.setFieldValue('content', response.data.data.content)
-
-        // Also update hashtags if available
+      if (response?.data?.status === 'SUCCESS' && response?.data?.data?.content) {
+        // Update content with AI generated text
+        formik.setFieldValue('content', response.data.data.content);
+        
+        // Process hashtags - remove # prefix if needed and update form
         if (response.data.data.hashtags && response.data.data.hashtags.length > 0) {
-          formik.setFieldValue('hashtags', response.data.data.hashtags)
+          const processedHashtags = response.data.data.hashtags.map((tag: string) => 
+            tag.startsWith('#') ? tag.substring(1) : tag
+          );
+          
+          // Reset existing hashtags and set the new ones
+          formik.setFieldValue('hashtags', processedHashtags);
+          
+          // Clear current hashtag input field
+          formik.setFieldValue('currentHashtag', '');
         }
-
+        
         toast.success('AI tweet generated successfully')
       } else {
         console.error('Invalid AI response format:', response)
@@ -392,19 +401,41 @@ const HomeSection = ({ setEdit, isPendingTweet = true, isTitleName = 'Share', cu
   })
 
   const handleAIGeneration = async () => {
-    const defaultMessage = 'Hôm nay của tôi'
-    const message = formik.values.content.trim() || defaultMessage
-
+    const defaultMessage = 'Hôm nay của tôi';
+    const message = formik.values.content.trim() || defaultMessage;
+  
     try {
-      await generateAITweetMutation.mutateAsync(message, {
-        onSuccess: (response) => {
-          console.log(response)
+      const response = await generateAITweetMutation.mutateAsync(message);
+      console.log('Response:', response);
+  
+      if (response.status === 200 && response.data.message === 'Generate tweet gemini success') {
+        const aiData = response.data.data.data;
+  
+        if (aiData.content) {
+          formik.setFieldValue('content', aiData.content);
+        } else {
+          console.warn('Không tìm thấy content trong phản hồi AI');
         }
-      })
+  
+        if (aiData.hashtags && Array.isArray(aiData.hashtags)) {
+          const processedHashtags = aiData.hashtags.map((tag) =>
+            tag.startsWith('#') ? tag.substring(1) : tag
+          );
+          formik.setFieldValue('hashtags', processedHashtags);
+        } else {
+          console.warn('Không tìm thấy hashtags trong phản hồi AI hoặc hashtags không phải mảng');
+          formik.setFieldValue('hashtags', []);
+        }
+  
+        toast.success('Tweet AI được tạo thành công');
+      } else {
+        toast.error('Không thể tạo tweet AI');
+      }
     } catch (error) {
-      console.error('Error in handleAIGeneration:', error)
+      console.error('Lỗi khi tạo tweet AI:', error);
+      toast.error('Lỗi khi tạo tweet AI');
     }
-  }
+  };
 
   return (
     <div className=' text-white flex-grow border-l border-r border-gray-700 max-w-2xl sm:ml-[73px] xl:ml-[370px]'>
