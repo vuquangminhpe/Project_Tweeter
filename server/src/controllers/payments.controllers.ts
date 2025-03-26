@@ -6,6 +6,8 @@ import { AccountStatus } from '~/constants/enums'
 import paymentService from '~/services/payment.services'
 import { PAYMENT_MESSAGE } from '~/constants/messages'
 import { CreatePaymentResBody } from '~/models/request/Payment.request'
+import databaseService from '~/services/database.services'
+import { ObjectId } from 'mongodb'
 
 export const createPaymentController = async (
   req: Request<ParamsDictionary, any, any, CreatePaymentResBody>,
@@ -38,6 +40,7 @@ export const createPaymentController = async (
 export const paymentCallbackController = async (req: Request, res: Response) => {
   try {
     const data = req.query
+    const user_id = req.decode_authorization?.user_id as string
     console.log('Payment callback received:', JSON.stringify(data))
 
     if (!data.vnp_TxnRef || !data.vnp_ResponseCode) {
@@ -45,12 +48,21 @@ export const paymentCallbackController = async (req: Request, res: Response) => 
       return res.redirect(`${process.env.CLIENT_URL}/user/payment/result?status=ERROR`)
     }
 
-    const result = await paymentService.verifyVnpayPayment(data)
+    const result = await paymentService.verifyVnpayPayment(data, req)
 
     console.log('Payment verification result:', result)
 
     const redirectUrl = `${process.env.CLIENT_URL}/user/payment/result?orderId=${data.vnp_TxnRef}&status=${result.success ? 'SUCCESS' : 'FAILED'}`
-
+    await databaseService.users.updateOne(
+      {
+        _id: new ObjectId(user_id)
+      },
+      {
+        $set: {
+          typeAccount: 2
+        }
+      }
+    )
     console.log('Redirecting to:', redirectUrl)
     res.redirect(redirectUrl)
   } catch (error) {
@@ -64,7 +76,7 @@ export const paymentWebhookController = async (req: Request, res: Response) => {
     const data = req.query
     console.log('Payment webhook received:', JSON.stringify(data))
 
-    const result = await paymentService.verifyVnpayPayment(data)
+    const result = await paymentService.verifyVnpayPayment(data, req)
     if (result.success) {
       res.status(HTTP_STATUS.OK).json({
         RspCode: '00',

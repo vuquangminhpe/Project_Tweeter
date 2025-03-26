@@ -43,6 +43,8 @@ import ImageViewerTweet from '../ImageViewer'
 import { DotsHorizontalIcon } from '@radix-ui/react-icons'
 import { AppContext } from '@/Contexts/app.context'
 import apiUser from '@/apis/users.api'
+import useNotifications from '@/components/Customs/Notification/useNotifications/useNotifications'
+import { ActionType } from '@/types/Notifications.types'
 
 interface Props {
   data_length: number
@@ -64,6 +66,8 @@ const TwitterCard = ({ data, refetchAllDataTweet, data_length }: Props) => {
   const [allComments, setAllComments] = useState<CommentRequest[]>([])
   const [edit, setEdit] = useState(false)
   const { profile } = useContext(AppContext)
+  const { createNotification } = useNotifications({ userId: profile?._id || '' })
+
   // khu vực data Query => chỉ viết data Query ở đây
   const { data: dataBookmark, refetch: refetchDataBookmark } = useQuery({
     queryKey: ['dataBookmark'],
@@ -79,13 +83,12 @@ const TwitterCard = ({ data, refetchAllDataTweet, data_length }: Props) => {
     queryFn: () => likesApi.getLikesTweet(data._id as string)
   })
 
-  const { data: dataUser} = useQuery({
+  const { data: dataUser } = useQuery({
     queryKey: ['dataUser', data.user_id],
     queryFn: () => apiUser.getProfileById(data.user_id)
-  }) 
+  })
 
   // console.log(dataUser?.data?.name);
-  
 
   // khu vực action bằng mutation => chi viết action ở đây
   const handleDeletedMutation = useMutation({
@@ -149,6 +152,12 @@ const TwitterCard = ({ data, refetchAllDataTweet, data_length }: Props) => {
       onSuccess: () => {
         refetchDataLikes()
         refetchAllDataTweet()
+        createNotification({
+          recipientId: dataUser?.data?._id as unknown as string,
+          actionType: ActionType.UNLIKE,
+          targetId: [profile?._id as string],
+          content: `${profile?.name} unliked your tweet`
+        })
       },
       onError: () => {
         toast.error('Delete Tweet Fail')
@@ -176,6 +185,12 @@ const TwitterCard = ({ data, refetchAllDataTweet, data_length }: Props) => {
       onSuccess: () => {
         setComment('')
         refetchDataComment()
+        createNotification({
+          recipientId: dataUser?.data?._id as unknown as string,
+          actionType: ActionType.COMMENT,
+          targetId: [profile?._id as string],
+          content: `${profile?.name} comment your tweet`
+        })
       },
       onError: () => {
         console.log('Error')
@@ -187,6 +202,12 @@ const TwitterCard = ({ data, refetchAllDataTweet, data_length }: Props) => {
     bookmarksTweetMutation.mutateAsync(tweet_id, {
       onSuccess: () => {
         refetchDataBookmark()
+        createNotification({
+          recipientId: dataUser?.data?._id as unknown as string,
+          actionType: ActionType.BOOKMARK,
+          targetId: [profile?._id as string],
+          content: `${profile?.name} bookmark your tweet`
+        })
       },
       onError: () => {
         toast.error('Bookmarks Tweet Fail')
@@ -197,6 +218,12 @@ const TwitterCard = ({ data, refetchAllDataTweet, data_length }: Props) => {
     unBookmarksTweetMutation.mutateAsync(tweet_id, {
       onSuccess: () => {
         refetchDataBookmark()
+        createNotification({
+          recipientId: dataUser?.data?._id as unknown as string,
+          actionType: ActionType.UNBOOKMARK,
+          targetId: [profile?._id as string],
+          content: `${profile?.name} un bookmark your tweet`
+        })
       },
       onError: () => {
         toast.error('UnBookmarks Tweet Fail')
@@ -209,6 +236,12 @@ const TwitterCard = ({ data, refetchAllDataTweet, data_length }: Props) => {
       onSuccess: () => {
         toast.success('Delete Comment Success')
         refetchDataComment()
+        createNotification({
+          recipientId: dataUser?.data?._id as unknown as string,
+          actionType: ActionType.COMMENT,
+          targetId: [profile?._id as string],
+          content: `${profile?.name} delete comments your tweet`
+        })
       },
       onError: () => {
         toast.error('Delete Comment Fail')
@@ -269,9 +302,9 @@ const TwitterCard = ({ data, refetchAllDataTweet, data_length }: Props) => {
       <div className='flex flex-col space-y-2 w-full'>
         <div className='flex space-x-4'>
           <Avatar className='mx-4 h-11 w-11 rounded-full cursor-pointer'>
-            <AvatarImage src={dataUser?.data?.avatar as String} alt={dataUser?.data?.name} />
+            <AvatarImage src={dataUser?.data?.avatar as any} alt={dataUser?.data?.name as any} />
             <AvatarFallback className='bg-gradient-to-r from-violet-200 to-indigo-200 text-indigo-600'>
-              {dataUser?.data?.name?.charAt(0).toUpperCase()}
+              {(dataUser?.data?.name as any)?.charAt(0).toUpperCase()}
             </AvatarFallback>
           </Avatar>
 
@@ -279,10 +312,10 @@ const TwitterCard = ({ data, refetchAllDataTweet, data_length }: Props) => {
             <div className='flex justify-between items-center'>
               <div className='flex items-center space-x-2'>
                 <span className='font-bold text-[15px] sm:text-base text-[#d9d9d9] group-hover:underline'>
-                  {dataUser?.data?.name}
+                  {dataUser?.data?.name as any}
                 </span>
                 <span className='text-sm text-gray-500'>
-                  @{dataUser?.data?.username || 'no user name'} · {commentTime(data?.updated_at as Date)}
+                  @{dataUser?.data?.username || ('no user name' as any)} · {commentTime(data?.updated_at as Date)}
                 </span>
                 <GoVerified className='text-blue-500' />
               </div>

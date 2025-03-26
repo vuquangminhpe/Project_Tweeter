@@ -22,10 +22,6 @@ const StoriesContainer = () => {
       refreshInterval: 30000
     })
 
-  useEffect(() => {
-    console.log('Stories data:', stories)
-  }, [stories])
-
   const scroll = (direction: 'left' | 'right') => {
     if (!containerRef) return
     const scrollAmount = direction === 'left' ? -200 : 200
@@ -38,20 +34,19 @@ const StoriesContainer = () => {
   }
 
   useEffect(() => {
-    if (activeStoryIndex !== null && stories && stories[activeStoryIndex]) {
-      const currentStory = stories[activeStoryIndex]
-      if (currentStory._id) {
+    if (activeStoryIndex !== null && stories && (stories as any)[activeStoryIndex]) {
+      const currentStory = (stories as any)[activeStoryIndex]
+      if (currentStory._id && !isStoryViewed(currentStory)) {
         markStoryAsViewed(currentStory._id)
       }
     }
-  }, [activeStoryIndex, stories, markStoryAsViewed])
+  }, [activeStoryIndex, stories, markStoryAsViewed, isStoryViewed])
 
   const userStories = React.useMemo(() => {
-    if (!stories || stories?.length === 0) return []
+    if (!stories || Number((stories as any)?.result?.length) === 0) return []
 
     const storyGroups = new Map()
-
-    stories?.forEach((story: any) => {
+    ;(stories as any)?.result?.forEach((story: any) => {
       if (!story || !story.user || !story.user._id) return
 
       const userId = story.user._id
@@ -118,7 +113,7 @@ const StoriesContainer = () => {
             userStories.map((group: any) => {
               if (!group || !group.user) return null
 
-              const startIndex = stories?.findIndex((s: any) => s.user._id === group.user._id) || 0
+              const startIndex = (stories as any)?.result?.findIndex((s: any) => s.user._id === group.user._id) || 0
               const isUserStoriesViewed = group.stories.every((story: any) => isStoryViewed(story))
 
               return (
@@ -148,7 +143,7 @@ const StoriesContainer = () => {
       </div>
 
       <AnimatePresence>
-        {activeStoryIndex !== null && stories && stories?.length > 0 && (
+        {activeStoryIndex !== null && stories && (stories as any)?.result?.length > 0 && (
           <StoryViewer
             stories={stories as NewsFeedStory[]}
             initialIndex={activeStoryIndex}

@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import { X, MoreHorizontal, ChevronLeft, ChevronRight, Pause, Play } from 'lucide-react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
@@ -50,37 +50,42 @@ const StoryViewer = ({ stories, initialIndex, onClose, currentUserId }: StoryVie
     }
   })
 
-  const navigateStory = (direction: 'prev' | 'next') => {
-    if (direction === 'prev') {
-      if (currentSegmentIndex > 0) {
-        setCurrentSegmentIndex(currentSegmentIndex - 1)
-      } else if (currentStoryIndex > 0) {
-        setCurrentStoryIndex(currentStoryIndex - 1)
-        setCurrentSegmentIndex(0)
-      }
-    } else {
-      if (currentStoryIndex < stories.length - 1) {
-        setCurrentStoryIndex(currentStoryIndex + 1)
-        setCurrentSegmentIndex(0)
+  const navigateStory = useCallback(
+    (direction: 'prev' | 'next') => {
+      if (direction === 'prev') {
+        setCurrentStoryIndex((prev) => {
+          if (prev > 0) return prev - 1
+          return prev
+        })
       } else {
-        onClose()
+        setCurrentStoryIndex((prev) => {
+          if (prev < stories.length - 1) return prev + 1
+          else {
+            setTimeout(() => onClose(), 0)
+            return prev
+          }
+        })
       }
-    }
-  }
+    },
+    [stories.length, onClose]
+  )
 
-  const togglePause = () => {
-    setIsPaused(!isPaused)
+  const togglePause = useCallback(() => {
+    setIsPaused((prev) => {
+      const newPaused = !prev
 
-    if (videoRef.current) {
-      if (isPaused) {
-        videoRef.current.play()
-      } else {
-        videoRef.current.pause()
+      if (videoRef.current) {
+        if (newPaused) {
+          videoRef.current.pause()
+        } else {
+          videoRef.current.play()
+        }
       }
-    }
-  }
 
-  const handleSendReaction = () => {
+      return newPaused
+    })
+  }, [])
+  const handleSendReaction = useCallback(() => {
     if (!reactionType || !currentStory?._id) return
 
     reactStoryMutation.mutate(
@@ -91,22 +96,21 @@ const StoryViewer = ({ stories, initialIndex, onClose, currentUserId }: StoryVie
       {
         onSuccess: () => {
           toast.success('Reaction sent!')
-          setIsReacting(false)
           setReactionType('')
           refetch()
         }
       }
     )
-  }
+  }, [reactionType, currentStory, reactStoryMutation, refetch])
 
-  const handleSendComment = () => {
+  const handleSendComment = useCallback(() => {
     if (!comment.trim() || !currentStory?._id) return
 
     commentStoryMutation.mutate({
       story_id: currentStory._id as string,
       content: comment.trim()
     })
-  }
+  }, [comment, currentStory, commentStoryMutation])
 
   useEffect(() => {
     if (currentStory && currentStory._id) {
@@ -140,7 +144,7 @@ const StoryViewer = ({ stories, initialIndex, onClose, currentUserId }: StoryVie
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [currentStoryIndex, currentSegmentIndex])
+  }, [navigateStory, togglePause, onClose])
 
   const formatTimeAgo = (dateString: string | Date) => {
     const date = new Date(dateString)

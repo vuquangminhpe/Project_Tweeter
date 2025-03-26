@@ -17,6 +17,7 @@ import { useNavigate } from 'react-router-dom'
 import { CommentRequest } from '@/types/Comments.type'
 import { Media } from '@/types/Medias.type'
 import VideoHLSPlayer from '../Customs/VideoHLSPlayer'
+import bookmarksApi from '@/apis/bookmarks.api'
 
 interface Props {
   profile: User | null
@@ -232,7 +233,7 @@ export default function Post({ profile, data, refetchAllDataTweet, data_length }
       return `${diffMinutes}m`
     }
   }
-  
+
   return (
     <div className='p-3 flex cursor-pointer border-b border-gray-700'>
       <div className='flex flex-col space-y-2 w-full'>
@@ -247,7 +248,9 @@ export default function Post({ profile, data, refetchAllDataTweet, data_length }
           <div className='text-[#6e767d]'>
             <div className='inline-block group justify-center items-center gap-1'>
               <div className='flex justify-center gap-1 items-center'>
-                <h4 className='font-bold text-[15px] sm:text-base text-[#d9d9d9] group-hover:underline'>{profile?.name}</h4>
+                <h4 className='font-bold text-[15px] sm:text-base text-[#d9d9d9] group-hover:underline'>
+                  {profile?.name}
+                </h4>
                 <span className='text-sm sm:text-[13px]'>{profile?.email}</span>
               </div>
 

@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useRef } from 'react'
 import { useQuery, useMutation } from '@tanstack/react-query'
 import storiesApi, { NewsFeedStory } from '@/apis/stories.api'
 import { toast } from 'sonner'
@@ -6,17 +6,21 @@ import { toast } from 'sonner'
 interface UseStoriesOptions {
   limit?: number
   page?: number
+  autoRefresh?: boolean
+  refreshInterval?: number
 }
 
 const useStories = (options: UseStoriesOptions = {}) => {
-  const { limit = 10, page = 1 } = options
+  const { limit = 10, page = 1, autoRefresh = false, refreshInterval = 30000 } = options
 
+  const viewedStoriesRef = useRef<Set<string>>(new Set())
   const [activeStoryIndex, setActiveStoryIndex] = useState<number | null>(null)
-  const [viewedStories, setViewedStories] = useState<Set<string>>(new Set())
 
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['news-feed-stories', limit, page],
-    queryFn: () => storiesApi.getNewsFeedStories(limit, page)
+    queryFn: () => storiesApi.getNewsFeedStories(limit, page),
+    refetchInterval: autoRefresh ? refreshInterval : false,
+    staleTime: 5 * 60 * 1000
   })
 
   const stories = data?.data?.result || []
@@ -24,7 +28,6 @@ const useStories = (options: UseStoriesOptions = {}) => {
   const viewStoryMutation = useMutation({
     mutationFn: storiesApi.viewStory,
     onSuccess: () => {
-      toast.success('Story viewed successfully')
       refetch()
     },
     onError: () => {
@@ -39,7 +42,7 @@ const useStories = (options: UseStoriesOptions = {}) => {
       refetch()
     },
     onError: () => {
-      toast.error('Error reacted story')
+      toast.error('Error reacting to story')
     }
   })
 
@@ -50,20 +53,17 @@ const useStories = (options: UseStoriesOptions = {}) => {
       refetch()
     },
     onError: () => {
-      toast.error('Error created story')
+      toast.error('Error creating story')
     }
   })
 
-  const isStoryViewed = useCallback(
-    (story: NewsFeedStory) => {
-      if (!story?._id) return false
+  const isStoryViewed = useCallback((story: NewsFeedStory) => {
+    if (!story?._id) return false
 
-      if (viewedStories.has(story._id)) return true
+    if (viewedStoriesRef.current.has(story._id)) return true
 
-      return story.viewer?.some((view) => view.view_status === 'seen') || false
-    },
-    [viewedStories]
-  )
+    return story.viewer?.some((view) => view.view_status === 'seen') || false
+  }, [])
 
   const openViewer = useCallback((index: number) => {
     setActiveStoryIndex(index)
@@ -77,11 +77,7 @@ const useStories = (options: UseStoriesOptions = {}) => {
     (storyId: string) => {
       if (!storyId) return
 
-      setViewedStories((prev) => {
-        const newSet = new Set(prev)
-        newSet.add(storyId)
-        return newSet
-      })
+      viewedStoriesRef.current.add(storyId)
 
       viewStoryMutation.mutate({
         story_id: storyId,
