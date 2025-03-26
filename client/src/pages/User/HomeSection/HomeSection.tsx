@@ -438,7 +438,7 @@ const HomeSection = ({ setEdit, isPendingTweet = true, isTitleName = 'Share', cu
   };
 
   return (
-    <div className=' text-white flex-grow border-l border-r border-gray-700 max-w-2xl sm:ml-[73px] xl:ml-[370px]'>
+    <div className={`text-white ${isPendingTweet ? 'flex-grow border-l border-r border-gray-700 max-w-2xl sm:ml-[73px] xl:ml-[370px]' : 'w-full'} ${customClassName || ''}`}>
       {isPendingTweet && (
         <div className={`${customClassName}`}>
           <div className='flex items-center justify-center sticky top-0 z-50 bg-black border-b border-gray-700'>
@@ -468,8 +468,8 @@ const HomeSection = ({ setEdit, isPendingTweet = true, isTitleName = 'Share', cu
         </div>
       )}
 
-      <div className={`p-4 bg-black border-b border-gray-700 ${isPendingTweet ? '' : 'w-full'}`}>
-        <div className='border-b border-gray-700 p-3 flex space-x-3'>
+      <div className={`p-4 bg-black ${isPendingTweet ? 'border-b border-gray-700' : ''}`}>
+        <div className={`${isPendingTweet ? 'border-b border-gray-700' : ''} p-3 flex space-x-3`}>
           <Avatar className='h-11 w-11 rounded-full cursor-pointer'>
             <AvatarImage src={profile?.avatar} alt={profile?.name} />
             <AvatarFallback className='bg-gradient-to-r from-violet-200 to-indigo-200 text-indigo-600'>
@@ -519,7 +519,7 @@ const HomeSection = ({ setEdit, isPendingTweet = true, isTitleName = 'Share', cu
               )}
 
               <div className='flex items-center justify-between pt-2.5'>
-                <div className='flex space-x-4'>
+                <div className='flex space-x-4 flex-wrap'>
                   <label className='cursor-pointer text-gray-600 hover:text-indigo-600 transition flex items-center gap-1'>
                     <BiImageAlt className='text-xl' />
                     <span className='text-sm'>Media</span>
@@ -714,9 +714,77 @@ const HomeSection = ({ setEdit, isPendingTweet = true, isTitleName = 'Share', cu
         </div>
       </div>
 
-      <div className='pb-72'>
-        {activeTab === 'forYou' ? (
-          isLoadingNewFeeds && !newFeedsData ? (
+      {isPendingTweet && (
+        <div className='pb-72'>
+          {activeTab === 'forYou' ? (
+            isLoadingNewFeeds && !newFeedsData ? (
+              <div className='flex justify-center items-center min-h-[200px]'>
+                <div className='animate-pulse flex space-x-2'>
+                  <div className='h-3 w-3 bg-indigo-400 rounded-full'></div>
+                  <div className='h-3 w-3 bg-indigo-500 rounded-full'></div>
+                  <div className='h-3 w-3 bg-indigo-600 rounded-full'></div>
+                </div>
+              </div>
+            ) : isPendingTweet && newFeedTweets.length > 0 ? (
+              <>
+                <div>
+                  {newFeedTweets.map((element, index) => (
+                    <PostCard
+                      refetchAllDataTweet={refetchAllDataTweet as any}
+                      key={`${element._id}-${index}`}
+                      data={element}
+                      data_length={element?.medias?.length}
+                      profile={profile as any}
+                    />
+                  ))}
+
+                  {/* {newFeedTweets.map((element) => console.log(element))} */}
+                </div>
+
+                {/* Load More Button */}
+                {hasNextPage && (
+                  <div className='flex justify-center my-4'>
+                    <button
+                      onClick={() => fetchNextPage()}
+                      disabled={isFetchingNextPage}
+                      className='flex items-center px-4 py-2 bg-indigo-500 text-white rounded-full hover:bg-indigo-600 disabled:opacity-50'
+                    >
+                      {isFetchingNextPage ? 'Loading...' : 'Load More'}
+                      <IoIosArrowDown className='ml-2' />
+                    </button>
+                  </div>
+                )}
+
+                {/* Loading More Indicator */}
+                {isFetchingNextPage && (
+                  <div className='flex justify-center items-center my-4'>
+                    <div className='animate-pulse text-gray-500'>Fetching more tweets...</div>
+                  </div>
+                )}
+              </>
+            ) : (
+              <div className='py-12 px-4 text-center'>
+                <div className='bg-indigo-50 rounded-full w-16 h-16 mx-auto flex items-center justify-center mb-4'>
+                  <svg
+                    xmlns='http://www.w3.org/2000/svg'
+                    className='h-8 w-8 text-indigo-500'
+                    fill='none'
+                    viewBox='0 0 24 24'
+                    stroke='currentColor'
+                  >
+                    <path
+                      strokeLinecap='round'
+                      strokeLinejoin='round'
+                      strokeWidth={2}
+                      d='M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z'
+                    />
+                  </svg>
+                </div>
+                <h3 className='text-lg font-medium text-gray-900 mb-1'>No posts in your feed</h3>
+                <p className='text-gray-500 mb-6'>Follow more people to see their posts</p>
+              </div>
+            )
+          ) : isLoadingMyTweets ? (
             <div className='flex justify-center items-center min-h-[200px]'>
               <div className='animate-pulse flex space-x-2'>
                 <div className='h-3 w-3 bg-indigo-400 rounded-full'></div>
@@ -724,43 +792,18 @@ const HomeSection = ({ setEdit, isPendingTweet = true, isTitleName = 'Share', cu
                 <div className='h-3 w-3 bg-indigo-600 rounded-full'></div>
               </div>
             </div>
-          ) : isPendingTweet && newFeedTweets.length > 0 ? (
-            <>
-              <div>
-                {newFeedTweets.map((element, index) => (
-                  <PostCard
-                    refetchAllDataTweet={refetchAllDataTweet as any}
-                    key={`${element._id}-${index}`}
-                    data={element}
-                    data_length={element?.medias?.length}
-                    profile={profile as any}
-                  />
-                ))}
-
-                {/* {newFeedTweets.map((element) => console.log(element))} */}
-              </div>
-
-              {/* Load More Button */}
-              {hasNextPage && (
-                <div className='flex justify-center my-4'>
-                  <button
-                    onClick={() => fetchNextPage()}
-                    disabled={isFetchingNextPage}
-                    className='flex items-center px-4 py-2 bg-indigo-500 text-white rounded-full hover:bg-indigo-600 disabled:opacity-50'
-                  >
-                    {isFetchingNextPage ? 'Loading...' : 'Load More'}
-                    <IoIosArrowDown className='ml-2' />
-                  </button>
-                </div>
-              )}
-
-              {/* Loading More Indicator */}
-              {isFetchingNextPage && (
-                <div className='flex justify-center items-center my-4'>
-                  <div className='animate-pulse text-gray-500'>Fetching more tweets...</div>
-                </div>
-              )}
-            </>
+          ) : isPendingTweet && (myTweets?.data?.data?.length ?? 0) > 0 ? (
+            <div>
+              {myTweets?.data?.data?.map((element, index) => (
+                <PostCard
+                  refetchAllDataTweet={refetchAllDataTweet as any}
+                  key={`${element._id}-${index}`}
+                  data={element}
+                  data_length={element?.medias?.length}
+                  profile={profile as any}
+                />
+              ))}
+            </div>
           ) : (
             <div className='py-12 px-4 text-center'>
               <div className='bg-indigo-50 rounded-full w-16 h-16 mx-auto flex items-center justify-center mb-4'>
@@ -779,53 +822,12 @@ const HomeSection = ({ setEdit, isPendingTweet = true, isTitleName = 'Share', cu
                   />
                 </svg>
               </div>
-              <h3 className='text-lg font-medium text-gray-900 mb-1'>No posts in your feed</h3>
-              <p className='text-gray-500 mb-6'>Follow more people to see their posts</p>
+              <h3 className='text-lg font-medium text-gray-900 mb-1'>You haven't posted yet</h3>
+              <p className='text-gray-500 mb-6'>Share something to see your tweets here</p>
             </div>
-          )
-        ) : isLoadingMyTweets ? (
-          <div className='flex justify-center items-center min-h-[200px]'>
-            <div className='animate-pulse flex space-x-2'>
-              <div className='h-3 w-3 bg-indigo-400 rounded-full'></div>
-              <div className='h-3 w-3 bg-indigo-500 rounded-full'></div>
-              <div className='h-3 w-3 bg-indigo-600 rounded-full'></div>
-            </div>
-          </div>
-        ) : isPendingTweet && (myTweets?.data?.data?.length ?? 0) > 0 ? (
-          <div>
-            {myTweets?.data?.data?.map((element, index) => (
-              <PostCard
-                refetchAllDataTweet={refetchAllDataTweet as any}
-                key={`${element._id}-${index}`}
-                data={element}
-                data_length={element?.medias?.length}
-                profile={profile as any}
-              />
-            ))}
-          </div>
-        ) : (
-          <div className='py-12 px-4 text-center'>
-            <div className='bg-indigo-50 rounded-full w-16 h-16 mx-auto flex items-center justify-center mb-4'>
-              <svg
-                xmlns='http://www.w3.org/2000/svg'
-                className='h-8 w-8 text-indigo-500'
-                fill='none'
-                viewBox='0 0 24 24'
-                stroke='currentColor'
-              >
-                <path
-                  strokeLinecap='round'
-                  strokeLinejoin='round'
-                  strokeWidth={2}
-                  d='M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z'
-                />
-              </svg>
-            </div>
-            <h3 className='text-lg font-medium text-gray-900 mb-1'>You haven't posted yet</h3>
-            <p className='text-gray-500 mb-6'>Share something to see your tweets here</p>
-          </div>
-        )}
-      </div>
+          )}
+        </div>
+      )}
     </div>
   )
 }

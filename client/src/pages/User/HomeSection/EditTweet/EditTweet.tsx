@@ -44,39 +44,43 @@ export default function EditTweet({ data, refetchAllDataTweet, setEdit }: Props)
     }
   }
   return (
-    <div className=''>
+    <div className='edit-tweet-container w-full max-w-full overflow-hidden'>
       <div className='flex flex-col space-y-4'>
         <div key={data._id}>
           <div className='mt-5 flex flex-col w-full'>
-            <div className='w-full'>
-              <div className='flex flex-row overflow-x-auto gap-1'>
-                {data?.medias?.map((media) => (
-                  <div key={media.url} className='relative'>
-                    {media.type === MediaType.Image ? (
-                      <img
-                        src={media.url}
-                        alt='media'
-                        className='rounded-2xl max-h-80 object-contain'
-                      />
-                    ) : (
-                      <div className='w-full h-48 relative'>
-                        <VideoHLSPlayer classNames='rounded-2xl max-h-80 object-contain' src={media.url} />
-                      </div>
-                    )}
-                    <button
-                      onClick={() => handleDeletedItemInTweetMutation(media.url)}
-                      type='button'
-                      className='absolute w-8 h-8 bg-[#15181c] hover:bg-[#272c26] bg-opacity-75 
-                          rounded-full flex items-center justify-center top-1 left-1 cursor-pointer'
-                    >
-                      ✕
-                    </button>
-                  </div>
-                ))}
+            {data?.medias?.length > 0 && (
+              <div className='w-full mb-4'>
+                <div className='flex flex-row overflow-x-auto gap-1'>
+                  {data?.medias?.map((media) => (
+                    <div key={media.url} className='relative'>
+                      {media.type === MediaType.Image ? (
+                        <img
+                          src={media.url}
+                          alt='media'
+                          className='rounded-2xl max-h-80 object-contain'
+                        />
+                      ) : (
+                        <div className='w-full h-48 relative'>
+                          <VideoHLSPlayer classNames='rounded-2xl max-h-80 object-contain' src={media.url} />
+                        </div>
+                      )}
+                      <button
+                        onClick={() => handleDeletedItemInTweetMutation(media.url)}
+                        type='button'
+                        className='absolute w-8 h-8 bg-[#15181c] hover:bg-[#272c26] bg-opacity-75 
+                            rounded-full flex items-center justify-center top-1 left-1 cursor-pointer'
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  ))}
+                </div>
               </div>
+            )}
+            <div className='w-full'>
               <HomeSection
                 setEdit={setEdit}
-                customClassName={'border-none'}
+                customClassName='edit-mode'
                 isPendingTweet={false}
                 isTitleName='Save'
                 dataEdit={data}
