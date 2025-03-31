@@ -5,9 +5,10 @@
       "src": "src/index.ts",
       "use": "@vercel/node",
       "config": {
+        "includeFiles": ["src/**/*"],
         "tscConfig": {
           "compilerOptions": {
-            "resolveJsonModule": true,
+            "outDir": "dist",
             "baseUrl": ".",
             "paths": {
               "~/*": ["src/*"]
