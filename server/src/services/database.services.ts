@@ -16,7 +16,7 @@ import { Payment } from '~/models/schemas/Payment.schema'
 import { Ban } from '~/models/schemas/Ban.schemas'
 import { Report } from '~/models/schemas/Report.schemas'
 
-const uri = `mongodb+srv://${envConfig.db_username}:${envConfig.db_password}@minhdevmongo.hzvnp.mongodb.net/?retryWrites=true&w=majority&appName=minhdevMongo`
+const uri = envConfig.mongodb_url
 
 class DatabaseService {
   private client: MongoClient

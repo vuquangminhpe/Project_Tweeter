@@ -55,5 +55,6 @@ export const envConfig = {
   vnpay_url: process.env.VNPAY_URL,
   vnpay_api_url: process.env.VNPAY_API_URL,
   vnpay_return_url: process.env.VNPAY_RETURN_URL,
-  payment_notify_url: process.env.PAYMENT_NOTIFY_URL
+  payment_notify_url: process.env.PAYMENT_NOTIFY_URL,
+  mongodb_url: process.env.MONGODB_URI as string
 }
