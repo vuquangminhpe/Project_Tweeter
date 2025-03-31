@@ -3,7 +3,18 @@
   "builds": [
     {
       "src": "src/index.ts",
-      "use": "@vercel/node"
+      "use": "@vercel/node",
+      "config": {
+        "tscConfig": {
+          "compilerOptions": {
+            "resolveJsonModule": true,
+            "baseUrl": ".",
+            "paths": {
+              "~/*": ["src/*"]
+            }
+          }
+        }
+      }
     }
   ],
   "routes": [
@@ -11,5 +22,8 @@
       "src": "/(.*)",
       "dest": "/src/index.ts"
     }
-  ]
+  ],
+  "env": {
+    "VALKEY_URL": "@valkey_url"
+  }
 }
