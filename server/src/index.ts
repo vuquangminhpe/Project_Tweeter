@@ -1,3 +1,4 @@
+import 'module-alias/register'
 import express from 'express'
 import databaseService from './services/database.services'
 import usersRouter from './routes/user.routes'
@@ -29,7 +30,6 @@ import initSocket from './utils/socket'
 import paymentRouter from './routes/payment.routes'
 import adminRouter from './routes/admin.routes'
 import contentModerationRouter from './routes/contentModeration.routes'
-import 'module-alias/register';
 config()
 databaseService
   .connect()

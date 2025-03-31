@@ -2,13 +2,12 @@
   "version": 2,
   "builds": [
     {
-      "src": "/dist/src/index.js",
+      "src": "src/index.ts",
       "use": "@vercel/node",
       "config": {
-        "includeFiles": ["src/**/*"],
         "tscConfig": {
           "compilerOptions": {
-            "outDir": "dist",
+            "resolveJsonModule": true,
             "baseUrl": ".",
             "paths": {
               "~/*": ["src/*"]
