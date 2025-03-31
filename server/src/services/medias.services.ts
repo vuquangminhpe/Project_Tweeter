@@ -5,8 +5,7 @@ import { UPLOAD_IMAGES_DIR, UPLOAD_VIDEO_DIR, UPLOAD_VIDEO_HLS_DIR } from '~/con
 import path from 'path'
 import fs from 'fs'
 import fsPromise from 'fs/promises'
-import mime from 'mime'
-import { envConfig, isProduction } from '~/constants/config'
+const mime = require('mime')
 import { EncodingStatus, MediaType } from '~/constants/enums'
 import { Media } from '~/models/Other'
 import { encodeHLSWithMultipleVideoStreams } from '~/utils/video'

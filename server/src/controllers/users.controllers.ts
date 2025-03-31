@@ -68,7 +68,7 @@ export const loginController = async (req: Request<ParamsDictionary, any, LoginR
 export const oauthController = async (req: Request<ParamsDictionary, any, LoginReqBody>, res: Response) => {
   const { code } = req.query
   const result = await usersService.oauth(code as string)
-  const urlRedirect = `${envConfig.client_redirect}?access_token=${result.access_token}&refresh_token=${result.refresh_token}&new_user=${result.newUser}&verify=${result.verify}`
+  const urlRedirect = `${envConfig.client_redirect}?access_token=${result.access_token}&new_user=${result.newUser}&verify=${result.verify}`
   res.redirect(urlRedirect)
   res.status(200).json({
     message: result.newUser ? USERS_MESSAGES.REGISTER_SUCCESS : USERS_MESSAGES.LOGIN_SUCCESS,
@@ -127,7 +127,7 @@ export const getAllUsersController = async (req: Request, res: Response) => {
     const page = parseInt(req.query.page as string) || 1
     const limit = parseInt(req.query.limit as string) || 10
 
-    const result = await usersService.getAllUsers(page, limit)
+    const result = await usersService.getAllUsers(page as any, limit)
     res.json({
       message: 'Fetched users successfully',
       result: {
@@ -168,6 +168,8 @@ export const refreshTokenController = async (
 }
 export const emailVerifyController = async (req: Request<ParamsDictionary, any, VerifyEmailReqBody>, res: Response) => {
   const { user_id } = req.decoded_email_verify_token as TokenPayload
+  console.log('user_id', user_id)
+
   const user = await databaseService.users.findOne({ _id: new ObjectId(user_id) })
   if (!user) {
     res.status(HTTP_STATUS.NOT_FOUND).json({
