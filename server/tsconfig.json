@@ -12,6 +12,7 @@
       "~/*": ["src/*"] // Đường dẫn tương đối cho các import (alias)
     }
   },
+  "esModuleInterop": true,
   "files": ["src/type.d.ts"], // Các file dùng để defined global type cho dự án
   "include": ["src/**/*", "sendmail.ts"] // Đường dẫn include cho các file cần build
 }
