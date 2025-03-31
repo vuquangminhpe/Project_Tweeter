@@ -24,6 +24,6 @@
     }
   ],
   "env": {
-    "VALKEY_URL": "@VALKEY_URL"
+    "VALKEY_URL": "rediss://default:AciDAAIjcDFjMmRhZjY5OWRmNTQ0MTBlOWQ4OWU2ZDM4ODE3MGYzMnAxMA@adequate-liger-51331.upstash.io:6380"
   }
 }
