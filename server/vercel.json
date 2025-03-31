@@ -24,6 +24,6 @@
     }
   ],
   "env": {
-    "VALKEY_URL": "@valkey_url"
+    "VALKEY_URL": "@VALKEY_URL"
   }
 }
