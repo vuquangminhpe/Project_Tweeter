@@ -1,5 +1,5 @@
 import { Request, Response } from 'express'
-import { ADMIN_MESSAGES } from '~/constants/messages'
+import { ADMIN_MESSAGES } from '../constants/messages'
 import {
   UserStatsQuery,
   ContentStatsQuery,
@@ -10,9 +10,9 @@ import {
   UpdateUserStatusBody,
   UpdateUserRoleBody,
   GenerateReportBody
-} from '~/models/request/Admin.request'
-import { UserRole } from '~/models/schemas/User.schema'
-import adminService from '~/services/admin.services'
+} from '../models/request/Admin.request'
+import { UserRole } from '../models/schemas/User.schema'
+import adminService from '../services/admin.services'
 
 export const getUserStatisticsController = async (req: Request<any, any, any, UserStatsQuery>, res: Response) => {
   const result = await adminService.getUserStatistics(req.query)

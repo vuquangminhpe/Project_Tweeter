@@ -18,7 +18,7 @@ import {
   paginationValidator,
   tweetIdValidator
 } from '../middlewares/tweets.middlewares'
-import { AccessTokenValidator, verifiedUserValidator } from '~/middlewares/users.middlewares'
+import { AccessTokenValidator, verifiedUserValidator } from '../middlewares/users.middlewares'
 import { wrapAsync } from '../utils/handler'
 
 export const tweetsRouter = Router()

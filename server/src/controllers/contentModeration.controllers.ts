@@ -7,11 +7,11 @@ import {
   ReportContentBody,
   UnbanUserBody
 } from '../models/request/Moderation.request'
-import contentModerationService from '~/services/contentModeration.services'
-import { TokenPayload } from '~/models/request/User.request'
-import { ReportStatus } from '~/models/request/Moderation.request'
+import contentModerationService from '../services/contentModeration.services'
+import { TokenPayload } from '../models/request/User.request'
+import { ReportStatus } from '../models/request/Moderation.request'
 import { ObjectId } from 'mongodb'
-import { ADMIN_MESSAGES } from '~/constants/messages'
+import { ADMIN_MESSAGES } from '../constants/messages'
 
 export const getReportedContentController = async (
   req: Request<any, any, any, ContentModerationQuery>,

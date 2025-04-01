@@ -1,5 +1,5 @@
 import { Server } from 'socket.io'
-import Stories from '~/models/schemas/Stories.schema'
+import Stories from '../../models/schemas/Stories.schema'
 import databaseService from '../database.services'
 import { ObjectId } from 'mongodb'
 
