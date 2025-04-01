@@ -214,17 +214,19 @@ class UserService {
   }
 
   async login({ user_id, verify }: { user_id: string; verify: UserVerifyStatus }) {
-    const [access_token, refresh_token] = await this.signAccessAndRefreshToken({
-      user_id,
-      verify: verify
-    })
+    try {
+      const [access_token, refresh_token] = await this.signAccessAndRefreshToken({
+        user_id,
+        verify: verify
+      })
 
-    const expiryInSeconds = envConfig.token_expiry_seconds || 604800
-    await valkeyService.storeRefreshToken(user_id, refresh_token, expiryInSeconds)
+      const expiryInSeconds = envConfig.token_expiry_seconds || 604800
+      await valkeyService.storeRefreshToken(user_id, refresh_token, expiryInSeconds)
 
-    return {
-      access_token
-    }
+      return {
+        access_token
+      }
+    } catch (error) {}
   }
   async logout(refresh_token: string) {
     await valkeyService.deleteRefreshToken(refresh_token)
