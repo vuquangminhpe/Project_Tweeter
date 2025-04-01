@@ -61,7 +61,7 @@ export const loginController = async (req: Request<ParamsDictionary, any, LoginR
   res.status(200).json({
     message: USERS_MESSAGES.LOGIN_SUCCESS,
     result: {
-      access_token: result.access_token
+      access_token: result
     }
   })
 }
