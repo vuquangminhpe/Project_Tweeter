@@ -7,9 +7,9 @@ import {
   getSubscriptionStatusController,
   paymentCallbackController,
   paymentWebhookController
-} from '~/controllers/payments.controllers'
-import { AccessTokenValidator, verifiedUserValidator } from '~/middlewares/users.middlewares'
-import { wrapAsync } from '~/utils/handler'
+} from '../controllers/payments.controllers'
+import { AccessTokenValidator, verifiedUserValidator } from '../middlewares/users.middlewares'
+import { wrapAsync } from '../utils/handler'
 
 const paymentRouter = Router()
 

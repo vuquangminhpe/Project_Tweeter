@@ -1,5 +1,5 @@
 import { ObjectId } from 'mongodb'
-import { AccountStatus, TweetType, UserVerifyStatus } from '~/constants/enums'
+import { AccountStatus, TweetType, UserVerifyStatus } from '../constants/enums'
 import {
   UserStatsQuery,
   ContentStatsQuery,
@@ -7,10 +7,10 @@ import {
   RevenueStatsQuery,
   SystemStatsQuery,
   AdminUserListQuery
-} from '~/models/request/Admin.request'
+} from '../models/request/Admin.request'
 import databaseService from './database.services'
-import { AdminReportType, StatInterval } from '~/constants/messages'
-import { UserRole } from '~/models/schemas/User.schema'
+import { AdminReportType, StatInterval } from '../constants/messages'
+import { UserRole } from '../models/schemas/User.schema'
 
 class AdminService {
   async getUserStatistics(query: UserStatsQuery) {

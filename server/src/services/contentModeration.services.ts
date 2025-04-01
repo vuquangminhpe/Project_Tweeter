@@ -1,9 +1,9 @@
 import { ObjectId } from 'mongodb'
-import { UserVerifyStatus } from '~/constants/enums'
+import { UserVerifyStatus } from '../constants/enums'
 import databaseService from './database.services'
-import { BanDurationType, ContentType, ReportReason, ReportStatus } from '~/models/request/Moderation.request'
-import { Report } from '~/models/schemas/Report.schemas'
-import { Ban } from '~/models/schemas/Ban.schemas'
+import { BanDurationType, ContentType, ReportReason, ReportStatus } from '../models/request/Moderation.request'
+import { Report } from '../models/schemas/Report.schemas'
+import { Ban } from '../models/schemas/Ban.schemas'
 export interface ContentModerationQuery {
   content_type?: ContentType
   status?: ReportStatus

@@ -1,7 +1,7 @@
 import { checkSchema } from 'express-validator'
-import { MediaTypeQuery } from '~/constants/enums'
-import { SEARCH_MESSAGE, TWEET_MESSAGE } from '~/constants/messages'
-import { validate } from '~/utils/validation'
+import { MediaTypeQuery } from '../constants/enums'
+import { SEARCH_MESSAGE, TWEET_MESSAGE } from '../constants/messages'
+import { validate } from '../utils/validation'
 
 export const searchValidator = validate(
   checkSchema(

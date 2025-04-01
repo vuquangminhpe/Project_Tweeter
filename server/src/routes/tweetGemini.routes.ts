@@ -3,11 +3,11 @@ import {
   chatWithGeminiController,
   generateTweetTextGeminiController,
   getConversationInAIControllers
-} from '~/controllers/tweet.controllers'
-import { messageUploadValidator } from '~/middlewares/conversations.middlewares'
-import { paginationValidator } from '~/middlewares/tweets.middlewares'
-import { AccessTokenValidator, premiumUserValidator, verifiedUserValidator } from '~/middlewares/users.middlewares'
-import { wrapAsync } from '~/utils/handler'
+} from '../controllers/tweet.controllers'
+import { messageUploadValidator } from '../middlewares/conversations.middlewares'
+import { paginationValidator } from '../middlewares/tweets.middlewares'
+import { AccessTokenValidator, premiumUserValidator, verifiedUserValidator } from '../middlewares/users.middlewares'
+import { wrapAsync } from '../utils/handler'
 
 const tweetGeminiRoutes = Router()
 

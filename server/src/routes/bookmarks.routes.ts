@@ -3,10 +3,10 @@ import {
   bookmarkTweetController,
   getBookmarkTweetController,
   unBookmarkTweetController
-} from '~/controllers/bookmarks.controllers'
-import { tweetIdValidator } from '~/middlewares/tweets.middlewares'
-import { AccessTokenValidator, verifiedUserValidator } from '~/middlewares/users.middlewares'
-import { wrapAsync } from '~/utils/handler'
+} from '../controllers/bookmarks.controllers'
+import { tweetIdValidator } from '../middlewares/tweets.middlewares'
+import { AccessTokenValidator, verifiedUserValidator } from '../middlewares/users.middlewares'
+import { wrapAsync } from '../utils/handler'
 
 const bookmarksRouter = Router()
 

@@ -1,7 +1,7 @@
-import { createNewStoryResBody, viewAndStatusStoryResBody } from '~/models/request/Stories.requests'
+import { createNewStoryResBody, viewAndStatusStoryResBody } from '../models/request/Stories.requests'
 import databaseService from './database.services'
 import { ObjectId } from 'mongodb'
-import Stories from '~/models/schemas/Stories.schema'
+import Stories from '../models/schemas/Stories.schema'
 
 class StoriesService {
   async createNewStory({ payload, user_id }: { payload: createNewStoryResBody; user_id: string }) {

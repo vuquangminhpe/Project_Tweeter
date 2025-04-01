@@ -21,7 +21,7 @@ import {
   getAllUsersController,
   VerifyForgotPasswordController,
   searchUsersByNameController
-} from '~/controllers/users.controllers'
+} from '../controllers/users.controllers'
 import {
   AccessTokenValidator,
   changePasswordValidator,
@@ -35,8 +35,8 @@ import {
   updateMeValidator,
   verifiedUserValidator,
   verifyForgotPasswordTokenValidator
-} from '~/middlewares/users.middlewares'
-import { wrapAsync } from '~/utils/handler'
+} from '../middlewares/users.middlewares'
+import { wrapAsync } from '../utils/handler'
 
 const usersRouter = Router()
 
@@ -64,12 +64,12 @@ usersRouter.post(
 )
 
 /**
- * Description: Get all users 
+ * Description: Get all users
  * Path: /all
  * method: GET
  * Header: {Authorization: Bearer <access_token>}
  */
-usersRouter.get('/all', wrapAsync(getAllUsersController));
+usersRouter.get('/all', wrapAsync(getAllUsersController))
 
 /**
  * Description: Search users by name
@@ -78,8 +78,7 @@ usersRouter.get('/all', wrapAsync(getAllUsersController));
  * Query: { name: string, page?: number, limit?: number }
  * Header: { Authorization: Bearer <access_token> }
  */
-usersRouter.get('/search', wrapAsync(searchUsersByNameController));
-
+usersRouter.get('/search', wrapAsync(searchUsersByNameController))
 
 usersRouter.post('/reset-password', resetPasswordValidator, wrapAsync(resetPasswordController))
 
@@ -130,8 +129,6 @@ usersRouter.get('/me/following', AccessTokenValidator, verifiedUserValidator, wr
  */
 usersRouter.get('/me/followers', AccessTokenValidator, verifiedUserValidator, wrapAsync(getFollowersController))
 
-
-
 /**
  * Description: follow someone
  * Path: /follow
@@ -140,8 +137,6 @@ usersRouter.get('/me/followers', AccessTokenValidator, verifiedUserValidator, wr
  * Header: {followed_user_id: string}
  */
 usersRouter.post('/follow', AccessTokenValidator, verifiedUserValidator, followValidator, wrapAsync(followController))
-
-
 
 /**
  * Description:un follow someone

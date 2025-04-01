@@ -4,10 +4,10 @@ import {
   deleteCommentController,
   editCommentController,
   getCommentTweetController
-} from '~/controllers/comments.controllers'
-import { createCommentValidator, paginationValidator, tweetIdValidator } from '~/middlewares/tweets.middlewares'
-import { AccessTokenValidator, verifiedUserValidator } from '~/middlewares/users.middlewares'
-import { wrapAsync } from '~/utils/handler'
+} from '../controllers/comments.controllers'
+import { createCommentValidator, paginationValidator, tweetIdValidator } from '../middlewares/tweets.middlewares'
+import { AccessTokenValidator, verifiedUserValidator } from '../middlewares/users.middlewares'
+import { wrapAsync } from '../utils/handler'
 
 const commentsRouter = Router()
 

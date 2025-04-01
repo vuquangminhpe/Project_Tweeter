@@ -1,8 +1,8 @@
 import { ObjectId } from 'mongodb'
 import databaseService from './database.services'
-import Comment, { CommentStatus } from '~/models/schemas/Comment.schema'
-import { MediaTypeQuery } from '~/constants/enums'
-import { COMMENT_MESSAGES } from '~/constants/messages'
+import Comment, { CommentStatus } from '../models/schemas/Comment.schema'
+import { MediaTypeQuery } from '../constants/enums'
+import { COMMENT_MESSAGES } from '../constants/messages'
 
 class CommentServices {
   async getAllCommentInTweet(tweet_id: string, limit: number, page: number) {

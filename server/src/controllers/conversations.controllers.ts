@@ -1,5 +1,5 @@
 import { Request, Response } from 'express'
-import { CONVERSATIONS_MESSAGE } from '~/constants/messages'
+import { CONVERSATIONS_MESSAGE } from '../constants/messages'
 import { ParamsDictionary } from 'express-serve-static-core'
 import {
   deleteMessageInConversationResBody,
@@ -7,9 +7,9 @@ import {
   GetAllConversationsParams,
   GetConversationsParams,
   setEmojiMessageInConversationResBody
-} from '~/models/request/Conversations.requests'
-import conversationServices from '~/services/conversations.services'
-import { TokenPayload } from '~/models/request/User.request'
+} from '../models/request/Conversations.requests'
+import conversationServices from '../services/conversations.services'
+import { TokenPayload } from '../models/request/User.request'
 export const getConversationsByReceiverIdController = async (req: Request<GetConversationsParams>, res: Response) => {
   const { receiver_id } = req.params
   const { limit, page } = req.query

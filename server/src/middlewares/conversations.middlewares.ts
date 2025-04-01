@@ -1,11 +1,11 @@
 import { checkSchema } from 'express-validator'
-import { validate } from '~/utils/validation'
+import { validate } from '../utils/validation'
 import { Request, Response } from 'express'
-import { ErrorWithStatus } from '~/models/Errors'
-import { CONVERSATIONS_MESSAGE } from '~/constants/messages'
-import HTTP_STATUS from '~/constants/httpStatus'
+import { ErrorWithStatus } from '../models/Errors'
+import { CONVERSATIONS_MESSAGE } from '../constants/messages'
+import HTTP_STATUS from '../constants/httpStatus'
 import { ObjectId } from 'mongodb'
-import databaseService from '~/services/database.services'
+import databaseService from '../services/database.services'
 export const messageUploadValidator = validate(checkSchema({ message: { isString: true } }, ['body']))
 export const editMessageValidator = validate(
   checkSchema(

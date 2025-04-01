@@ -1,5 +1,5 @@
 import { ObjectId } from 'mongodb'
-import { ActionType, NotificationStatus } from '~/constants/enums'
+import { ActionType, NotificationStatus } from '../../constants/enums'
 
 interface NotificationType {
   _id?: ObjectId

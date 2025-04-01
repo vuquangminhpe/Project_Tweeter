@@ -1,13 +1,13 @@
-import { ObjectId } from 'bson'
+import { ObjectId } from 'mongodb'
 import { Request, Response } from 'express'
 import { ParamsDictionary } from 'express-serve-static-core'
-import HTTP_STATUS from '~/constants/httpStatus'
-import { STORIES_MESSAGE } from '~/constants/messages'
-import { ErrorWithStatus } from '~/models/Errors'
-import { createNewStoryResBody, ReactStoryResBody, viewAndStatusStoryResBody } from '~/models/request/Stories.requests'
-import { TokenPayload } from '~/models/request/User.request'
-import databaseService from '~/services/database.services'
-import storiesService from '~/services/stories.services'
+import HTTP_STATUS from '../constants/httpStatus'
+import { STORIES_MESSAGE } from '../constants/messages'
+import { ErrorWithStatus } from '../models/Errors'
+import { createNewStoryResBody, ReactStoryResBody, viewAndStatusStoryResBody } from '../models/request/Stories.requests'
+import { TokenPayload } from '../models/request/User.request'
+import databaseService from '../services/database.services'
+import storiesService from '../services/stories.services'
 export const createNewStoryController = async (
   req: Request<ParamsDictionary, any, createNewStoryResBody, any>,
   res: Response

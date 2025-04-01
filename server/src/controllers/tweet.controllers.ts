@@ -7,11 +7,11 @@ import {
   TweetParam,
   TweetQuery,
   TweetRequestBody
-} from '~/models/request/Tweet.request'
-import tweetsService from '~/services/tweets.services'
-import { TokenPayload } from '~/models/request/User.request'
-import { TWEET_MESSAGE } from '~/constants/messages'
-import { TweetType } from '~/constants/enums'
+} from '../models/request/Tweet.request'
+import tweetsService from '../services/tweets.services'
+import { TokenPayload } from '../models/request/User.request'
+import { TWEET_MESSAGE } from '../constants/messages'
+import { TweetType } from '../constants/enums'
 
 export const createTweetController = async (req: Request<ParamsDictionary, any, TweetRequestBody>, res: Response) => {
   const { user_id } = req.decode_authorization as TokenPayload

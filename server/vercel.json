@@ -3,19 +3,7 @@
   "builds": [
     {
       "src": "src/index.ts",
-      "use": "@vercel/node",
-      "config": {
-        "includeFiles": ["src/**/*"],
-        "runtime": "nodejs18.x",
-        "tscConfig": {
-          "compilerOptions": {
-            "baseUrl": ".",
-            "paths": {
-              "~/*": ["src/*"]
-            }
-          }
-        }
-      }
+      "use": "@vercel/node"
     }
   ],
   "routes": [

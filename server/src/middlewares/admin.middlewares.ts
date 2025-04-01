@@ -1,12 +1,12 @@
 import { NextFunction, Request, Response } from 'express'
 import { checkSchema } from 'express-validator'
-import HTTP_STATUS from '~/constants/httpStatus'
-import { ADMIN_MESSAGES } from '~/constants/messages'
-import { ErrorWithStatus } from '~/models/Errors'
-import databaseService from '~/services/database.services'
+import HTTP_STATUS from '../constants/httpStatus'
+import { ADMIN_MESSAGES } from '../constants/messages'
+import { ErrorWithStatus } from '../models/Errors'
+import databaseService from '../services/database.services'
 import { ObjectId } from 'mongodb'
-import { validate } from '~/utils/validation'
-import { TokenPayload } from '~/models/request/User.request'
+import { validate } from '../utils/validation'
+import { TokenPayload } from '../models/request/User.request'
 
 export const isAdminValidator = async (req: Request, res: Response, next: NextFunction) => {
   const { user_id } = req.decode_authorization as TokenPayload

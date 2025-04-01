@@ -16,17 +16,17 @@ import {
   VerifyEmailReqBody,
   VerifyForgotPasswordReqBody
 } from '../models/request/User.request'
-import { USERS_MESSAGES } from '~/constants/messages'
+import { USERS_MESSAGES } from '../constants/messages'
 import { ObjectId } from 'bson'
-import User from '~/models/schemas/User.schema'
-import databaseService from '~/services/database.services'
-import HTTP_STATUS from '~/constants/httpStatus'
+import User from '../models/schemas/User.schema'
+import databaseService from '../services/database.services'
+import HTTP_STATUS from '../constants/httpStatus'
 import { WithId } from 'mongodb'
-import { UserVerifyStatus } from '~/constants/enums'
+import { UserVerifyStatus } from '../constants/enums'
 import { pick } from 'lodash'
-import { hashPassword, verifyPassword } from '~/utils/crypto'
+import { hashPassword, verifyPassword } from '../utils/crypto'
 import { config } from 'dotenv'
-import { envConfig } from '~/constants/config'
+import { envConfig } from '../constants/config'
 config()
 export const loginController = async (req: Request<ParamsDictionary, any, LoginReqBody>, res: Response) => {
   const user = req.user as User

@@ -6,15 +6,19 @@ import {
   getAllConverSationsController,
   getConversationsByReceiverIdController,
   setEmojiMessageInConversationController
-} from '~/controllers/conversations.controllers'
+} from '../controllers/conversations.controllers'
 import {
   deleteAllMessageInConversationValidator,
   deleteMessageValidator,
   editMessageValidator
-} from '~/middlewares/conversations.middlewares'
-import { paginationValidator } from '~/middlewares/tweets.middlewares'
-import { AccessTokenValidator, getConversationsValidator, verifiedUserValidator } from '~/middlewares/users.middlewares'
-import { wrapAsync } from '~/utils/handler'
+} from '../middlewares/conversations.middlewares'
+import { paginationValidator } from '../middlewares/tweets.middlewares'
+import {
+  AccessTokenValidator,
+  getConversationsValidator,
+  verifiedUserValidator
+} from '../middlewares/users.middlewares'
+import { wrapAsync } from '../utils/handler'
 
 const conversationsRouter = Router()
 

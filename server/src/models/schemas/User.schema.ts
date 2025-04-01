@@ -1,5 +1,5 @@
 import { ObjectId } from 'mongodb'
-import { AccountStatus } from '~/constants/enums'
+import { AccountStatus } from '../../constants/enums'
 
 enum UserVerifyStatus {
   Unverified,

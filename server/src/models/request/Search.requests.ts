@@ -1,4 +1,4 @@
-import { MediaTypeQuery } from '~/constants/enums'
+import { MediaTypeQuery } from '../../constants/enums'
 import { Pagination } from './Tweet.request'
 
 export interface SearchQuery extends Pagination {

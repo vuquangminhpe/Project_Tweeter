@@ -1,11 +1,11 @@
 import { ObjectId } from 'mongodb'
 import { checkSchema } from 'express-validator'
-import databaseService from '~/services/database.services'
-import { validate } from '~/utils/validation'
-import { ErrorWithStatus } from '~/models/Errors'
-import HTTP_STATUS from '~/constants/httpStatus'
-import { STORIES_MESSAGE, USERS_MESSAGES } from '~/constants/messages'
-import { TokenPayload } from '~/models/request/User.request'
+import databaseService from '../services/database.services'
+import { validate } from '../utils/validation'
+import { ErrorWithStatus } from '../models/Errors'
+import HTTP_STATUS from '../constants/httpStatus'
+import { STORIES_MESSAGE, USERS_MESSAGES } from '../constants/messages'
+import { TokenPayload } from '../models/request/User.request'
 export const createNewStoryValidator = validate(
   checkSchema(
     {

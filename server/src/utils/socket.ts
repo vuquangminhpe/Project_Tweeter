@@ -1,10 +1,10 @@
 import { Server, Socket } from 'socket.io'
-import Conversations from '~/models/schemas/conversations.schema'
+import Conversations from '../models/schemas/conversations.schema'
 import { ObjectId } from 'mongodb'
-import databaseService from '~/services/database.services'
+import databaseService from '../services/database.services'
 import { Server as ServerHttp } from 'http'
-import { ActionType, NotificationStatus } from '~/constants/enums'
-import { Notification } from '~/models/schemas/Notification.shema'
+import { ActionType, NotificationStatus } from '../constants/enums'
+import { Notification } from '../models/schemas/Notification.shema'
 
 interface UserStatus {
   socket_id: string

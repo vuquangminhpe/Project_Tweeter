@@ -10,10 +10,10 @@ import {
   getUserBanHistoryController,
   getContentModerationStatsController,
   detectToxicContentController
-} from '~/controllers/contentModeration.controllers'
-import { AccessTokenValidator, verifiedUserValidator } from '~/middlewares/users.middlewares'
-import { banUserValidator, isAdminValidator } from '~/middlewares/admin.middlewares'
-import { wrapAsync } from '~/utils/handler'
+} from '../controllers/contentModeration.controllers'
+import { AccessTokenValidator, verifiedUserValidator } from '../middlewares/users.middlewares'
+import { banUserValidator, isAdminValidator } from '../middlewares/admin.middlewares'
+import { wrapAsync } from '../utils/handler'
 
 const contentModerationRouter = Router()
 

@@ -1,16 +1,16 @@
-import { EditTweetRequestBody, TweetRequestBody } from '~/models/request/Tweet.request'
+import { EditTweetRequestBody, TweetRequestBody } from '../models/request/Tweet.request'
 import databaseService from './database.services'
-import Tweet from '~/models/schemas/Tweet.schema'
+import Tweet from '../models/schemas/Tweet.schema'
 import { ObjectId, WithId } from 'mongodb'
-import Hashtag from '~/models/schemas/Hashtag.schema'
-import { AccountStatus, MediaType, TweetAudience, TweetType } from '~/constants/enums'
-import { deleteFileFromS3, deleteS3Folder } from '~/utils/s3'
-import { convertS3Url, extractContentAndInsertToDB, extractGeminiData } from '~/utils/utils'
+import Hashtag from '../models/schemas/Hashtag.schema'
+import { AccountStatus, MediaType, TweetAudience, TweetType } from '../constants/enums'
+import { deleteFileFromS3, deleteS3Folder } from '../utils/s3'
+import { convertS3Url, extractContentAndInsertToDB, extractGeminiData } from '../utils/utils'
 import { GoogleGenerativeAI } from '@google/generative-ai'
 
 import * as nodeFetch from 'node-fetch'
 import { config } from 'dotenv'
-import { PROMPT_CHAT, PROMPT_TWEET_FREE, PROMPT_TWEET_PREMIUM } from '~/constants/prompt'
+import { PROMPT_CHAT, PROMPT_TWEET_FREE, PROMPT_TWEET_PREMIUM } from '../constants/prompt'
 
 config()
 if (!globalThis.fetch) {

@@ -1,6 +1,6 @@
 import databaseService from './database.services'
 import { ObjectId } from 'mongodb'
-import { MediaType, MediaTypeQuery, TweetType } from '~/constants/enums'
+import { MediaType, MediaTypeQuery, TweetType } from '../constants/enums'
 import { performance } from 'perf_hooks'
 import NodeCache from 'node-cache'
 

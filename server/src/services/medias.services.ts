@@ -1,17 +1,23 @@
 import { Request } from 'express'
-import { getFiles, getNameFromFullname, handleUploadImage, handleUploadVideo, handleUploadVideoHLS } from '~/utils/file'
+import {
+  getFiles,
+  getNameFromFullname,
+  handleUploadImage,
+  handleUploadVideo,
+  handleUploadVideoHLS
+} from '../utils/file'
 import sharp from 'sharp'
-import { UPLOAD_IMAGES_DIR, UPLOAD_VIDEO_DIR, UPLOAD_VIDEO_HLS_DIR } from '~/constants/dir'
+import { UPLOAD_IMAGES_DIR, UPLOAD_VIDEO_DIR, UPLOAD_VIDEO_HLS_DIR } from '../constants/dir'
 import path from 'path'
 import fs from 'fs'
 import fsPromise from 'fs/promises'
 const mime = require('mime')
-import { EncodingStatus, MediaType } from '~/constants/enums'
-import { Media } from '~/models/Other'
-import { encodeHLSWithMultipleVideoStreams } from '~/utils/video'
+import { EncodingStatus, MediaType } from '../constants/enums'
+import { Media } from '../models/Other'
+import { encodeHLSWithMultipleVideoStreams } from '../utils/video'
 import databaseService from './database.services'
-import VideoStatus from '~/models/schemas/VideoStatus.schema'
-import { uploadFileS3 } from '~/utils/s3'
+import VideoStatus from '../models/schemas/VideoStatus.schema'
+import { uploadFileS3 } from '../utils/s3'
 import { CompleteMultipartUploadCommandOutput } from '@aws-sdk/client-s3'
 
 class Queue {

@@ -1,5 +1,5 @@
 import { ObjectId } from 'mongodb'
-import { MediaTypeQuery } from '~/constants/enums'
+import { MediaTypeQuery } from '../../constants/enums'
 
 export interface CommentStatus {
   url: string

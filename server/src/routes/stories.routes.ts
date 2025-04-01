@@ -10,7 +10,7 @@ import {
   replyStoryController,
   updateStoryStoryController,
   viewAndStatusStoryController
-} from '~/controllers/stories.controllers'
+} from '../controllers/stories.controllers'
 import {
   createNewStoryValidator,
   deleteStoryValidator,
@@ -19,9 +19,9 @@ import {
   replyStoryValidator,
   updateStoryValidator,
   viewAndStatusStoryValidator
-} from '~/middlewares/stories.middleware'
-import { AccessTokenValidator, verifiedUserValidator } from '~/middlewares/users.middlewares'
-import { wrapAsync } from '~/utils/handler'
+} from '../middlewares/stories.middleware'
+import { AccessTokenValidator, verifiedUserValidator } from '../middlewares/users.middlewares'
+import { wrapAsync } from '../utils/handler'
 
 const storiesRouter = Router()
 

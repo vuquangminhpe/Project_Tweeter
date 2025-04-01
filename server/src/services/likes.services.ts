@@ -1,7 +1,7 @@
-import { Like } from '~/models/schemas/Like.schema'
+import { Like } from '../models/schemas/Like.schema'
 import databaseService from './database.services'
 import { ObjectId } from 'mongodb'
-import { LIKES_MESSAGE } from '~/constants/messages'
+import { LIKES_MESSAGE } from '../constants/messages'
 
 class LikesTweet {
   async likeTweet(user_id: string, tweet_id: string) {

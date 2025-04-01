@@ -5,9 +5,9 @@ import {
   uploadVideoController,
   uploadVideoHLSController,
   videoStatusController
-} from '~/controllers/medias.controllers'
-import { AccessTokenValidator, deleteS3Validator, verifiedUserValidator } from '~/middlewares/users.middlewares'
-import { wrapAsync } from '~/utils/handler'
+} from '../controllers/medias.controllers'
+import { AccessTokenValidator, deleteS3Validator, verifiedUserValidator } from '../middlewares/users.middlewares'
+import { wrapAsync } from '../utils/handler'
 const mediasRouter = Router()
 
 mediasRouter.post('/upload-image', AccessTokenValidator, verifiedUserValidator, wrapAsync(uploadImageController))

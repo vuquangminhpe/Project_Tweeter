@@ -4,7 +4,7 @@ import {
   serveSegmentController,
   serveVideoM3u8Controller,
   serveVideoStreamController
-} from '~/controllers/medias.controllers'
+} from '../controllers/medias.controllers'
 const staticRouter = Router()
 
 staticRouter.get('/image/:name', serveImageController)

@@ -1,4 +1,4 @@
-import { MediaTypeQuery } from '~/constants/enums'
+import { MediaTypeQuery } from '../../constants/enums'
 
 export interface createNewStoryResBody {
   content: string

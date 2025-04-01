@@ -10,10 +10,10 @@ import {
   updateUserStatusController,
   updateUserRoleController,
   generateReportController
-} from '~/controllers/admin.controllers'
-import { AccessTokenValidator, verifiedUserValidator } from '~/middlewares/users.middlewares'
-import { dateRangeValidator, isAdminValidator } from '~/middlewares/admin.middlewares'
-import { wrapAsync } from '~/utils/handler'
+} from '../controllers/admin.controllers'
+import { AccessTokenValidator, verifiedUserValidator } from '../middlewares/users.middlewares'
+import { dateRangeValidator, isAdminValidator } from '../middlewares/admin.middlewares'
+import { wrapAsync } from '../utils/handler'
 
 const adminRouter = Router()
 

@@ -8,7 +8,7 @@ import {
   getTweetChildrenController,
   getTweetDetailsController,
   getTweetDetailsGuestController
-} from '~/controllers/tweet.controllers'
+} from '../controllers/tweet.controllers'
 import {
   audienceValidator,
   createTweetValidator,
@@ -17,9 +17,9 @@ import {
   getTweetChildrenValidator,
   paginationValidator,
   tweetIdValidator
-} from '~/middlewares/tweets.middlewares'
+} from '../middlewares/tweets.middlewares'
 import { AccessTokenValidator, verifiedUserValidator } from '~/middlewares/users.middlewares'
-import { wrapAsync } from '~/utils/handler'
+import { wrapAsync } from '../utils/handler'
 
 export const tweetsRouter = Router()
 
@@ -52,8 +52,7 @@ tweetsRouter.get(
   '/guest/:tweet_id',
   tweetIdValidator,
   wrapAsync(getTweetDetailsGuestController) // Controller mới
-);
-
+)
 
 /**
  * Description: get Tweet details

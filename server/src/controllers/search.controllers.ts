@@ -1,8 +1,8 @@
 import { Request, Response } from 'express'
 import { ParamsDictionary } from 'express-serve-static-core'
-import { SEARCH_MESSAGE } from '~/constants/messages'
-import { SearchQuery } from '~/models/request/Search.requests'
-import searchService from '~/services/search.services'
+import { SEARCH_MESSAGE } from '../constants/messages'
+import { SearchQuery } from '../models/request/Search.requests'
+import searchService from '../services/search.services'
 export const searchController = async (req: Request<ParamsDictionary, any, any, SearchQuery>, res: Response) => {
   const limit = Number(req.query.limit)
   const page = Number(req.query.page)

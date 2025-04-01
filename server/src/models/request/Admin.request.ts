@@ -1,6 +1,6 @@
 import { Query } from 'express-serve-static-core'
-import { UserVerifyStatus } from '~/constants/enums'
-import { AdminReportType, StatInterval } from '~/constants/messages'
+import { UserVerifyStatus } from '../../constants/enums'
+import { AdminReportType, StatInterval } from '../../constants/messages'
 
 export interface StatDateRange {
   from_date?: string

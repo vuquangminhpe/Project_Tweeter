@@ -1,12 +1,12 @@
 import crypto from 'crypto'
 import { ObjectId } from 'mongodb'
-import { AccountStatus } from '~/constants/enums'
+import { AccountStatus } from '../constants/enums'
 import databaseService from './database.services'
-import { envConfig } from '~/constants/config'
+import { envConfig } from '../constants/config'
 import moment from 'moment'
 import qs from 'qs'
-import { ErrorWithStatus } from '~/models/Errors'
-import { PAYMENT_MESSAGE } from '~/constants/messages'
+import { ErrorWithStatus } from '../models/Errors'
+import { PAYMENT_MESSAGE } from '../constants/messages'
 import { Request } from 'express'
 const PRICES = {
   [AccountStatus.PREMIUM]: 50000,

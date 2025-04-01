@@ -1,8 +1,8 @@
 import { config } from 'dotenv'
 import { GoogleGenerativeAI } from '@google/generative-ai'
-import { GeminiSuccessResponse, GeminiViolationResponse } from '~/models/request/Gemini.requests'
+import { GeminiSuccessResponse, GeminiViolationResponse } from '../models/request/Gemini.requests'
 import { ObjectId } from 'mongodb'
-import databaseService from '~/services/database.services'
+import databaseService from '../services/database.services'
 config()
 export function convertS3Url(inputUrl: string): string {
   const httpS3UrlPattern = /^https?:\/\/([^.]+)\.s3\.([^/]+)\.amazonaws\.com\/(.+)$/
