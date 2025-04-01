@@ -27,10 +27,7 @@ class ValkeyService {
       console.log('Redis connected!')
     })
   }
-  async get(key: string) {
-    const client = await this.ensureConnection()
-    return client.get(key)
-  }
+
   async ensureConnection() {
     if (!this.isConnected) {
       try {
@@ -42,7 +39,10 @@ class ValkeyService {
     }
     return this.client
   }
-
+  async get(key: string) {
+    const client = await this.ensureConnection()
+    return client.get(key)
+  }
   async connect() {
     try {
       await this.client.connect()
