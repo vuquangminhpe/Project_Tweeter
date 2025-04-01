@@ -58,10 +58,14 @@ const corsOptions: CorsOptions = {
 // app.use(limiter)
 app.use(cors(corsOptions))
 
-initFolderImage()
-initFolderVideo()
-initFolderVideoHls()
-
+try {
+  initFolderImage()
+  initFolderVideo()
+  initFolderVideoHls()
+  console.log('Directories initialized successfully')
+} catch (error) {
+  console.error('Error initializing directories:', error)
+}
 app.use(express.json())
 app.use('/users', usersRouter)
 app.use('/medias', mediasRouter)
