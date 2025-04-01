@@ -12,7 +12,7 @@ import HTTP_STATUS from '../constants/httpStatus'
 import Follower from '../models/schemas/Follower.schema'
 import axios from 'axios'
 import { config } from 'dotenv'
-import { verifyEmail as sendVerifyEmail, verifyEmail, verifyForgotPassword } from 'sendmail'
+import { verifyEmail as sendVerifyEmail, verifyEmail, verifyForgotPassword } from '~/utils/sendmail'
 import { envConfig } from '../constants/config'
 import valkeyService from './valkey.services'
 

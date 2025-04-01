@@ -14,5 +14,5 @@
   },
   "esModuleInterop": true,
   "files": ["src/type.d.ts"], // Các file dùng để defined global type cho dự án
-  "include": ["src/**/*", "sendmail.ts"] // Đường dẫn include cho các file cần build
+  "include": ["src/**/*", "src/utils/sendmail.ts"] // Đường dẫn include cho các file cần build
 }
