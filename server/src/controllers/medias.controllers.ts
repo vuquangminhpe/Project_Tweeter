@@ -2,7 +2,7 @@ import { Response, Request, NextFunction } from 'express'
 import { USERS_MESSAGES } from '../constants/messages'
 import mediaService from '../services/medias.services'
 import path from 'path'
-const mime = require('mime')
+import mime from 'mime'
 import fs from 'fs'
 import { UPLOAD_IMAGES_DIR, UPLOAD_VIDEO_DIR } from '../constants/dir'
 import { deleteFileFromS3, deleteS3Folder, sendFileFromS3 } from '../utils/s3'
