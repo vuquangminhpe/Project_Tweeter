@@ -2,10 +2,15 @@ import { Response, Request, NextFunction } from 'express'
 import { USERS_MESSAGES } from '../constants/messages'
 import mediaService from '../services/medias.services'
 import path from 'path'
-import mime from 'mime'
 import fs from 'fs'
+
 import { UPLOAD_IMAGES_DIR, UPLOAD_VIDEO_DIR } from '../constants/dir'
 import { deleteFileFromS3, deleteS3Folder, sendFileFromS3 } from '../utils/s3'
+let mime: any
+;(async () => {
+  const mimeModule = await import('mime')
+  mime = mimeModule
+})()
 export const uploadImageController = async (req: Request, res: Response, next: NextFunction) => {
   const url = await mediaService.uploadImage(req)
   res.json({ message: USERS_MESSAGES.UPLOAD_SUCCESS, result: url })
@@ -52,7 +57,7 @@ export const serveVideoStreamController = async (req: Request, res: Response, ne
         'Content-Range': `bytes ${start}-${end}/${videoSize}`,
         'Accept-Ranges': 'bytes',
         'Content-Length': chunksize,
-        'Content-Type': mime.getType(videoPath) || 'video/mp4'
+        'Content-Type': mime.default.getType(videoPath) || 'video/mp4'
       }
 
       res.writeHead(206, head)
@@ -60,7 +65,7 @@ export const serveVideoStreamController = async (req: Request, res: Response, ne
     } else {
       const head = {
         'Content-Length': videoSize,
-        'Content-Type': mime.getType(videoPath) || 'video/mp4'
+        'Content-Type': mime.default.getType(videoPath) || 'video/mp4'
       }
       res.writeHead(200, head)
       fs.createReadStream(videoPath).pipe(res)

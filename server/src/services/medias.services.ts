@@ -11,7 +11,6 @@ import { UPLOAD_IMAGES_DIR, UPLOAD_VIDEO_DIR, UPLOAD_VIDEO_HLS_DIR } from '../co
 import path from 'path'
 import fs from 'fs'
 import fsPromise from 'fs/promises'
-import mime from 'mime'
 import { EncodingStatus, MediaType } from '../constants/enums'
 import { Media } from '../models/Other'
 import { encodeHLSWithMultipleVideoStreams } from '../utils/video'
@@ -19,7 +18,11 @@ import databaseService from './database.services'
 import VideoStatus from '../models/schemas/VideoStatus.schema'
 import { uploadFileS3 } from '../utils/s3'
 import { CompleteMultipartUploadCommandOutput } from '@aws-sdk/client-s3'
-
+let mime: any
+;(async () => {
+  const mimeModule = await import('mime')
+  mime = mimeModule
+})()
 class Queue {
   items: string[]
   encoding: boolean
@@ -77,7 +80,7 @@ class Queue {
             const s3Upload = await uploadFileS3({
               filePath: filepath,
               filename: fileName,
-              contentType: mime.getType(filepath) as string
+              contentType: mime.default.getType(filepath) as string
             })
 
             if (filepath.endsWith('/master.m3u8')) {
@@ -144,7 +147,7 @@ class MediaService {
         const s3Result = await uploadFileS3({
           filename: 'Images/' + newFullFileName,
           filePath: newPath,
-          contentType: mime.getType(newFullFileName) as string
+          contentType: mime.default.getType(newFullFileName) as string
         })
         await Promise.all([fsPromise.unlink(file.filepath), fsPromise.unlink(newPath)])
         return {

@@ -3,8 +3,12 @@ import fs from 'fs'
 import formidable, { Part } from 'formidable'
 import { File } from 'formidable'
 import { UPLOAD_IMAGES_DIR, UPLOAD_TEMP_DIR, UPLOAD_VIDEO_DIR, UPLOAD_VIDEO_HLS_DIR } from '../constants/dir'
-import { nanoid } from 'nanoid'
 import path from 'path'
+let nanoid: any
+;(async () => {
+  const module = await import('nanoid')
+  nanoid = module.nanoid
+})()
 export const initFolderImage = () => {
   if (!fs.existsSync(UPLOAD_IMAGES_DIR)) {
     fs.mkdirSync(UPLOAD_IMAGES_DIR, {
