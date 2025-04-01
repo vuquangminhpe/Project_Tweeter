@@ -8,7 +8,8 @@ config({
 })
 
 export const envConfig = {
-  valkey_url: process.env.VALKEY_URL,
+  valkey_url: process.env.VALKEY_URL as string,
+  redis_url: process.env.REDIS_URL as string,
   port: process.env.PORT,
   host: process.env.HOST,
   db_username: process.env.DB_USERNAME,

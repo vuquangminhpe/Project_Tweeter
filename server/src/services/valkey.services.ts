@@ -4,30 +4,43 @@ import { ObjectId } from 'bson'
 
 class ValkeyService {
   private client
+  private isConnected = false
   private readonly REFRESH_TOKEN_PREFIX = 'refresh_token:'
   private readonly TOKEN_TO_USER_PREFIX = 'token_to_user:'
 
   constructor() {
     this.client = createClient({
-      url: envConfig.valkey_url,
+      url: envConfig.redis_url,
       socket: {
+        tls: envConfig.redis_url.startsWith('rediss://'),
         reconnectStrategy: (retries) => {
-          // Thử kết nối lại tối đa 5 lần
-          if (retries > 5) {
-            console.log('Too many retries, giving up')
-            return new Error('Connection failed')
-          }
-          // Tăng thời gian chờ giữa các lần thử
+          if (retries > 3) return new Error('Max retries reached')
           return Math.min(retries * 500, 2000)
         },
-        connectTimeout: 5000 // Tăng timeout lên 5 giây
+        connectTimeout: 20000
       }
     })
 
-    this.client.on('error', (err) => console.error('Valkey Error:', err))
-    this.client.on('connect', () => console.log('Valkey connecting...'))
-    this.client.on('ready', () => console.log('Valkey connected!'))
-    this.connect()
+    this.client.on('error', (err) => console.error('Redis error:', err))
+    this.client.on('ready', () => {
+      this.isConnected = true
+      console.log('Redis connected!')
+    })
+  }
+  async get(key: string) {
+    const client = await this.ensureConnection()
+    return client.get(key)
+  }
+  async ensureConnection() {
+    if (!this.isConnected) {
+      try {
+        await this.client.connect()
+      } catch (err) {
+        console.error('Redis connection failed:', err)
+        throw err
+      }
+    }
+    return this.client
   }
 
   async connect() {
