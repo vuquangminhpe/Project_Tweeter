@@ -284,13 +284,12 @@
     "dev": "npx nodemon --development",
     "dev:prod": "npx nodemon --env=production",
     "build": "rimraf ./dist && tsc && tsc-alias",
-    "start": "node dist/index.js --env=development",
+    "start:dev": "node dist/index.js --env=development",
     "start:prod": "node dist/index.js --env=production",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "prettier": "prettier --check .",
-    "prettier:fix": "prettier --write .",
-    "migrate-tokens": "ts-node src/scripts/migrateTokens.ts"
+    "prettier:fix": "prettier --write ."
   },
   "author": "",
   "license": "ISC",
