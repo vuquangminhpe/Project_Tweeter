@@ -13,7 +13,7 @@ export const envConfig = {
   host: process.env.HOST,
   db_username: process.env.DB_USERNAME,
   db_password: process.env.DB_PASSWORD,
-  db_name: process.env.DB_Name,
+  db_name: process.env.DB_NAME,
   password_secret: process.env.PASSWORD_SECRET,
   Bucket_Name: process.env.S3_BUCKET_NAME,
   usersCollection: process.env.DB_USERS_COLLECTION as string,

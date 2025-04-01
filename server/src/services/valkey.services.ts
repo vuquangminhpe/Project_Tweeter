@@ -9,10 +9,24 @@ class ValkeyService {
 
   constructor() {
     this.client = createClient({
-      url: envConfig.valkey_url || 'redis://localhost:6380 '
+      url: envConfig.valkey_url,
+      socket: {
+        reconnectStrategy: (retries) => {
+          // Thử kết nối lại tối đa 5 lần
+          if (retries > 5) {
+            console.log('Too many retries, giving up')
+            return new Error('Connection failed')
+          }
+          // Tăng thời gian chờ giữa các lần thử
+          return Math.min(retries * 500, 2000)
+        },
+        connectTimeout: 5000 // Tăng timeout lên 5 giây
+      }
     })
 
-    this.client.on('error', (err) => console.log('Valkey Client Error', err))
+    this.client.on('error', (err) => console.error('Valkey Error:', err))
+    this.client.on('connect', () => console.log('Valkey connecting...'))
+    this.client.on('ready', () => console.log('Valkey connected!'))
     this.connect()
   }
 
