@@ -3,53 +3,52 @@ import { envConfig } from '../constants/config'
 import { ObjectId } from 'bson'
 
 class ValkeyService {
-  private client
-  private isConnected = false
+  private client: ReturnType<typeof createClient>
+  private static instance: ValkeyService
+  private connectionPromise: Promise<void> | null = null
   private readonly REFRESH_TOKEN_PREFIX = 'refresh_token:'
   private readonly TOKEN_TO_USER_PREFIX = 'token_to_user:'
 
-  constructor() {
+  private constructor() {
     this.client = createClient({
-      url: envConfig.redis_url,
+      url: process.env.VALKEY_URL || 'redis://localhost:6379',
       socket: {
-        tls: envConfig.redis_url.startsWith('rediss://'),
+        tls: process.env.VALKEY_URL?.startsWith('rediss://'),
         reconnectStrategy: (retries) => {
           if (retries > 3) return new Error('Max retries reached')
           return Math.min(retries * 500, 2000)
         },
-        connectTimeout: 20000
+        connectTimeout: 10000 // 10 giây
       }
     })
 
     this.client.on('error', (err) => console.error('Redis error:', err))
-    this.client.on('ready', () => {
-      this.isConnected = true
-      console.log('Redis connected!')
-    })
   }
 
-  async ensureConnection() {
-    if (!this.isConnected) {
-      try {
-        await this.client.connect()
-      } catch (err) {
-        console.error('Redis connection failed:', err)
-        throw err
-      }
+  public static getInstance(): ValkeyService {
+    if (!ValkeyService.instance) {
+      ValkeyService.instance = new ValkeyService()
     }
-    return this.client
+    return ValkeyService.instance
   }
-  async get(key: string) {
-    const client = await this.ensureConnection()
-    return client.get(key)
-  }
-  async connect() {
-    try {
-      await this.client.connect()
-      console.log('Connected to Valkey successfully!')
-    } catch (error) {
-      console.error('Failed to connect to Valkey:', error)
+
+  async connect(): Promise<void> {
+    if (!this.connectionPromise) {
+      this.connectionPromise = this.client
+        .connect()
+        .then(() => console.log('Redis connected!'))
+        .catch((err) => {
+          console.error('Redis connection failed:', err)
+          this.connectionPromise = null
+          throw err
+        })
     }
+    return this.connectionPromise
+  }
+
+  async get(key: string): Promise<string | null> {
+    await this.connect()
+    return this.client.get(key)
   }
 
   async storeRefreshToken(user_id: string, token: string, expiresInSec: number) {
@@ -101,5 +100,5 @@ class ValkeyService {
   }
 }
 
-const valkeyService = new ValkeyService()
+const valkeyService = ValkeyService.getInstance()
 export default valkeyService

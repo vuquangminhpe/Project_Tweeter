@@ -12,6 +12,12 @@
       "dest": "/src/index.ts"
     }
   ],
+  "functions": {
+    "api/*.ts": {
+      "memory": 3008,
+      "maxDuration": 30
+    }
+  },
   "env": {
     "VALKEY_URL": "rediss://default:AciDAAIjcDFjMmRhZjY5OWRmNTQ0MTBlOWQ4OWU2ZDM4ODE3MGYzMnAxMA@adequate-liger-51331.upstash.io:6380"
   }
