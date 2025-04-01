@@ -214,21 +214,15 @@ class UserService {
   }
 
   async login({ user_id, verify }: { user_id: string; verify: UserVerifyStatus }) {
-    try {
-      const [access_token, refresh_token] = await this.signAccessAndRefreshToken({
-        user_id,
-        verify: verify
-      })
+    const [access_token, refresh_token] = await this.signAccessAndRefreshToken({
+      user_id,
+      verify: verify
+    })
 
-      const expiryInSeconds = envConfig.token_expiry_seconds || 604800
-      await valkeyService.storeRefreshToken(user_id, refresh_token, expiryInSeconds)
-
-      return {
-        access_token
-      }
-    } catch (error) {
-      return error
-    }
+    const expiryInSeconds = envConfig.token_expiry_seconds || 604800
+    await valkeyService.storeRefreshToken(user_id, refresh_token, expiryInSeconds)
+    // https://tweeterclone-six.vercel.app
+    return access_token
   }
   async logout(refresh_token: string) {
     await valkeyService.deleteRefreshToken(refresh_token)

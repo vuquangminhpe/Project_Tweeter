@@ -46,12 +46,15 @@ class ValkeyService {
     return this.connectionPromise
   }
 
-  async get(key: string): Promise<string | null> {
-    await this.connect()
-    return this.client.get(key)
+  // Phương thức mới để đảm bảo kết nối trước khi thực hiện thao tác
+  private async ensureConnected(): Promise<void> {
+    if (!this.client.isOpen) {
+      await this.connect()
+    }
   }
 
   async storeRefreshToken(user_id: string, token: string, expiresInSec: number) {
+    await this.ensureConnected()
     const tokenKey = `${this.TOKEN_TO_USER_PREFIX}${token}`
     await this.client.setEx(tokenKey, expiresInSec, user_id)
     const userKey = `${this.REFRESH_TOKEN_PREFIX}${user_id}`
@@ -60,16 +63,19 @@ class ValkeyService {
   }
 
   async getUserIdFromToken(token: string): Promise<string | null> {
+    await this.ensureConnected()
     const tokenKey = `${this.TOKEN_TO_USER_PREFIX}${token}`
     return await this.client.get(tokenKey)
   }
 
   async getRefreshTokensForUser(user_id: string): Promise<string[]> {
+    await this.ensureConnected()
     const userKey = `${this.REFRESH_TOKEN_PREFIX}${user_id}`
     return await this.client.sMembers(userKey)
   }
 
   async deleteRefreshToken(token: string): Promise<boolean> {
+    await this.ensureConnected()
     const tokenKey = `${this.TOKEN_TO_USER_PREFIX}${token}`
     const user_id = await this.client.get(tokenKey)
 
@@ -84,6 +90,7 @@ class ValkeyService {
   }
 
   async deleteAllRefreshTokensForUser(user_id: string): Promise<void> {
+    await this.ensureConnected()
     const userKey = `${this.REFRESH_TOKEN_PREFIX}${user_id}`
     const tokens = await this.client.sMembers(userKey)
 
@@ -95,6 +102,7 @@ class ValkeyService {
   }
 
   async tokenExists(token: string): Promise<boolean> {
+    await this.ensureConnected()
     const tokenKey = `${this.TOKEN_TO_USER_PREFIX}${token}`
     return (await this.client.exists(tokenKey)) === 1
   }
