@@ -226,7 +226,9 @@ class UserService {
       return {
         access_token
       }
-    } catch (error) {}
+    } catch (error) {
+      return error
+    }
   }
   async logout(refresh_token: string) {
     await valkeyService.deleteRefreshToken(refresh_token)
