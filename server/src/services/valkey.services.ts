@@ -10,8 +10,7 @@ class ValkeyService {
   private readonly TOKEN_TO_USER_PREFIX = 'token_to_user:'
 
   private constructor() {
-    // Không tạo client trong constructor để tránh kết nối tự động
-    // khi serverless function khởi tạo
+    //  khởi tạo
   }
 
   public static getInstance(): ValkeyService {
@@ -28,16 +27,15 @@ class ValkeyService {
         socket: {
           tls: process.env.VALKEY_URL?.startsWith('rediss://'),
           reconnectStrategy: (retries) => {
-            if (retries > 1) return new Error('Max retries reached') // Giảm số lần thử lại
-            return Math.min(retries * 300, 1000) // Giảm thời gian chờ
+            if (retries > 1) return new Error('Max retries reached') 
+            return Math.min(retries * 300, 1000) 
           },
-          connectTimeout: 5000 // Giảm timeout xuống 5 giây
+          connectTimeout: 5000 
         }
       })
 
       this.client.on('error', (err) => {
         console.error('Redis error:', err)
-        // Reset client khi gặp lỗi
         this.connectionPromise = null
         this.client = null
       })
@@ -47,7 +45,6 @@ class ValkeyService {
   }
 
   async connect(): Promise<void> {
-    // Tránh kết nối nếu đang ở quá trình build của Vercel
     if (process.env.VERCEL_ENV === 'development' && process.env.VERCEL_BUILDING) {
       console.log('Skipping Redis connection during Vercel build')
       return Promise.resolve()
@@ -65,15 +62,13 @@ class ValkeyService {
           console.error('Redis connection failed:', err)
           this.connectionPromise = null
           this.client = null
-          // Không ném lỗi để tránh crash serverless function
-          // Thay vào đó, sẽ thử lại ở lần gọi tiếp theo
         })
     }
 
     return this.connectionPromise
   }
 
-  // Phương thức đảm bảo kết nối với timeout ngắn hơn cho serverless
+  
   private async ensureConnected(): Promise<boolean> {
     try {
       if (!this.client || !this.client.isOpen) {
@@ -201,3 +196,4 @@ class ValkeyService {
 
 const valkeyService = ValkeyService.getInstance()
 export default valkeyService
+
